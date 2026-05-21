@@ -284,78 +284,97 @@
                             <!-- List View -->
                             <div class="space-y-3">
                                 <article v-for="r in filteredRecords" :key="r.ID" @click="openRecordModal(r)" 
-                                    class="bg-surface rounded-2xl p-3 shadow-soft border border-border-subtle/50 active:scale-[0.98] transition-all cursor-pointer hover:shadow-md"
-                                    :class="{'opacity-85': r.Status === 'Выполнен', 'opacity-70 grayscale-[20%]': r.Status === 'Отменён'}">
+                                    class="bg-surface rounded-2xl p-3 shadow-soft border border-slate-200/50 active:scale-[0.98] transition-all cursor-pointer hover:shadow-md hover:border-slate-300 flex flex-col gap-2"
+                                    :class="{'opacity-90': r.Status === 'Выполнен', 'opacity-75 grayscale-[15%]': r.Status === 'Отменён'}">
                                     
-                                    <!-- Header Row: Car info and Badges -->
-                                    <div class="flex justify-between items-center gap-2 mb-2 bg-slate-50/50 p-1.5 rounded-xl border border-slate-100">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <!-- Car Number styled like an elegant physical plate -->
-                                            <span class="px-2 py-0.5 bg-slate-800 text-white font-mono font-extrabold text-[12px] tracking-wider rounded-lg shadow-sm shrink-0 uppercase">
+                                    <!-- ROW 1: [гос.номер] & [мастер] -->
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <!-- гос.номер -->
+                                        <div class="bg-slate-800 border border-slate-900/40 text-white rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0 shadow-sm">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-300 font-bold">directions_car</span>
+                                            <span class="font-mono font-black text-xs tracking-wider uppercase truncate leading-none">
                                                 {{ r.CarNumber }}
                                             </span>
-                                            <span class="text-xs font-black text-slate-800 truncate">
-                                                {{ getBrandName(r.BrandID) }} {{ getModelName(r.ModelID) }}
-                                            </span>
                                         </div>
-                                        <div class="flex items-center gap-1 shrink-0 select-none">
-                                            <!-- Payment Badge -->
-                                            <span class="px-1.5 py-0.5 rounded-md text-[8.5px] font-black uppercase tracking-wider border flex items-center gap-0.5" 
-                                                :class="(r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'bg-emerald-50 text-emerald-750 border-emerald-200/40' : 'bg-rose-50 text-rose-750 border-rose-200/40'">
-                                                <span class="material-symbols-outlined text-[10px] font-black">{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'check_circle' : 'cancel' }}</span>
-                                                <span>{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'Оплачен' : 'Не оплачен' }}</span>
-                                            </span>
-                                            <!-- Status Badge -->
-                                            <span class="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-slate-200/20" :class="statusBadgeTw(r.Status)">
-                                                {{ r.Status }}
+                                        <!-- мастер -->
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400">engineering</span>
+                                            <span class="text-xs font-semibold text-slate-700 truncate leading-none">
+                                                {{ getMasterName(r.MasterID) }}
                                             </span>
                                         </div>
                                     </div>
 
-                                    <!-- Middle Row: Master, Time and execution duration -->
-                                    <div class="mb-2.5 px-1.5 flex flex-wrap items-center justify-between gap-1.5 text-[11.5px] font-semibold text-slate-500">
-                                        <div class="flex items-center gap-2 flex-wrap">
-                                            <span class="flex items-center gap-1 font-bold text-slate-700">
-                                                <span class="material-symbols-outlined text-[13px] text-slate-400">engineering</span>
-                                                {{ getMasterName(r.MasterID) }}
-                                            </span>
-                                            <span>&bull;</span>
-                                            <span class="flex items-center gap-1">
-                                                <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold">schedule</span>
+                                    <!-- ROW 2: [начало] & [Марка - Модель] -->
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <!-- начало -->
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-indigo-500 font-bold">play_circle</span>
+                                            <span class="text-[11px] font-semibold text-slate-600 leading-none truncate">
                                                 {{ formatDate(r.StartTime).date }} {{ formatDate(r.StartTime).time }}
                                             </span>
                                         </div>
-                                        <!-- Execution time (Время выполнения) -->
-                                        <div v-if="r.Status === 'Выполнен' && r.EndTime" class="flex items-center gap-1 text-[10.5px] font-black bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md border border-emerald-150">
-                                            <span class="material-symbols-outlined text-[11px] font-bold">timer</span>
-                                            <span>Время: {{ getDuration(r.StartTime, r.EndTime) }}</span>
+                                        <!-- Марка - Модель -->
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold">minor_crash</span>
+                                            <span class="text-xs font-bold text-slate-800 truncate leading-none">
+                                                {{ getBrandName(r.BrandID) }} {{ getModelName(r.ModelID) }}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    <!-- Divider -->
-                                    <div class="h-px bg-slate-100/80 w-full mb-2"></div>
-
-                                    <!-- Bottom Row: Quick Status change & Quick Payment Toggle next to each other + Price -->
-                                    <div class="flex justify-between items-center px-0.5">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
-                                            <!-- Quick Status Action -->
-                                            <button v-if="r.Status === 'Открыт'" @click.stop="quickStatusChange(r, 'Выполнен')" class="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-emerald-700 transition shadow-sm border-0 cursor-pointer">
-                                                Завершить
-                                            </button>
-                                            <button v-if="r.Status === 'Выполнен' || r.Status === 'Отменён'" @click.stop="quickStatusChange(r, 'Открыт')" class="px-2.5 py-1 bg-slate-600 text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-slate-700 transition shadow-sm border-0 cursor-pointer">
-                                                Переоткрыть
-                                            </button>
-
-                                            <!-- Quick Payment Toggle Button NEXT to status button -->
-                                            <button @click.stop="quickPaymentToggle(r)" 
-                                                class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wide rounded-lg border flex items-center gap-1 transition shadow-sm cursor-pointer select-none"
-                                                :class="(r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'bg-emerald-50 text-emerald-750 border-emerald-250 hover:bg-emerald-100' : 'bg-rose-50 text-rose-750 border-rose-250 hover:bg-rose-100'">
-                                                <span class="material-symbols-outlined text-[12px] font-bold">payments</span>
-                                                <span>{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'Оплачено' : 'Оплатить' }}</span>
-                                            </button>
+                                    <!-- ROW 3: [конец] & [время выполнения] -->
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <!-- конец -->
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-emerald-500 font-bold">stop_circle</span>
+                                            <span class="text-[11px] font-semibold text-slate-600 leading-none truncate">
+                                                {{ r.EndTime ? (formatDate(r.EndTime).date + ' ' + formatDate(r.EndTime).time) : '—' }}
+                                            </span>
                                         </div>
-                                        <!-- Price -->
-                                        <p class="font-black text-[15px] text-slate-800 font-heading m-0">{{ Number(r.TotalAmount || 0).toLocaleString() }} KGS</p>
+                                        <!-- время выполнения -->
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold">timer</span>
+                                            <span class="text-[11px] font-semibold text-slate-600 leading-none truncate">
+                                                {{ (r.Status === 'Выполнен' && r.EndTime) ? getDuration(r.StartTime, r.EndTime) : 'В процессе' }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 4: [Услуга] & [сумма] -->
+                                    <div class="grid grid-cols-12 gap-2 items-stretch">
+                                        <!-- Услуга -->
+                                        <div class="col-span-8 bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold shrink-0">handyman</span>
+                                            <span class="text-[11px] font-semibold text-slate-600 truncate leading-none">
+                                                {{ getRecordServicesString(r) }}
+                                            </span>
+                                        </div>
+                                        <!-- сумма -->
+                                        <div class="col-span-4 bg-slate-50 border border-slate-200/50 rounded-xl px-2.5 py-1.5 flex items-center justify-center text-center font-bold text-slate-800 min-w-0">
+                                            <span class="text-xs font-black text-slate-900 leading-none font-heading truncate">
+                                                {{ Number(r.TotalAmount || 0).toLocaleString() }} KGS
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 5: [статус записи - кнопка] & [статус оплаты - кнопка] -->
+                                    <div class="grid grid-cols-2 gap-2 mt-1">
+                                        <!-- статус записи - кнопка -->
+                                        <button @click.stop="toggleStatusDirectly(r)" 
+                                            class="h-9.5 rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
+                                            :class="statusButtonClasses(r.Status)">
+                                            <span class="material-symbols-outlined text-[15px] font-black">{{ statusIcon(r.Status) }}</span>
+                                            <span>{{ r.Status }}</span>
+                                        </button>
+
+                                        <!-- статус оплаты - кнопка -->
+                                        <button @click.stop="quickPaymentToggle(r)" 
+                                            class="h-9.5 rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
+                                            :class="(r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-rose-100 hover:bg-rose-200 text-rose-700'">
+                                            <span class="material-symbols-outlined text-[15px] font-black">{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'check_circle' : 'cancel' }}</span>
+                                            <span>{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'Оплачен' : 'Не оплачен' }}</span>
+                                        </button>
                                     </div>
                                 </article>
                                 
@@ -1758,6 +1777,44 @@ export default {
                     } catch(e) {
                          this.showToast(e.message, 'error');
                     }
+                },
+
+                async toggleStatusDirectly(record) {
+                    let nextStatus = 'Открыт';
+                    if (record.Status === 'Открыт') {
+                        nextStatus = 'Выполнен';
+                    } else if (record.Status === 'Выполнен') {
+                        nextStatus = 'Отменён';
+                    } else {
+                        nextStatus = 'Открыт';
+                    }
+                    await this.quickStatusChange(record, nextStatus);
+                },
+
+                statusButtonClasses(status) {
+                    if (status === 'Выполнен') return 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800';
+                    if (status === 'Отменён') return 'bg-rose-100 hover:bg-rose-200 text-rose-800';
+                    return 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-200';
+                },
+
+                statusIcon(status) {
+                    if (status === 'Выполнен') return 'check_circle';
+                    if (status === 'Отменён') return 'cancel';
+                    return 'build_circle';
+                },
+
+                getRecordServicesString(record) {
+                    if (!record) return '—';
+                    let sids = [];
+                    if (record.ServicesJSON) {
+                        sids = typeof record.ServicesJSON === 'string' ? JSON.parse(record.ServicesJSON || '[]') : record.ServicesJSON;
+                    }
+                    if (!sids || sids.length === 0) return 'Без услуг';
+                    
+                    return sids.map(sid => {
+                        let found = this.db.services.find(s => s.ID === sid);
+                        return found ? found.Name : '';
+                    }).filter(Boolean).join(', ');
                 },
 
                 formatPhoneInput(objName, fieldName) {
