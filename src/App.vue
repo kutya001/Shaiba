@@ -119,78 +119,78 @@
             <!-- Main Workspace -->
             <main class="flex-1 flex flex-col h-full overflow-hidden relative pb-16 md:pb-0">
                 <!-- Mobile Top Header -->
-                <header class="md:hidden mx-4 mt-4 mb-2 rounded-2xl h-12 bg-white/75 backdrop-blur-md border border-slate-200/50 shadow-sm px-4 flex items-center justify-between shrink-0 z-20 select-none">
-                    <div class="flex items-center gap-1.5" v-if="!isSearchExpanded">
-                        <div class="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm shadow-indigo-100">
-                            <i class="bi bi-car-front-fill text-white text-[10px]"></i>
+                <header class="md:hidden mx-4 mt-4 mb-2 h-12 bg-transparent border-0 shadow-none px-0 flex items-center justify-between shrink-0 z-20 select-none">
+                    <div class="flex items-center gap-1.5 bg-white shadow-md border border-slate-200/50 rounded-xl px-2.5 h-10" v-if="!isSearchExpanded">
+                        <div class="w-5 h-5 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <i class="bi bi-car-front-fill text-white text-[9px]"></i>
                         </div>
-                        <span class="font-bold text-sm tracking-tight text-slate-800">AutoService CRM</span>
+                        <span class="font-black text-xs tracking-tight text-slate-800">AutoService</span>
                     </div>
 
                     <!-- Expanded Mobile Search -->
-                    <div v-else class="flex-1 mr-2 relative">
-                        <input v-model="searchQuery" ref="mobileSearchInput" class="w-full h-8 pl-8 pr-8 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold outline-none border border-slate-200/50 focus:border-indigo-500 focus:bg-white" placeholder="Поиск по госномеру...">
-                        <span class="material-symbols-outlined text-[16px] text-slate-400 absolute left-2.5 top-2">search</span>
-                        <button @click="isSearchExpanded = false; searchQuery = ''" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 flex items-center">
+                    <div v-else class="flex-1 mr-2 relative h-10 select-none">
+                        <input v-model="searchQuery" ref="mobileSearchInput" class="w-full h-10 pl-8 pr-8 rounded-xl bg-white text-slate-800 text-xs font-semibold outline-none border border-slate-200/50 shadow-md focus:border-indigo-500/80" placeholder="Поиск по госномеру...">
+                        <span class="material-symbols-outlined text-[16px] text-slate-400 absolute left-2.5 top-3">search</span>
+                        <button @click="isSearchExpanded = false; searchQuery = ''" class="absolute right-2 top-3 text-slate-400 hover:text-slate-600 flex items-center">
                             <span class="material-symbols-outlined text-[15px]">close</span>
                         </button>
                     </div>
                     
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 h-10 bg-white shadow-md border border-slate-200/50 rounded-xl p-1">
                         <!-- Search Icon Toggle for Records -->
-                        <button v-if="activeTab === 'records' && !isSearchExpanded" @click="isSearchExpanded = true; $nextTick(() => { if($refs.mobileSearchInput) $refs.mobileSearchInput.focus() })" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                        <button v-if="activeTab === 'records' && !isSearchExpanded" @click="isSearchExpanded = true; $nextTick(() => { if($refs.mobileSearchInput) $refs.mobileSearchInput.focus() })" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50/50 transition cursor-pointer">
                             <span class="material-symbols-outlined text-[18px]">search</span>
                         </button>
 
                         <!-- Filter Icon Toggle for Records -->
-                        <button v-if="activeTab === 'records'" @click="isFiltersExpanded = !isFiltersExpanded" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition cursor-pointer" :class="isFiltersExpanded ? 'bg-indigo-50 text-indigo-600 border border-indigo-100/60' : ''">
+                        <button v-if="activeTab === 'records'" @click="isFiltersExpanded = !isFiltersExpanded" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50/50 transition cursor-pointer" :class="isFiltersExpanded ? 'bg-indigo-50/50 text-indigo-600 font-bold' : ''">
                             <span class="material-symbols-outlined text-[18px]">tune</span>
                         </button>
 
-                        <button v-if="isSyncing" class="px-1.5 py-0.5 text-indigo-600 font-bold flex items-center gap-1 bg-indigo-50 rounded-lg shrink-0" style="font-size: 9px;">
+                        <button v-if="isSyncing" class="px-1.5 h-8 text-indigo-600 font-bold flex items-center gap-1 bg-indigo-50/60 rounded-lg shrink-0" style="font-size: 9px;">
                             <span class="material-symbols-outlined animate-spin font-bold text-[13px]">sync</span>
                         </button>
-                        <button @click="openProfileModal" class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/50 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition shrink-0" title="Профиль">
-                            <span class="font-bold text-[10px]">{{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}</span>
+                        <button @click="openProfileModal" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-700 transition shrink-0" title="Профиль">
+                            <span class="font-black text-[9px]">{{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}</span>
                         </button>
                     </div>
                 </header>
 
                 <!-- Desktop Header -->
-                <header class="hidden md:flex mx-6 mt-4 mb-2 rounded-2xl h-16 bg-white/70 backdrop-blur-md shadow-sm border border-slate-200/60 px-8 items-center justify-between shrink-0 z-10">
-                    <div class="flex items-center gap-4">
-                        <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='records'">Журнал Обслуживания</h1>
-                        <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='dashboard'">Аналитика и Финансы</h1>
-                        <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='refs'">Управление справочниками</h1>
-                        <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='users'">Управление персоналом</h1>
+                <header class="hidden md:flex mx-6 mt-4 mb-2 h-16 bg-transparent border-none shadow-none items-center justify-between shrink-0 z-10 select-none px-0">
+                    <div class="flex items-center gap-4 bg-white shadow-md border border-slate-200/50 rounded-2xl p-2 px-4 h-14">
+                        <h1 class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none" v-if="activeTab==='records'">Журнал</h1>
+                        <h1 class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none" v-if="activeTab==='dashboard'">Аналитика</h1>
+                        <h1 class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none" v-if="activeTab==='refs'">Справочники</h1>
+                        <h1 class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none" v-if="activeTab==='users'">Персонал</h1>
 
                         <!-- Search icon & Input in Desktop Header -->
-                        <div v-if="activeTab === 'records'" class="flex items-center gap-1.5 ml-2">
-                            <button v-if="!isSearchExpanded" @click="isSearchExpanded = true; $nextTick(() => { if($refs.desktopSearchInput) $refs.desktopSearchInput.focus() })" class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:bg-slate-100/85 transition cursor-pointer" title="Поиск записей">
+                        <div v-if="activeTab === 'records'" class="flex items-center gap-1.5">
+                            <button v-if="!isSearchExpanded" @click="isSearchExpanded = true; $nextTick(() => { if($refs.desktopSearchInput) $refs.desktopSearchInput.focus() })" class="w-9 h-9 rounded-xl bg-slate-50 border border-slate-150 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-indigo-600 transition cursor-pointer" title="Поиск записей">
                                 <span class="material-symbols-outlined text-[18px]">search</span>
                             </button>
-                            <div v-else class="relative flex items-center transition-all duration-300">
-                                <input ref="desktopSearchInput" v-model="searchQuery" class="w-60 h-10 pl-9 pr-8 rounded-xl border border-slate-200/80 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100/40 focus:border-indigo-500 text-xs font-semibold text-slate-700 outline-none transition" placeholder="Поиск по госномеру...">
+                            <div v-else class="relative flex items-center">
+                                <input ref="desktopSearchInput" v-model="searchQuery" class="w-60 h-9.5 pl-9 pr-8 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-150/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 outline-none transition" placeholder="Поиск по госномеру...">
                                 <span class="material-symbols-outlined text-[18px] text-slate-400 absolute left-3 top-2.5">search</span>
-                                <button @click="isSearchExpanded = false; searchQuery = ''" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 flex items-center">
+                                <button @click="isSearchExpanded = false; searchQuery = ''" class="absolute right-2 top-2.5 text-slate-400 hover:text-slate-600 flex items-center">
                                     <span class="material-symbols-outlined text-[16px]">close</span>
                                 </button>
                             </div>
                         </div>
 
                         <!-- Filters toggle on Desktop Header -->
-                        <button v-if="activeTab === 'records'" @click="isFiltersExpanded = !isFiltersExpanded" class="h-10 px-4 rounded-xl border flex items-center gap-2 text-xs font-bold transition cursor-pointer" :class="isFiltersExpanded ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+                        <button v-if="activeTab === 'records'" @click="isFiltersExpanded = !isFiltersExpanded" class="h-9.5 px-3 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition cursor-pointer block select-none border-none" :class="isFiltersExpanded ? 'bg-indigo-50 text-indigo-600' : 'bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800'">
                             <span class="material-symbols-outlined text-[18px]">tune</span>
-                            Фильтры
+                            <span>Фильтры</span>
                         </button>
                     </div>
                     
-                    <div class="flex items-center gap-4">
-                        <button v-if="isSyncing" class="p-2 border border-indigo-100 bg-indigo-50 text-indigo-600 rounded-xl transition-all font-bold flex items-center gap-2">
-                            <span class="material-symbols-outlined animate-spin font-bold">sync</span> <span class="text-xs uppercase tracking-wider">Синхронизация...</span>
+                    <div class="flex items-center gap-4 bg-white shadow-md border border-slate-200/50 rounded-2xl p-2 px-4 h-14">
+                        <button v-if="isSyncing" class="px-2.5 h-9.5 border border-indigo-100 bg-indigo-50 text-indigo-600 rounded-xl transition-all font-bold flex items-center gap-1.5 animate-pulse">
+                            <span class="material-symbols-outlined animate-spin font-bold text-sm">sync</span> <span class="text-[9px] uppercase tracking-wider">Синхронизация</span>
                         </button>
                         
-                        <select v-if="activeTab==='dashboard'" v-model="dashboardPeriod" class="form-select w-auto border-none rounded-xl text-sm bg-slate-50 font-bold cursor-pointer hover:bg-slate-100 transition-colors shadow-sm outline-none">
+                        <select v-if="activeTab==='dashboard'" v-model="dashboardPeriod" class="form-select w-auto h-9.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-bold cursor-pointer hover:bg-slate-100 transition-colors outline-none px-2.5">
                             <option value="day">За Сегодня</option>
                             <option value="week">За Неделю</option>
                             <option value="month">За Месяц</option>
@@ -199,12 +199,12 @@
 
                         <div class="h-6 w-px bg-slate-200 mx-1"></div>
 
-                        <button @click="openProfileModal" class="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-xl transition cursor-pointer">
-                             <div class="text-right hidden lg:block">
-                                 <div class="text-xs font-bold text-slate-800 leading-tight">{{ user.Username }}</div>
-                                 <div class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider leading-tight">{{ user.Role === 'Superadmin' ? 'Супер-админ' : user.Role === 'SenMaster' ? 'Ст. мастер' : 'Мастер' }}</div>
+                        <button @click="openProfileModal" class="flex items-center gap-2 hover:bg-slate-50 p-1 rounded-xl transition cursor-pointer">
+                             <div class="text-right hidden lg:block select-none">
+                                 <div class="text-xs font-black text-slate-800 leading-tight">{{ user.Username }}</div>
+                                 <div class="text-[9px] font-black text-indigo-600 uppercase tracking-widest leading-tight mt-0.5">{{ user.Role === 'Superadmin' ? 'Супер-админ' : user.Role === 'SenMaster' ? 'Ст. мастер' : 'Мастер' }}</div>
                              </div>
-                             <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm tracking-tighter">
+                             <div class="w-9 h-9 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700 font-extrabold text-xs tracking-tighter">
                                  {{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}
                              </div>
                         </button>
@@ -222,9 +222,9 @@
                         <!-- ЗАПИСИ (Ремонты) -->
                         <div v-if="activeTab === 'records'" class="max-w-md mx-auto w-full space-y-4 pb-20">
                             <!-- Sticky Header elements for Records -->
-                            <div class="sticky top-0 bg-background-light pt-1.5 pb-2.5 z-10 space-y-2 select-none shadow-[0_8px_20px_-10px_rgba(15,23,42,0.06)] -mx-3 px-3">
+                            <div class="sticky top-0 bg-transparent pt-1.5 pb-2.5 z-10 space-y-2 select-none -mx-3 px-3">
                                 <!-- Advanced Filters - Collapsible sliding container -->
-                                <div v-if="isFiltersExpanded" class="bg-indigo-50/60 border border-indigo-100/70 p-3 rounded-2xl flex flex-col gap-2.5 transition-all duration-300">
+                                <div v-if="isFiltersExpanded" class="bg-white border border-slate-200/50 p-4.5 rounded-2xl flex flex-col gap-3.5 transition-all duration-300 shadow-xl">
                                     <div class="flex items-center justify-between">
                                         <span class="text-[10px] font-black uppercase text-indigo-700 tracking-wider flex items-center gap-1">
                                             <span class="material-symbols-outlined text-[13px] font-bold">tune</span> Фильтры поиска
@@ -234,85 +234,128 @@
                                     <div class="grid grid-cols-1 xs:grid-cols-3 gap-2">
                                         <div class="flex flex-col">
                                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Мастер</span>
-                                            <select v-model="advFilterMaster" class="h-8 py-0 px-2.5 rounded-xl border border-slate-200/80 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                            <select v-model="advFilterMaster" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
                                                 <option value="">Все мастера</option>
                                                 <option v-for="m in mastersList" :key="m.ID" :value="m.ID">{{m.Name || m.Username}}</option>
                                             </select>
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Услуга</span>
-                                            <select v-model="advFilterService" class="h-8 py-0 px-2.5 rounded-xl border border-slate-200/80 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                            <select v-model="advFilterService" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
                                                 <option value="">Все услуги</option>
                                                 <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
                                             </select>
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Дата</span>
-                                            <input type="date" v-model="advFilterDate" class="h-8 py-0 px-2.5 rounded-xl border border-slate-200/80 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all">
+                                            <input type="date" v-model="advFilterDate" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all">
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Status Filter Individual Buttons ("Islands") -->
-                                <div class="flex flex-wrap gap-1.5 w-full">
-                                    <button class="flex-1 min-w-[65px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'open' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
-                                        @click="recordFilter = 'open'">
-                                        Открыт
+                                <!-- Status Filter Individual Buttons ("Islands" with shadows) -->
+                                <div class="flex gap-2 w-full">
+                                    <!-- Открыт -->
+                                    <button class="flex-1 min-w-[70px] flex h-9.5 items-center justify-center gap-1 w-full rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
+                                        :class="activeStatuses.includes('Открыт') ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
+                                        @click="toggleStatus('Открыт')">
+                                        <span class="material-symbols-outlined text-[14px]" :class="activeStatuses.includes('Открыт') ? 'text-white' : 'text-indigo-500'">build_circle</span>
+                                        <span>Открыт</span>
                                     </button>
-                                    <button class="flex-1 min-w-[65px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'completed' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
-                                        @click="recordFilter = 'completed'">
-                                        Выполнен
+                                    
+                                    <!-- Выполнен -->
+                                    <button class="flex-1 min-w-[70px] flex h-9.5 items-center justify-center gap-1 w-full rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
+                                        :class="activeStatuses.includes('Выполнен') ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
+                                        @click="toggleStatus('Выполнен')">
+                                        <span class="material-symbols-outlined text-[14px]" :class="activeStatuses.includes('Выполнен') ? 'text-white' : 'text-emerald-500'">check_circle</span>
+                                        <span>Выполнен</span>
                                     </button>
-                                    <button class="flex-1 min-w-[65px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'canceled' ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
-                                        @click="recordFilter = 'canceled'">
-                                        Отменён
-                                    </button>
-                                    <button class="flex-1 min-w-[45px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'all' ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
-                                        @click="recordFilter = 'all'">
-                                        Все
+                                    
+                                    <!-- Отменён -->
+                                    <button class="flex-1 min-w-[70px] flex h-9.5 items-center justify-center gap-1 w-full rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
+                                        :class="activeStatuses.includes('Отменён') ? 'bg-rose-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
+                                        @click="toggleStatus('Отменён')">
+                                        <span class="material-symbols-outlined text-[14px]" :class="activeStatuses.includes('Отменён') ? 'text-white' : 'text-rose-500'">cancel</span>
+                                        <span>Отменён</span>
                                     </button>
                                 </div>
                             </div>
 
                             <!-- List View -->
-                            <div class="space-y-4">
+                            <div class="space-y-3">
                                 <article v-for="r in filteredRecords" :key="r.ID" @click="openRecordModal(r)" 
-                                    class="bg-surface rounded-2xl p-4 shadow-soft border border-border-subtle/50 active:scale-[0.98] transition-transform cursor-pointer"
-                                    :class="{'opacity-80': r.Status === 'Выполнен', 'opacity-70 grayscale-[20%]': r.Status === 'Отменён'}">
-                                    <div class="flex justify-between items-center mb-3">
-                                        <h3 class="font-bold text-[18px] text-text-main tracking-tight uppercase font-heading">{{ r.CarNumber }}</h3>
-                                        <span class="px-2 py-0.5 rounded-lg text-[9.5px] font-extrabold uppercase tracking-wider border border-slate-200/30 shadow-sm" :class="statusBadgeTw(r.Status)">
-                                            {{ r.Status }}
-                                        </span>
-                                    </div>
-                                    <div class="mb-3 space-y-1">
-                                        <p class="text-[16px] font-semibold text-text-main">{{ getBrandName(r.BrandID) }} {{ getModelName(r.ModelID) }}</p>
-                                        <div class="flex items-center text-muted gap-1.5">
-                                            <span class="material-symbols-outlined text-[16px]">build</span>
-                                            <p class="text-[14px] font-medium">Мастер: {{ getMasterName(r.MasterID) }}</p>
+                                    class="bg-surface rounded-2xl p-3 shadow-soft border border-border-subtle/50 active:scale-[0.98] transition-all cursor-pointer hover:shadow-md"
+                                    :class="{'opacity-85': r.Status === 'Выполнен', 'opacity-70 grayscale-[20%]': r.Status === 'Отменён'}">
+                                    
+                                    <!-- Header Row: Car info and Badges -->
+                                    <div class="flex justify-between items-center gap-2 mb-2 bg-slate-50/50 p-1.5 rounded-xl border border-slate-100">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <!-- Car Number styled like an elegant physical plate -->
+                                            <span class="px-2 py-0.5 bg-slate-800 text-white font-mono font-extrabold text-[12px] tracking-wider rounded-lg shadow-sm shrink-0 uppercase">
+                                                {{ r.CarNumber }}
+                                            </span>
+                                            <span class="text-xs font-black text-slate-800 truncate">
+                                                {{ getBrandName(r.BrandID) }} {{ getModelName(r.ModelID) }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-1 shrink-0 select-none">
+                                            <!-- Payment Badge -->
+                                            <span class="px-1.5 py-0.5 rounded-md text-[8.5px] font-black uppercase tracking-wider border flex items-center gap-0.5" 
+                                                :class="(r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'bg-emerald-50 text-emerald-750 border-emerald-200/40' : 'bg-rose-50 text-rose-750 border-rose-200/40'">
+                                                <span class="material-symbols-outlined text-[10px] font-black">{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'check_circle' : 'cancel' }}</span>
+                                                <span>{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'Оплачен' : 'Не оплачен' }}</span>
+                                            </span>
+                                            <!-- Status Badge -->
+                                            <span class="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-slate-200/20" :class="statusBadgeTw(r.Status)">
+                                                {{ r.Status }}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="h-px bg-border-subtle w-full my-3"></div>
-                                    <div class="flex justify-between items-end">
-                                        <div class="flex flex-col gap-2">
-                                            <div class="flex items-center text-muted gap-1.5">
-                                                <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                                <p class="text-[13px] font-medium">{{ formatDate(r.StartTime).date }} &bull; {{ formatDate(r.StartTime).time }}</p>
-                                            </div>
-                                            <div class="flex gap-2 mt-1">
-                                                <button v-if="r.Status === 'Открыт'" @click.stop="quickStatusChange(r, 'Выполнен')" class="px-3 py-1 bg-status-completed-bg text-status-completed-text text-[11px] font-bold uppercase tracking-wider rounded-md border border-status-completed-text/20 hover:bg-emerald-100 transition-colors">
-                                                    Завершить
-                                                </button>
-                                                <button v-if="r.Status === 'Выполнен' || r.Status === 'Отменён'" @click.stop="quickStatusChange(r, 'Открыт')" class="px-3 py-1 bg-status-open-bg text-status-open-text text-[11px] font-bold uppercase tracking-wider rounded-md border border-status-open-text/20 hover:bg-amber-100 transition-colors">
-                                                    Открыть заново
-                                                </button>
-                                            </div>
+
+                                    <!-- Middle Row: Master, Time and execution duration -->
+                                    <div class="mb-2.5 px-1.5 flex flex-wrap items-center justify-between gap-1.5 text-[11.5px] font-semibold text-slate-500">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="flex items-center gap-1 font-bold text-slate-700">
+                                                <span class="material-symbols-outlined text-[13px] text-slate-400">engineering</span>
+                                                {{ getMasterName(r.MasterID) }}
+                                            </span>
+                                            <span>&bull;</span>
+                                            <span class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold">schedule</span>
+                                                {{ formatDate(r.StartTime).date }} {{ formatDate(r.StartTime).time }}
+                                            </span>
                                         </div>
-                                        <p class="font-bold text-[18px] text-text-main font-heading">{{ Number(r.TotalAmount || 0).toLocaleString() }} KGS</p>
+                                        <!-- Execution time (Время выполнения) -->
+                                        <div v-if="r.Status === 'Выполнен' && r.EndTime" class="flex items-center gap-1 text-[10.5px] font-black bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md border border-emerald-150">
+                                            <span class="material-symbols-outlined text-[11px] font-bold">timer</span>
+                                            <span>Время: {{ getDuration(r.StartTime, r.EndTime) }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Divider -->
+                                    <div class="h-px bg-slate-100/80 w-full mb-2"></div>
+
+                                    <!-- Bottom Row: Quick Status change & Quick Payment Toggle next to each other + Price -->
+                                    <div class="flex justify-between items-center px-0.5">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <!-- Quick Status Action -->
+                                            <button v-if="r.Status === 'Открыт'" @click.stop="quickStatusChange(r, 'Выполнен')" class="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-emerald-700 transition shadow-sm border-0 cursor-pointer">
+                                                Завершить
+                                            </button>
+                                            <button v-if="r.Status === 'Выполнен' || r.Status === 'Отменён'" @click.stop="quickStatusChange(r, 'Открыт')" class="px-2.5 py-1 bg-slate-600 text-white text-[10px] font-black uppercase tracking-wide rounded-lg hover:bg-slate-700 transition shadow-sm border-0 cursor-pointer">
+                                                Переоткрыть
+                                            </button>
+
+                                            <!-- Quick Payment Toggle Button NEXT to status button -->
+                                            <button @click.stop="quickPaymentToggle(r)" 
+                                                class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wide rounded-lg border flex items-center gap-1 transition shadow-sm cursor-pointer select-none"
+                                                :class="(r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'bg-emerald-50 text-emerald-750 border-emerald-250 hover:bg-emerald-100' : 'bg-rose-50 text-rose-750 border-rose-250 hover:bg-rose-100'">
+                                                <span class="material-symbols-outlined text-[12px] font-bold">payments</span>
+                                                <span>{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'Оплачено' : 'Оплатить' }}</span>
+                                            </button>
+                                        </div>
+                                        <!-- Price -->
+                                        <p class="font-black text-[15px] text-slate-800 font-heading m-0">{{ Number(r.TotalAmount || 0).toLocaleString() }} KGS</p>
                                     </div>
                                 </article>
                                 
@@ -330,116 +373,189 @@
 
                         <!-- ДАШБОРД -->
                         <!-- АНАЛИТИКА / DASHBOARD -->
-                        <div v-if="activeTab === 'dashboard'" class="max-w-md mx-auto w-full space-y-6 fade-transition pb-20">
+                        <div v-if="activeTab === 'dashboard'" class="max-w-md mx-auto w-full space-y-6 fade-transition pb-20" id="dashboard-tab-container">
                             
+                            <!-- Header with title -->
                             <div class="flex justify-between items-center px-1 relative">
-                                <h1 class="text-2xl font-bold tracking-tight text-text-main font-heading">Аналитика</h1>
-                                <label class="p-2 -mr-2 rounded-full hover:bg-slate-100 active:bg-slate-200 transition-colors relative flex items-center justify-center cursor-pointer">
-                                    <span class="material-symbols-outlined" :class="dashboardPeriod === 'custom' ? 'text-indigo-600' : 'text-slate-400'">calendar_month</span>
-                                    <input type="date" v-model="dashboardCustomDate" @change="dashboardPeriod = 'custom'" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
-                                </label>
+                                <div>
+                                    <h1 class="text-2xl font-bold tracking-tight text-slate-800 font-heading">Аналитика</h1>
+                                    <p class="text-slate-400 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
+                                        Финансовые показатели
+                                    </p>
+                                </div>
                             </div>
 
-                            <div class="flex gap-2 p-1.5 bg-background border border-border-subtle rounded-[14px]">
-                                <button class="flex-1 py-1.5 rounded-[10px] text-[13px] font-bold transition-all shadow-sm"
-                                    :class="dashboardPeriod === 'day' ? 'bg-surface text-text-main' : 'bg-transparent text-muted hover:text-text-main'"
-                                    @click="dashboardPeriod = 'day'">День</button>
-                                <button class="flex-1 py-1.5 rounded-[10px] text-[13px] font-bold transition-all"
-                                    :class="dashboardPeriod === 'week' ? 'bg-surface text-text-main shadow-sm' : 'bg-transparent text-muted hover:text-text-main'"
-                                    @click="dashboardPeriod = 'week'">Неделя</button>
-                                <button class="flex-1 py-1.5 rounded-[10px] text-[13px] font-bold transition-all"
-                                    :class="dashboardPeriod === 'month' ? 'bg-surface text-text-main shadow-sm' : 'bg-transparent text-muted hover:text-text-main'"
-                                    @click="dashboardPeriod = 'month'">Месяц</button>
+                            <!-- Period Selector & Advanced Filters trigger -->
+                            <div class="flex gap-2 items-center">
+                                <div class="flex-1 flex gap-1 p-1 bg-slate-100 hover:bg-slate-150 transition-colors border border-slate-200/50 rounded-xl">
+                                    <button id="dash-period-day" class="flex-1 py-1 rounded-[8px] text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-0"
+                                        :class="dashboardPeriod === 'day' ? 'bg-white text-indigo-600 shadow-sm' : 'bg-transparent text-slate-500 hover:text-slate-800'"
+                                        @click="dashboardPeriod = 'day'">День</button>
+                                    <button id="dash-period-week" class="flex-1 py-1 rounded-[8px] text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-0"
+                                        :class="dashboardPeriod === 'week' ? 'bg-white text-indigo-600 shadow-sm' : 'bg-transparent text-slate-500 hover:text-slate-800'"
+                                        @click="dashboardPeriod = 'week'">Неделя</button>
+                                    <button id="dash-period-month" class="flex-1 py-1 rounded-[8px] text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-0"
+                                        :class="dashboardPeriod === 'month' ? 'bg-white text-indigo-600 shadow-sm' : 'bg-transparent text-slate-500 hover:text-slate-800'"
+                                        @click="dashboardPeriod = 'month'">Месяц</button>
+                                    <button id="dash-period-all" class="flex-1 py-1 rounded-[8px] text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-0"
+                                        :class="dashboardPeriod === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'bg-transparent text-slate-500 hover:text-slate-800'"
+                                        @click="dashboardPeriod = 'all'">Все</button>
+                                </div>
+                                <button id="dash-filters-toggle" @click="isDashFiltersExpanded = !isDashFiltersExpanded" 
+                                    class="w-10 h-[34px] rounded-xl border flex items-center justify-center transition cursor-pointer shrink-0 shadow-sm relative border-slate-200"
+                                    :class="isDashFiltersExpanded ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white text-slate-500 hover:bg-slate-50'">
+                                    <span class="material-symbols-outlined text-[19px]">tune</span>
+                                    <!-- Dot badge if any advanced filter is active -->
+                                    <span v-if="dashFilterMaster || dashFilterService || dashFilterDate" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-600 border border-white rounded-full"></span>
+                                </button>
+                            </div>
+
+                            <!-- Sliding Advanced Filters -->
+                            <div v-if="isDashFiltersExpanded" class="bg-indigo-50/60 border border-indigo-100/70 p-3.5 rounded-2xl flex flex-col gap-2.5 transition-all duration-300" id="dash-filters-pane">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black uppercase text-indigo-700 tracking-wider flex items-center gap-1.5 leading-none">
+                                        <span class="material-symbols-outlined text-[13px] font-black">tune</span> Дополнительные фильтры
+                                    </span>
+                                    <button id="dash-filters-clear" @click="clearAllDashFilters" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition border-0 bg-transparent cursor-pointer">Сбросить</button>
+                                </div>
+                                <div class="grid select-none gap-2 text-left" :class="user.Role === 'Master' ? 'grid-cols-2' : 'grid-cols-3'">
+                                    <!-- Master filter (hidden or auto prefilled for Masters) -->
+                                    <div v-if="user.Role !== 'Master'" class="flex flex-col">
+                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 text-left">Мастер</span>
+                                        <select id="dash-filter-master-select" v-model="dashFilterMaster" class="h-8 py-0 px-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                            <option value="">Все мастера</option>
+                                            <option v-for="m in mastersList" :key="m.ID" :value="m.ID">{{m.Name || m.Username}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 text-left">Услуга</span>
+                                        <select id="dash-filter-service-select" v-model="dashFilterService" class="h-8 py-0 px-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                            <option value="">Все услуги</option>
+                                            <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 text-left">Дата заезда</span>
+                                        <input id="dash-filter-date-input" type="date" v-model="dashFilterDate" class="h-8 py-0 px-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all">
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Hero Metric Card -->
-                            <div class="bg-surface rounded-2xl p-5 shadow-soft border border-border-subtle/50">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h2 class="text-muted text-sm font-medium">Выручка</h2>
-                                    <span class="material-symbols-outlined text-status-completed-text text-sm bg-status-completed-bg rounded-full p-1">trending_up</span>
+                            <div class="bg-indigo-600 rounded-2xl p-5 text-white shadow-md border border-indigo-500/10 flex flex-col relative overflow-hidden text-left" id="dash-hero-revenue">
+                                <div class="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-[0.06] text-white pointer-events-none select-none">
+                                    <span class="material-symbols-outlined text-[140px]">currency_ruble</span>
                                 </div>
-                                <div class="font-heading text-4xl font-bold tracking-tight text-text-main mb-1">{{ dashStats.sum.toLocaleString() }} KGS</div>
-                                <p class="text-xs text-muted">+0% к прошлому периоду</p>
+                                <div class="flex justify-between items-start mb-4 relative z-10">
+                                    <div>
+                                        <span class="text-indigo-200 text-[10px] font-bold uppercase tracking-wider">Выручка за период</span>
+                                        <h2 class="font-heading text-3xl font-extrabold tracking-tight mt-1">{{ dashStats.sum.toLocaleString() }} KGS</h2>
+                                    </div>
+                                    <span class="material-symbols-outlined text-white text-[18px] bg-white/20 rounded-xl p-2 shrink-0">trending_up</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 text-xs text-indigo-100 font-medium relative z-10">
+                                    <span class="material-symbols-outlined text-[15px]">analytics</span>
+                                    <span>Учитываются только завершенные заказы</span>
+                                </div>
                             </div>
                             
                             <!-- Stat Cards Grid -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-3" id="dash-stats-grid">
                                 <!-- Orders -->
-                                <div class="bg-surface rounded-2xl p-4 shadow-soft border border-border-subtle/50 flex flex-col justify-between">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <span class="material-symbols-outlined text-muted text-lg">receipt_long</span>
-                                        <h3 class="text-muted text-sm font-medium">Заказов</h3>
+                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 flex items-center justify-between text-left" id="dash-stat-orders">
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Выполнено</span>
+                                        <div class="font-heading text-2xl font-black text-slate-800">{{ dashStats.count }}</div>
+                                        <span class="text-[10px] text-slate-500 font-bold uppercase">заказов</span>
                                     </div>
-                                    <div class="font-heading text-2xl font-bold text-text-main">{{ dashStats.count }}</div>
+                                    <span class="material-symbols-outlined text-indigo-500 bg-indigo-50 rounded-xl p-2 text-[20px] shrink-0">check_circle</span>
                                 </div>
                                 <!-- Avg check -->
-                                <div class="bg-surface rounded-2xl p-4 shadow-soft border border-border-subtle/50 flex flex-col justify-between">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <span class="material-symbols-outlined text-muted text-lg">payments</span>
-                                        <h3 class="text-muted text-sm font-medium">Средний чек</h3>
+                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 flex items-center justify-between text-left" id="dash-stat-avg-check">
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Средний чек</span>
+                                        <div class="font-heading text-xl font-black text-slate-800">
+                                            {{ dashStats.count ? Math.round(dashStats.sum / dashStats.count).toLocaleString() : 0 }}
+                                        </div>
+                                        <span class="text-[10px] text-slate-500 font-semibold uppercase">KGS</span>
                                     </div>
-                                    <div class="font-heading text-2xl font-bold text-text-main">{{ dashStats.count ? Math.round(dashStats.sum / dashStats.count).toLocaleString() : 0 }} KGS</div>
+                                    <span class="material-symbols-outlined text-emerald-500 bg-emerald-50 rounded-xl p-2 text-[20px] shrink-0">payments</span>
                                 </div>
                             </div>
                             
                             <!-- Mechanic Leaderboard -->
-                            <div class="bg-surface rounded-2xl p-5 shadow-soft border border-border-subtle/50">
-                                <h3 class="font-bold text-[16px] mb-4 text-text-main font-heading">Топ мастеров</h3>
-                                <div class="space-y-3">
-                                    <div v-for="(stat, master, idx) in dashMasterStats" :key="master" class="flex justify-between items-center p-2 rounded-xl" :class="idx === 0 ? 'bg-primary/5' : (idx === 1 ? 'bg-amber-50' : 'bg-slate-50')">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] uppercase shrink-0" 
-                                                :class="idx === 0 ? 'bg-primary/10 text-primary' : (idx === 1 ? 'bg-amber-100 text-amber-700' : 'bg-slate-200/50 text-slate-500')">
-                                                {{ typeof master === 'string' && master.length > 0 ? master.slice(0, 2) : 'ХЗ' }}
+                            <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm text-left" id="dash-leader-masters">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-indigo-500 text-[20px]">engineering</span>
+                                    <h3 class="font-bold text-[14px] text-slate-800 font-heading">Топ мастеров по выручке</h3>
+                                </div>
+                                <div class="space-y-2.5">
+                                    <div v-for="(stat, master, idx) in dashMasterStats" :key="master" class="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
+                                        <div class="flex items-center gap-2.5 max-w-[65%]">
+                                            <div class="w-7 h-7 rounded-lg flex items-center justify-center font-extrabold text-[10px] uppercase shrink-0" 
+                                                :class="idx === 0 ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-100' : 'bg-slate-100 text-slate-600'">
+                                                {{ typeof master === 'string' && master.length > 0 ? master.slice(0, 2) : 'М' }}
                                             </div>
-                                            <span class="font-medium text-[13px] text-text-main">{{ master }}</span>
+                                            <span class="font-bold text-xs text-slate-700 truncate">{{ master }}</span>
                                         </div>
                                         <div class="flex flex-col items-end shrink-0">
-                                            <span class="font-bold text-[13px] text-text-main">{{ stat.sum.toLocaleString() }} KGS</span>
-                                            <span class="font-semibold text-[11px] text-muted">{{ stat.count }} шт.</span>
+                                            <span class="font-extrabold text-xs text-slate-800">{{ stat.sum.toLocaleString() }} KGS</span>
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{{ stat.count }} зак.</span>
                                         </div>
                                     </div>
-                                    <div v-if="Object.keys(dashMasterStats).length === 0" class="text-center py-4 text-muted text-sm">Нет данных</div>
+                                    <div v-if="Object.keys(dashMasterStats).length === 0" class="text-center py-4 bg-slate-50/50 rounded-xl">
+                                        <p class="text-slate-400 text-xs font-semibold m-0">Нет данных для отображения</p>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Services Leaderboard -->
-                            <div class="bg-surface rounded-2xl p-5 shadow-soft border border-border-subtle/50">
-                                <h3 class="font-bold text-[16px] mb-4 text-text-main font-heading">Топ услуг</h3>
-                                <div class="space-y-3">
-                                    <div v-for="(stat, service, idx) in dashServiceStats" :key="service" class="flex justify-between items-center p-2 rounded-xl" :class="idx === 0 ? 'bg-primary/5' : 'bg-slate-50'">
-                                        <div class="flex items-center gap-3 max-w-[70%]">
-                                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-slate-200/50 text-slate-500">
-                                                <span class="material-symbols-outlined text-[16px]">build</span>
+                            <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm text-left" id="dash-leader-services">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-indigo-500 text-[20px]">build</span>
+                                    <h3 class="font-bold text-[14px] text-slate-800 font-heading">Популярные услуги</h3>
+                                </div>
+                                <div class="space-y-2.5">
+                                    <div v-for="(stat, service, idx) in dashServiceStats" :key="service" class="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
+                                        <div class="flex items-center gap-2.5 max-w-[65%]">
+                                            <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0">
+                                                <span class="material-symbols-outlined text-[15px]">build</span>
                                             </div>
-                                            <span class="font-medium text-[13px] text-text-main truncate">{{ service }}</span>
+                                            <span class="font-bold text-xs text-slate-700 truncate" :title="service">{{ service }}</span>
                                         </div>
                                         <div class="flex flex-col items-end shrink-0">
-                                            <span class="font-bold text-[13px] text-text-main">{{ stat.sum.toLocaleString() }} KGS</span>
-                                            <span class="font-semibold text-[11px] text-muted">{{ stat.count }} шт.</span>
+                                            <span class="font-extrabold text-xs text-slate-800">{{ stat.sum.toLocaleString() }} KGS</span>
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{{ stat.count }} раз</span>
                                         </div>
                                     </div>
-                                    <div v-if="Object.keys(dashServiceStats).length === 0" class="text-center py-4 text-muted text-sm">Нет данных</div>
+                                    <div v-if="Object.keys(dashServiceStats).length === 0" class="text-center py-4 bg-slate-50/50 rounded-xl">
+                                        <p class="text-slate-400 text-xs font-semibold m-0">Нет данных для отображения</p>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Brands Leaderboard -->
-                            <div class="bg-surface rounded-2xl p-5 shadow-soft border border-border-subtle/50">
-                                <h3 class="font-bold text-[16px] mb-4 text-text-main font-heading">Популярные Марки</h3>
-                                <div class="space-y-3">
-                                    <div v-for="(stat, brand, idx) in dashBrandStats" :key="brand" class="flex justify-between items-center p-2 rounded-xl" :class="idx === 0 ? 'bg-primary/5' : 'bg-slate-50'">
-                                        <div class="flex items-center gap-3 max-w-[70%]">
-                                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-slate-200/50 text-slate-500">
-                                                <span class="material-symbols-outlined text-[16px]">directions_car</span>
+                            <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm text-left" id="dash-leader-brands">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-indigo-500 text-[20px]">directions_car</span>
+                                    <h3 class="font-bold text-[14px] text-slate-800 font-heading">Популярные марки авто</h3>
+                                </div>
+                                <div class="space-y-2.5">
+                                    <div v-for="(stat, brand, idx) in dashBrandStats" :key="brand" class="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
+                                        <div class="flex items-center gap-2.5 max-w-[65%]">
+                                            <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0">
+                                                <span class="material-symbols-outlined text-[15px]">directions_car</span>
                                             </div>
-                                            <span class="font-medium text-[13px] text-text-main truncate">{{ brand }}</span>
+                                            <span class="font-bold text-xs text-slate-700 truncate">{{ brand }}</span>
                                         </div>
                                         <div class="flex flex-col items-end shrink-0">
-                                            <span class="font-bold text-[13px] text-text-main">{{ stat.sum.toLocaleString() }} KGS</span>
-                                            <span class="font-semibold text-[11px] text-muted">{{ stat.count }} шт.</span>
+                                            <span class="font-extrabold text-xs text-slate-800">{{ stat.sum.toLocaleString() }} KGS</span>
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{{ stat.count }} авто</span>
                                         </div>
                                     </div>
-                                    <div v-if="Object.keys(dashBrandStats).length === 0" class="text-center py-4 text-muted text-sm">Нет данных</div>
+                                    <div v-if="Object.keys(dashBrandStats).length === 0" class="text-center py-4 bg-slate-50/50 rounded-xl">
+                                        <p class="text-slate-400 text-xs font-semibold m-0">Нет данных для отображения</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -774,6 +890,25 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Payment Status Card -->
+                                        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                                            <div>
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Статус оплаты</span>
+                                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border inline-flex items-center gap-1 shadow-sm" 
+                                                    :class="recordForm.IsPaid ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' : 'bg-rose-50 text-rose-700 border-rose-200/50'">
+                                                    <span class="material-symbols-outlined text-[13px] font-black">{{ recordForm.IsPaid ? 'check_circle' : 'cancel' }}</span>
+                                                    {{ recordForm.IsPaid ? 'Оплачено' : 'Не оплачено' }}
+                                                </span>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Изменение</span>
+                                                <button @click="recordForm.IsPaid = !recordForm.IsPaid; saveRecord()" class="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-[10px] uppercase rounded-xl border border-slate-200 transition cursor-pointer inline-flex items-center gap-1.5 leading-none select-none">
+                                                    <span class="material-symbols-outlined text-[14px] font-bold">payments</span>
+                                                    <span>Оплачено/Нет</span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Right column: Services list, Comments, Actions -->
@@ -943,10 +1078,25 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                                                <div class="flex flex-col">
+                                            <div class="grid grid-cols-2 gap-2.5">
+                                                <div class="flex flex-col col-span-1">
                                                     <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Время заезда</label>
                                                     <input type="datetime-local" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-2 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none" v-model="recordForm.StartTime_LOCAL">
+                                                </div>
+                                                <div class="flex flex-col col-span-1 select-none">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Оплата</label>
+                                                    <div class="flex gap-1 bg-slate-50 p-1.5 rounded-xl h-10 items-center border border-slate-200">
+                                                        <button type="button" @click="recordForm.IsPaid = true" 
+                                                            class="flex-1 h-full rounded-lg text-[9.5px] font-extrabold uppercase tracking-widest transition-all cursor-pointer border-0 flex items-center justify-center gap-0.5 shrink-0"
+                                                            :class="recordForm.IsPaid ? 'bg-emerald-600 text-white shadow-sm' : 'bg-transparent text-slate-500 hover:text-slate-800'">
+                                                            <span class="material-symbols-outlined text-[13px] font-black">check_circle</span> <span>Да</span>
+                                                        </button>
+                                                        <button type="button" @click="recordForm.IsPaid = false" 
+                                                            class="flex-1 h-full rounded-lg text-[9.5px] font-extrabold uppercase tracking-widest transition-all cursor-pointer border-0 flex items-center justify-center gap-0.5 shrink-0"
+                                                            :class="!recordForm.IsPaid ? 'bg-rose-600 text-white shadow-sm' : 'bg-transparent text-slate-500 hover:text-slate-800'">
+                                                            <span class="material-symbols-outlined text-[13px] font-black">cancel</span> <span>Нет</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -1171,7 +1321,7 @@ export default {
                     searchQuery: '',
                     isSearchExpanded: false,
                     isFiltersExpanded: false,
-                    recordFilter: 'open',
+                    activeStatuses: ['Открыт', 'Выполнен', 'Отменён'],
                     advFilterMaster: '',
                     advFilterService: '',
                     advFilterDate: '',
@@ -1194,6 +1344,10 @@ export default {
                     recordForm: this.emptyRecord(),
                     refForm: {},
                     dashboardPeriod: 'all',
+                    dashFilterMaster: '',
+                    dashFilterService: '',
+                    dashFilterDate: '',
+                    isDashFiltersExpanded: false,
                     
                     showServiceSelector: false,
                     serviceSearch: '',
@@ -1228,12 +1382,10 @@ export default {
                            return s.includes(q);
                        });
                     }
-                    if (this.recordFilter === 'open') {
-                        d = d.filter(r => r.Status === 'Открыт');
-                    } else if (this.recordFilter === 'completed') {
-                        d = d.filter(r => r.Status === 'Выполнен');
-                    } else if (this.recordFilter === 'canceled') {
-                        d = d.filter(r => r.Status === 'Отменён');
+                    if (this.activeStatuses && this.activeStatuses.length > 0) {
+                        d = d.filter(r => this.activeStatuses.includes(r.Status));
+                    } else {
+                        d = [];
                     }
 
                     if (this.advFilterMaster) {
@@ -1273,23 +1425,43 @@ export default {
                         if (r.Status !== 'Выполнен') return false;
                         if (!r.StartTime) return false;
                         
+                        // Role restrictions & Master filter
                         if (this.user && this.user.Role === 'Master') {
                             if (r.MasterID !== this.currentUserMasterID) return false;
+                        } else if (this.dashFilterMaster) {
+                            if (String(r.MasterID) !== String(this.dashFilterMaster)) return false;
+                        }
+
+                        // Service filter
+                        if (this.dashFilterService) {
+                            let s = [];
+                            try {
+                                s = typeof r.ServicesJSON === 'string' ? JSON.parse(r.ServicesJSON || '[]') : (r.ServicesJSON || []);
+                            } catch(e) { s = []; }
+                            if (!s.includes(this.dashFilterService)) return false;
                         }
                         
-                        let d = new Date(r.StartTime);
-                        if (this.dashboardPeriod === 'day') return d.toDateString() === now.toDateString();
-                        if (this.dashboardPeriod === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                        if (this.dashboardPeriod === 'week') {
-                            let dt = new Date(now);
-                            dt.setDate(dt.getDate() - (dt.getDay() || 7) + 1); // Monday
-                            dt.setHours(0,0,0,0);
-                            return d >= dt;
+                        // Date filter
+                        if (this.dashFilterDate) {
+                            if (!r.StartTime.startsWith(this.dashFilterDate)) return false;
+                        } else {
+                            // Period filtering
+                            let d = new Date(r.StartTime);
+                            if (this.dashboardPeriod === 'day') {
+                                if (d.toDateString() !== now.toDateString()) return false;
+                            } else if (this.dashboardPeriod === 'month') {
+                                if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return false;
+                            } else if (this.dashboardPeriod === 'week') {
+                                let dt = new Date(now);
+                                dt.setDate(dt.getDate() - (dt.getDay() || 7) + 1); // Monday
+                                dt.setHours(0,0,0,0);
+                                if (d < dt) return false;
+                            } else if (this.dashboardPeriod === 'custom' && this.dashboardCustomDate) {
+                                let cd = new Date(this.dashboardCustomDate);
+                                if (d.toDateString() !== cd.toDateString()) return false;
+                            }
                         }
-                        if (this.dashboardPeriod === 'custom' && this.dashboardCustomDate) {
-                            let cd = new Date(this.dashboardCustomDate);
-                            return d.toDateString() === cd.toDateString();
-                        }
+                        
                         return true;
                     });
                 },
@@ -1451,7 +1623,7 @@ export default {
                     return {
                         ID: null, ClientName: '', Phone: '+996 ', CarNumber: '', BrandID: '', ModelID: '', 
                         MasterID: '', Status: 'Открыт', ServicesJSON: [], TotalAmount: 0, Comment: '',
-                        StartTime_LOCAL: localIso, CarRegion: '', CarCountry: 'KG', CarNumberMain: ''
+                        StartTime_LOCAL: localIso, CarRegion: '', CarCountry: 'KG', CarNumberMain: '', IsPaid: false
                     };
                 },
                 formatDate(isoString) {
@@ -1468,6 +1640,22 @@ export default {
                     this.advFilterMaster = '';
                     this.advFilterService = '';
                     this.advFilterDate = '';
+                    this.activeStatuses = ['Открыт', 'Выполнен', 'Отменён'];
+                },
+                toggleStatus(status) {
+                    let idx = this.activeStatuses.indexOf(status);
+                    if (idx > -1) {
+                        this.activeStatuses.splice(idx, 1);
+                    } else {
+                        this.activeStatuses.push(status);
+                    }
+                },
+                clearAllDashFilters() {
+                    this.dashFilterMaster = '';
+                    this.dashFilterService = '';
+                    this.dashFilterDate = '';
+                    this.dashboardPeriod = 'all';
+                    this.dashboardCustomDate = '';
                 },
                 parseServices(record) {
                     if (record.ServicesJSON) {
@@ -1555,6 +1743,23 @@ export default {
                     }
                 },
 
+                async quickPaymentToggle(record) {
+                    try {
+                        let payload = Object.assign({}, record);
+                        payload.IsPaid = !(record.IsPaid === true || String(record.IsPaid).toUpperCase() === 'TRUE');
+                        
+                        let idx = this.db.records.findIndex(x => x.ID === record.ID);
+                        if(idx > -1) {
+                            this.db.records[idx] = payload;
+                        }
+                        
+                        this.dispatchSync('updateRecord', payload);
+                        this.showToast(payload.IsPaid ? 'Запись отмечена как "Оплачено"' : 'Запись отмечена как "Не оплачено"');
+                    } catch(e) {
+                         this.showToast(e.message, 'error');
+                    }
+                },
+
                 formatPhoneInput(objName, fieldName) {
                     let raw = this[objName][fieldName].replace(/\D/g, '');
                     if (raw.startsWith('996')) raw = raw.slice(3);
@@ -1580,6 +1785,7 @@ export default {
                         this.isEditingRecord = false;
                         this.recordForm = JSON.parse(JSON.stringify(record));
                         this.recordForm.ServicesJSON = this.recordForm.ServicesJSON || [];
+                        this.recordForm.IsPaid = record.IsPaid === true || String(record.IsPaid).toUpperCase() === 'TRUE';
                         if (this.recordForm.StartTime) {
                             let d = new Date(this.recordForm.StartTime);
                             d.setMinutes(d.getMinutes() - d.getTimezoneOffset());

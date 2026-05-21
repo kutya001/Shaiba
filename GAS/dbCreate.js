@@ -2,7 +2,7 @@ function createDatabase() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var tables = {
     'Users': ['ID', 'Username', 'Password', 'Name', 'Phone', 'Role', 'Status'],
-    'Records': ['ID', 'ClientName', 'Phone', 'CarNumber', 'BrandID', 'ModelID', 'MasterID', 'StartTime', 'EndTime', 'Status', 'ServicesJSON', 'TotalAmount', 'Comment'],
+    'Records': ['ID', 'ClientName', 'Phone', 'CarNumber', 'BrandID', 'ModelID', 'MasterID', 'StartTime', 'EndTime', 'Status', 'ServicesJSON', 'TotalAmount', 'Comment', 'IsPaid'],
     'Services': ['ID', 'Name', 'Price'],
     'Brands': ['ID', 'Name'],
     'Models': ['ID', 'BrandID', 'Name']
