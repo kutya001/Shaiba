@@ -171,7 +171,12 @@ function getTable(sheetName) {
   for(var i = 1; i < data.length; i++) {
     var obj = {};
     for(var j = 0; j < headers.length; j++) {
-       obj[headers[j]] = data[i][j];
+       var h = headers[j];
+       var val = data[i][j];
+       if (h === 'ServicesJSON' && typeof val === 'string' && val.trim().startsWith('[')) {
+           try { val = JSON.parse(val); } catch(e) { val = []; }
+       }
+       obj[h] = val;
     }
     result.push(obj);
   }
