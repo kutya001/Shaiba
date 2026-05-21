@@ -119,20 +119,20 @@
             <!-- Main Workspace -->
             <main class="flex-1 flex flex-col h-full overflow-hidden relative pb-16 md:pb-0">
                 <!-- Mobile Top Header -->
-                <header class="md:hidden w-full h-14 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200 px-4 flex items-center justify-between shrink-0 z-10">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-                            <i class="bi bi-car-front-fill text-white text-xs"></i>
+                <header class="md:hidden w-full h-11 bg-white/95 backdrop-blur-md border-b border-slate-200/60 px-3.5 flex items-center justify-between shrink-0 z-10 select-none">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm shadow-indigo-100">
+                            <i class="bi bi-car-front-fill text-white text-[10px]"></i>
                         </div>
-                        <span class="font-bold text-base tracking-tight">AutoService CRM</span>
+                        <span class="font-bold text-sm tracking-tight text-slate-800">AutoService CRM</span>
                     </div>
                     
-                    <div class="flex items-center gap-3">
-                        <button v-if="isSyncing" class="p-1.5 text-indigo-600 transition-all font-bold flex items-center gap-1">
-                            <span class="material-symbols-outlined animate-spin font-bold">sync</span> <span class="text-[10px] uppercase tracking-wider hidden sm:inline">Синхронизация</span>
+                    <div class="flex items-center gap-2">
+                        <button v-if="isSyncing" class="px-2 py-0.5 text-indigo-600 font-bold flex items-center gap-1 bg-indigo-50 rounded-lg" style="font-size: 9px;">
+                            <span class="material-symbols-outlined animate-spin font-bold text-[13px]">sync</span> <span class="uppercase tracking-wider hidden xs:inline">Синхрон...</span>
                         </button>
-                        <button @click="openProfileModal" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition" title="Профиль">
-                            <span class="font-bold text-xs">{{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}</span>
+                        <button @click="openProfileModal" class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/50 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition" title="Профиль">
+                            <span class="font-bold text-[10px]">{{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}</span>
                         </button>
                     </div>
                 </header>
@@ -151,7 +151,7 @@
                             <span class="material-symbols-outlined animate-spin font-bold">sync</span> <span class="text-xs uppercase tracking-wider">Синхронизация...</span>
                         </button>
                         
-                        <select v-if="activeTab==='dashboard'" v-model="dashboardPeriod" class="form-select w-auto border-slate-200 rounded-xl text-sm bg-slate-50 font-bold cursor-pointer hover:bg-slate-100 transition focus:ring-slate-300 border-none shadow-sm">
+                        <select v-if="activeTab==='dashboard'" v-model="dashboardPeriod" class="form-select w-auto border-none rounded-xl text-sm bg-slate-50 font-bold cursor-pointer hover:bg-slate-100 transition-colors shadow-sm outline-none">
                             <option value="day">За Сегодня</option>
                             <option value="week">За Неделю</option>
                             <option value="month">За Месяц</option>
@@ -161,69 +161,69 @@
                         <div class="h-6 w-px bg-slate-200 mx-1"></div>
 
                         <button @click="openProfileModal" class="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-xl transition cursor-pointer">
-                            <div class="text-right hidden lg:block">
-                                <div class="text-xs font-bold text-slate-800 leading-tight">{{ user.Username }}</div>
-                                <div class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider leading-tight">{{ user.Role === 'Superadmin' ? 'Супер-админ' : user.Role === 'SenMaster' ? 'Ст. мастер' : 'Мастер' }}</div>
-                            </div>
-                            <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm tracking-tighter">
-                                {{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}
-                            </div>
+                             <div class="text-right hidden lg:block">
+                                 <div class="text-xs font-bold text-slate-800 leading-tight">{{ user.Username }}</div>
+                                 <div class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider leading-tight">{{ user.Role === 'Superadmin' ? 'Супер-админ' : user.Role === 'SenMaster' ? 'Ст. мастер' : 'Мастер' }}</div>
+                             </div>
+                             <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm tracking-tighter">
+                                 {{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}
+                             </div>
                         </button>
                     </div>
                 </header>
 
-                <div class="flex-1 px-4 pt-2 pb-4 md:px-8 overflow-y-auto w-full relative z-0">
+                <div class="flex-1 px-3 pt-1.5 pb-4 md:px-8 overflow-y-auto w-full relative z-0">
                     <div v-if="!loading" class="max-w-7xl mx-auto space-y-4 md:space-y-6">
                         
                         <!-- ОШИБКА ДАННЫХ -->
                         <div v-if="initError" class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200">
-                            <strong>Ошибка при загрузке данных:</strong> {{ initError }}
+                             <strong>Ошибка при загрузке данных:</strong> {{ initError }}
                         </div>
 
                         <!-- ЗАПИСИ (Ремонты) -->
                         <div v-if="activeTab === 'records'" class="max-w-md mx-auto w-full space-y-4 pb-20">
                             <!-- Sticky Header elements for Records -->
-                            <div class="sticky top-0 bg-background-light pt-2 pb-3 z-10 transition-shadow duration-200 space-y-3">
+                            <div class="sticky top-0 bg-background-light pt-1.5 pb-2 z-10 space-y-2 select-none shadow-[0_8px_20px_-10px_rgba(15,23,42,0.06)] -mx-3 px-3">
                                 <!-- Search -->
-                                <label class="flex flex-col h-12 w-full mb-0">
-                                    <div class="flex w-full flex-1 items-stretch rounded-lg shadow-sm border border-border-subtle bg-surface focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
-                                        <div class="text-muted flex items-center justify-center pl-4 rounded-l-lg">
-                                            <span class="material-symbols-outlined text-[24px]">search</span>
+                                <label class="flex flex-col h-10 w-full mb-0">
+                                    <div class="flex w-full flex-1 items-stretch rounded-xl border border-border-subtle bg-slate-50 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100/40 focus-within:border-indigo-500 transition-all">
+                                        <div class="text-muted flex items-center justify-center pl-3">
+                                            <span class="material-symbols-outlined text-[18px] text-slate-400">search</span>
                                         </div>
-                                        <input v-model="searchQuery" class="flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 h-full placeholder:text-muted px-4 rounded-r-lg text-[16px] font-medium text-text-main outline-none" placeholder="Поиск по номеру авто...">
+                                        <input v-model="searchQuery" class="flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 h-full placeholder:text-slate-400 px-2.5 text-xs font-semibold text-text-main outline-none" placeholder="Поиск по номеру авто...">
                                     </div>
                                 </label>
                                 
-                                <!-- Status Filter -->
-                                <div class="grid grid-cols-3 gap-2 w-full pb-1">
-                                    <button class="flex h-9 items-center justify-center rounded-lg px-1 shadow-sm font-bold text-[11px] sm:text-[13px] uppercase tracking-wide transition-colors"
-                                        :class="recordFilter === 'open' ? 'bg-primary text-white' : 'bg-surface border border-border-subtle text-text-main hover:bg-gray-50'"
+                                <!-- Status Filter Segmented Control -->
+                                <div class="bg-slate-100 p-0.5 rounded-xl flex w-full border border-slate-200/40 shadow-inner">
+                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
+                                        :class="recordFilter === 'open' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
                                         @click="recordFilter = 'open'">
-                                        ОТКРЫТ
+                                        Работа
                                     </button>
-                                    <button class="flex h-9 items-center justify-center rounded-lg px-1 shadow-sm font-bold text-[11px] sm:text-[13px] uppercase tracking-wide transition-colors"
-                                        :class="recordFilter === 'completed' ? 'bg-primary text-white' : 'bg-surface border border-border-subtle text-text-main hover:bg-gray-50'"
+                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
+                                        :class="recordFilter === 'completed' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
                                         @click="recordFilter = 'completed'">
-                                        Выполнен
+                                        Готов
                                     </button>
-                                    <button class="flex h-9 items-center justify-center rounded-lg px-1 shadow-sm font-bold text-[11px] sm:text-[13px] uppercase tracking-wide transition-colors"
-                                        :class="recordFilter === 'all' ? 'bg-primary text-white' : 'bg-surface border border-border-subtle text-text-main hover:bg-gray-50'"
+                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
+                                        :class="recordFilter === 'all' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
                                         @click="recordFilter = 'all'">
                                         Все
                                     </button>
                                 </div>
                                 
                                 <!-- Advanced Filters -->
-                                <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                                    <select v-model="advFilterMaster" class="h-9 shrink-0 rounded-lg border border-border-subtle bg-surface px-3 text-[13px] font-semibold text-text-main focus:ring-1 focus:ring-primary outline-none">
+                                <div class="flex gap-1 overflow-x-auto hide-scrollbar pb-0.5">
+                                    <select v-model="advFilterMaster" class="h-7 py-0 px-2.5 shrink-0 rounded-lg border border-border-subtle bg-slate-50 text-[10px] font-bold text-slate-600 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/10 cursor-pointer transition-all max-w-[110px]">
                                         <option value="">Все мастера</option>
                                         <option v-for="m in mastersList" :key="m.ID" :value="m.ID">{{m.Name || m.Username}}</option>
                                     </select>
-                                    <select v-model="advFilterService" class="h-9 shrink-0 rounded-lg border border-border-subtle bg-surface px-3 text-[13px] font-semibold text-text-main focus:ring-1 focus:ring-primary outline-none max-w-[150px]">
+                                    <select v-model="advFilterService" class="h-7 py-0 px-2.5 shrink-0 rounded-lg border border-border-subtle bg-slate-50 text-[10px] font-bold text-slate-600 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/10 cursor-pointer transition-all max-w-[110px]">
                                         <option value="">Все услуги</option>
                                         <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
                                     </select>
-                                    <input type="date" v-model="advFilterDate" class="h-9 shrink-0 rounded-lg border border-border-subtle bg-surface px-3 text-[13px] font-semibold text-text-main focus:ring-1 focus:ring-primary outline-none">
+                                    <input type="date" v-model="advFilterDate" class="h-7 py-0 px-2 shrink-0 rounded-lg border border-border-subtle bg-slate-50 text-[10px] font-bold text-slate-600 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all max-w-[100px]">
                                 </div>
                             </div>
 
@@ -522,30 +522,30 @@
                 </div>
 
                 <!-- Mobile Bottom Navigation Bar -->
-                <nav class="md:hidden fixed bottom-4 left-4 right-4 flex gap-2 rounded-2xl shadow-[0_12px_24px_-4px_rgba(0,0,0,0.1),0_4px_8px_-4px_rgba(0,0,0,0.05)] border border-slate-100 bg-white/95 backdrop-blur-md px-3 py-2 z-30">
-                    <button @click="activeTab='dashboard'" class="flex flex-1 flex-col items-center justify-center gap-1 transition-all bg-transparent border-0 outline-none select-none py-1" :class="activeTab === 'dashboard' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'">
-                        <div class="flex h-8 items-center justify-center">
-                            <span class="material-symbols-outlined" :style="activeTab === 'dashboard' ? 'font-variation-settings: \'FILL\' 1;' : ''">monitoring</span>
+                <nav class="md:hidden fixed bottom-4.5 left-4.5 right-4.5 flex gap-1 rounded-2xl shadow-[0_12px_24px_-4px_rgba(0,0,0,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] border border-slate-200/50 bg-white/95 backdrop-blur-md p-1.5 z-30 select-none">
+                    <button @click="activeTab='dashboard'" class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none" :class="activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600 bg-transparent'">
+                        <div class="flex h-6 items-center justify-center">
+                            <span class="material-symbols-outlined text-[19px]" :style="activeTab === 'dashboard' ? 'font-variation-settings: \'FILL\' 1;' : ''">monitoring</span>
                         </div>
-                        <p class="text-[10px] font-bold leading-none tracking-wide uppercase">Дашборд</p>
+                        <span class="text-[9px] font-bold tracking-wider uppercase leading-none mt-1">Аналитика</span>
                     </button>
-                    <button @click="activeTab='records'" class="flex flex-1 flex-col items-center justify-center gap-1 transition-all bg-transparent border-0 outline-none select-none py-1" :class="activeTab === 'records' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'">
-                        <div class="flex h-8 items-center justify-center">
-                            <span class="material-symbols-outlined" :style="activeTab === 'records' ? 'font-variation-settings: \'FILL\' 1;' : ''">list_alt</span>
+                    <button @click="activeTab='records'" class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none" :class="activeTab === 'records' ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600 bg-transparent'">
+                        <div class="flex h-6 items-center justify-center">
+                            <span class="material-symbols-outlined text-[19px]" :style="activeTab === 'records' ? 'font-variation-settings: \'FILL\' 1;' : ''">list_alt</span>
                         </div>
-                        <p class="text-[10px] font-bold leading-none tracking-wide uppercase">Записи</p>
+                        <span class="text-[9px] font-bold tracking-wider uppercase leading-none mt-1">Записи</span>
                     </button>
-                    <button v-if="user.Role !== 'Master'" @click="activeTab='refs'; refTab='services'" class="flex flex-1 flex-col items-center justify-center gap-1 transition-all bg-transparent border-0 outline-none select-none py-1" :class="activeTab === 'refs' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'">
-                        <div class="flex h-8 items-center justify-center">
-                            <span class="material-symbols-outlined" :style="activeTab === 'refs' ? 'font-variation-settings: \'FILL\' 1;' : ''">menu_book</span>
+                    <button v-if="user.Role !== 'Master'" @click="activeTab='refs'; refTab='services'" class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none" :class="activeTab === 'refs' ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600 bg-transparent'">
+                        <div class="flex h-6 items-center justify-center">
+                            <span class="material-symbols-outlined text-[19px]" :style="activeTab === 'refs' ? 'font-variation-settings: \'FILL\' 1;' : ''">menu_book</span>
                         </div>
-                        <p class="text-[10px] font-bold leading-none tracking-wide uppercase">База</p>
+                        <span class="text-[9px] font-bold tracking-wider uppercase leading-none mt-1">База</span>
                     </button>
-                    <button v-if="user && user.Role === 'Superadmin'" @click="activeTab='users'" class="flex flex-1 flex-col items-center justify-center gap-1 transition-all bg-transparent border-0 outline-none select-none" :class="activeTab === 'users' ? 'text-primary' : 'text-muted'">
-                        <div class="flex h-8 items-center justify-center">
-                            <span class="material-symbols-outlined" :style="activeTab === 'users' ? 'font-variation-settings: \'FILL\' 1;' : ''">groups</span>
+                    <button v-if="user && user.Role === 'Superadmin'" @click="activeTab='users'" class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none" :class="activeTab === 'users' ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600 bg-transparent'">
+                        <div class="flex h-6 items-center justify-center">
+                            <span class="material-symbols-outlined text-[19px]" :style="activeTab === 'users' ? 'font-variation-settings: \'FILL\' 1;' : ''">groups</span>
                         </div>
-                        <p class="text-[10px] font-bold leading-none tracking-wide uppercase">Штат</p>
+                        <span class="text-[9px] font-bold tracking-wider uppercase leading-none mt-1">Штат</span>
                     </button>
                 </nav>
             </main>
