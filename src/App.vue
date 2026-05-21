@@ -25,9 +25,9 @@
                 <!-- Divider -->
                 <div class="w-12 h-1 bg-indigo-500 rounded-full mb-6"></div>
 
-                <!-- Brief Description: "Анвар коток" -->
+                <!-- Brief Description: "Анвар сушняк алыпкел" -->
                 <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl text-slate-600 text-sm font-semibold mb-8 h-16 flex items-center justify-center w-full shadow-inner tracking-medium font-sans">
-                    Анвар коток
+                    Анвар  сушняк алыпкел
                 </div>
 
                 <!-- Enter / Get Started Button -->
@@ -1167,6 +1167,11 @@
                                             </div>
                                         </div>
 
+                                        <div v-if="recordForm.AdditionalServices" class="p-3.5 bg-indigo-50/70 rounded-2xl border border-indigo-100 mb-3" style="margin-top: 1rem;">
+                                            <span class="block text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">Дополнительные услуги</span>
+                                            <p class="text-xs font-semibold text-indigo-800 m-0 leading-normal">{{ recordForm.AdditionalServices }}</p>
+                                        </div>
+
                                         <!-- Comments -->
                                         <div v-if="recordForm.Comment" class="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-100">
                                             <span class="block text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1">Комментарий</span>
@@ -1342,6 +1347,10 @@
                                                 </div>
                                             </div>
 
+                                            <div class="flex flex-col mb-3">
+                                                <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Дополнительные услуги</label>
+                                                <textarea v-model="recordForm.AdditionalServices" class="w-full min-h-[50px] px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 resize-y" rows="2" placeholder="Опишите прочие услуги..."></textarea>
+                                            </div>
                                             <div class="flex flex-col">
                                                 <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Комментарий</label>
                                                 <textarea ref="commentInput" v-model="recordForm.Comment" class="w-full min-h-[50px] px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 resize-y" rows="2" placeholder="Дополнительная информация или заметки к ремонту..."></textarea>
@@ -1355,8 +1364,8 @@
                         <!-- Sticky Bottom Bar -->
                         <div v-show="isEditingRecord" class="bg-white border-t border-slate-200 px-4 py-3 md:px-5 shrink-0 flex justify-between items-center gap-3">
                             <div class="flex items-center gap-1.5 px-0.5">
-                                <span class="text-slate-500 font-bold text-[10px] uppercase tracking-wider hidden sm:inline">Итого к оплате:</span>
-                                <span class="text-lg font-black text-indigo-600">{{ Number(recordForm.TotalAmount).toLocaleString() }} <span class="text-[10px] text-slate-400 font-extrabold">KGS</span></span>
+                                <span class="text-slate-500 font-bold text-[10px] uppercase tracking-wider hidden sm:inline">Итого к оплате (KGS):</span>
+                                <input type="number" v-model="recordForm.TotalAmount" class="w-24 px-2 py-1 bg-white border border-slate-200 rounded text-lg font-black text-indigo-600 text-right outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                             </div>
                             <div class="flex gap-2">
                                 <button type="button" class="hidden md:flex h-9.5 px-4 items-center border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-xs transition cursor-pointer" data-bs-dismiss="modal">Отмена</button>
@@ -2038,6 +2047,89 @@ export default {
                     try {
                         let d = await runGS('getInitData', this.user.Role, this.user.ID);
                         d.records.forEach(r => this.parseServices(r));
+                        
+                        const defaultServices = [
+                            { ID: 'ds_1', Name: 'Компьютерная диагностика двигателя', Price: 1000 },
+                            { ID: 'ds_2', Name: 'Диагностика осциллографом', Price: 2000 },
+                            { ID: 'ds_3', Name: 'Поиск и устранение обрыва проводки', Price: 1500 },
+                            { ID: 'ds_4', Name: 'Адаптация дроссельной заслонки', Price: 800 },
+                            { ID: 'ds_5', Name: 'Ремонт генератора (замена щеток/диодного моста)', Price: 3500 },
+                            { ID: 'ds_6', Name: 'Ремонт стартера (замена бендикса/втягивающего)', Price: 3000 },
+                            { ID: 'ds_7', Name: 'Снятие/установка генератора/стартера', Price: 1500 },
+                            { ID: 'ds_8', Name: 'Зарядка и обслуживание АКБ', Price: 500 },
+                            { ID: 'ds_9', Name: 'Замена ламп накаливания и ксенона (1 шт)', Price: 300 },
+                            { ID: 'ds_10', Name: 'Установка автосигнализации (с автозапуском)', Price: 5000 },
+                            { ID: 'ds_11', Name: 'Демонтаж старой автосигнализации', Price: 1500 },
+                            { ID: 'ds_12', Name: 'Ремонт и программирование брелоков', Price: 1000 },
+                            { ID: 'ds_13', Name: 'Ремонт мотора стеклоподъемника', Price: 1200 },
+                            { ID: 'ds_14', Name: 'Чистка форсунок ультразвуком', Price: 2500 },
+                            { ID: 'ds_15', Name: 'Замена свечей зажигания (4 шт)', Price: 800 },
+                            { ID: 'ds_16', Name: 'Прошивка ЭБУ / Чип-тюнинг (Евро-2)', Price: 8000 },
+                            { ID: 'ds_17', Name: 'Замена лямбда-зонда (датчика кислорода)', Price: 1000 },
+                            { ID: 'ds_18', Name: 'Замена датчика распредвала/коленвала', Price: 1200 },
+                            { ID: 'ds_19', Name: 'Восстановление блока SRS / Airbag', Price: 4000 },
+                            { ID: 'ds_20', Name: 'Адаптация и прошивка роботизированной КПП', Price: 2000 },
+                            { ID: 'ds_21', Name: 'Сброс сервисных интервалов и ошибок', Price: 500 },
+                            { ID: 'ds_22', Name: 'Ремонт щитка приборов / замена шлейфов', Price: 3000 },
+                            { ID: 'ds_23', Name: 'Установка и подключение автомагнитолы', Price: 1500 }
+                        ];
+
+                        const defaultBrands = [
+                            { ID: 'db_1', Name: 'Lada (ВАЗ)' },
+                            { ID: 'db_2', Name: 'GAZ (ГАЗ)' },
+                            { ID: 'db_3', Name: 'UAZ (УАЗ)' },
+                            { ID: 'db_6', Name: 'Chevrolet' },
+                            { ID: 'db_7', Name: 'Daewoo' },
+                            { ID: 'db_5', Name: 'Ravon' },
+                            { ID: 'db_8', Name: 'Hyundai' },
+                            { ID: 'db_9', Name: 'Kia' },
+                            { ID: 'db_10', Name: 'Toyota' },
+                            { ID: 'db_11', Name: 'Nissan' },
+                            { ID: 'db_12', Name: 'Renault' },
+                            { ID: 'db_13', Name: 'Volkswagen' },
+                            { ID: 'db_14', Name: 'Skoda' },
+                            { ID: 'db_15', Name: 'Chery' },
+                            { ID: 'db_16', Name: 'Geely' },
+                            { ID: 'db_17', Name: 'Haval' }
+                        ];
+
+                        const defaultModels = [
+                            { ID: 'dm_1', BrandID: 'db_1', Name: 'Granta' },
+                            { ID: 'dm_2', BrandID: 'db_1', Name: 'Vesta' },
+                            { ID: 'dm_3', BrandID: 'db_1', Name: 'Priora' },
+                            { ID: 'dm_4', BrandID: 'db_1', Name: 'Niva (4x4)' },
+                            { ID: 'dm_5', BrandID: 'db_1', Name: 'Largus' },
+                            { ID: 'dm_6', BrandID: 'db_1', Name: 'Kalina' },
+                            { ID: 'dm_7', BrandID: 'db_2', Name: 'Gazelle' },
+                            { ID: 'dm_8', BrandID: 'db_2', Name: 'Volga' },
+                            { ID: 'dm_11', BrandID: 'db_6', Name: 'Cobalt' },
+                            { ID: 'dm_12', BrandID: 'db_6', Name: 'Spark' },
+                            { ID: 'dm_13', BrandID: 'db_6', Name: 'Nexia 3' },
+                            { ID: 'dm_14', BrandID: 'db_6', Name: 'Cruze' },
+                            { ID: 'dm_15', BrandID: 'db_7', Name: 'Nexia' },
+                            { ID: 'dm_16', BrandID: 'db_7', Name: 'Matiz' },
+                            { ID: 'dm_17', BrandID: 'db_8', Name: 'Solaris' },
+                            { ID: 'dm_18', BrandID: 'db_8', Name: 'Creta' },
+                            { ID: 'dm_19', BrandID: 'db_8', Name: 'Accent' },
+                            { ID: 'dm_20', BrandID: 'db_8', Name: 'Elantra' },
+                            { ID: 'dm_21', BrandID: 'db_8', Name: 'Santa Fe' },
+                            { ID: 'dm_22', BrandID: 'db_9', Name: 'Rio' },
+                            { ID: 'dm_23', BrandID: 'db_9', Name: 'Sportage' },
+                            { ID: 'dm_24', BrandID: 'db_9', Name: 'Optima / K5' },
+                            { ID: 'dm_25', BrandID: 'db_10', Name: 'Camry' },
+                            { ID: 'dm_26', BrandID: 'db_10', Name: 'Corolla' },
+                            { ID: 'dm_27', BrandID: 'db_10', Name: 'RAV4' },
+                            { ID: 'dm_28', BrandID: 'db_10', Name: 'Land Cruiser' },
+                            { ID: 'dm_29', BrandID: 'db_13', Name: 'Polo' },
+                            { ID: 'dm_30', BrandID: 'db_13', Name: 'Tiguan' },
+                            { ID: 'dm_31', BrandID: 'db_14', Name: 'Rapid' },
+                            { ID: 'dm_32', BrandID: 'db_14', Name: 'Octavia' }
+                        ];
+
+                        d.services = [ ...defaultServices, ...d.services.filter(s => s && String(s.ID).indexOf('ds_') !== 0) ];
+                        d.brands = [ ...defaultBrands, ...d.brands.filter(b => b && String(b.ID).indexOf('db_') !== 0) ];
+                        d.models = [ ...defaultModels, ...d.models.filter(m => m && String(m.ID).indexOf('dm_') !== 0) ];
+
                         this.db = d;
                         this.profileForm.username = this.user.Username;
                         this.profileForm.Name = this.user.Name || '';
@@ -2090,7 +2182,7 @@ export default {
                     let localIso = now.toISOString().slice(0, 16);
                     return {
                         ID: null, ClientName: '', Phone: '+996 ', CarNumber: '', BrandID: '', ModelID: '', 
-                        MasterID: '', Status: 'Открыт', ServicesJSON: [], TotalAmount: 0, Comment: '',
+                        MasterID: '', Status: 'Открыт', ServicesJSON: [], TotalAmount: 0, Comment: '', AdditionalServices: '',
                         StartTime_LOCAL: localIso, CarRegion: '', CarCountry: 'KG', CarNumberMain: '', IsPaid: false
                     };
                 },

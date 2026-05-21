@@ -147,6 +147,21 @@ function updateUserProfile(userId, newUsername, newPassword, newName, newPhone) 
 
 // Получить все данные приложения разом асинхронно
 function getInitData(role, userId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var recordsSheet = ss.getSheetByName('Records');
+  if (recordsSheet) {
+    var headers = recordsSheet.getRange(1, 1, 1, recordsSheet.getLastColumn()).getValues()[0];
+    if (headers.indexOf('AdditionalServices') === -1) {
+      var servicesIndex = headers.indexOf('ServicesJSON');
+      if (servicesIndex > -1) {
+        recordsSheet.insertColumnAfter(servicesIndex + 1);
+        recordsSheet.getRange(1, servicesIndex + 2).setValue('AdditionalServices').setFontWeight('bold');
+      } else {
+        recordsSheet.getRange(1, headers.length + 1).setValue('AdditionalServices').setFontWeight('bold');
+      }
+    }
+  }
+
   var data = {
     records: getTable('Records'),
     services: getTable('Services'),
