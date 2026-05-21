@@ -123,10 +123,12 @@
                 <!-- Mobile Top Header -->
                 <header class="md:hidden mx-4 mt-4 mb-2 h-12 bg-transparent border-0 shadow-none px-0 flex items-center justify-between shrink-0 z-20 select-none">
                     <div class="flex items-center gap-1.5 bg-white shadow-md border border-slate-200/50 rounded-xl px-2.5 h-10" v-if="!isSearchExpanded">
-                        <div class="w-5 h-5 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
-                            <i class="bi bi-car-front-fill text-white text-[9px]"></i>
+                        <div class="w-5 h-5 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                            <i class="bi text-white text-[9px]" :class="activeTab === 'dashboard' ? 'bi-bar-chart-line-fill' : activeTab === 'refs' ? 'bi-journals' : activeTab === 'users' ? 'bi-people-fill' : 'bi-car-front-fill'"></i>
                         </div>
-                        <span class="font-black text-xs tracking-tight text-slate-800">AutoService</span>
+                        <span class="font-black text-xs tracking-tight text-slate-800">
+                            {{ activeTab === 'dashboard' ? 'Аналитика' : activeTab === 'refs' ? 'Справочники' : activeTab === 'users' ? 'Персонал' : 'AutoService' }}
+                        </span>
                     </div>
 
                     <!-- "Все" button on mobile header -->
@@ -422,20 +424,8 @@
                             </button>
                         </div>
 
-                        <!-- ДАШБОРД -->
-                        <!-- АНАЛИТИКА / DASHBOARD -->
-                        <div v-if="activeTab === 'dashboard'" class="max-w-md mx-auto w-full space-y-6 fade-transition pb-20" id="dashboard-tab-container">
+                        <div v-if="activeTab === 'dashboard'" class="max-w-md mx-auto w-full space-y-4 fade-transition pb-20" id="dashboard-tab-container">
                             
-                            <!-- Header with title -->
-                            <div class="flex justify-between items-center px-1 relative">
-                                <div>
-                                    <h1 class="text-2xl font-bold tracking-tight text-slate-800 font-heading">Аналитика</h1>
-                                    <p class="text-slate-400 text-[11px] font-bold uppercase mt-0.5 tracking-wider">
-                                        Финансовые показатели
-                                    </p>
-                                </div>
-                            </div>
-
                             <!-- Period Selector & Advanced Filters trigger -->
                             <div class="flex gap-2 items-center">
                                 <div class="flex-1 flex gap-1 p-1 bg-slate-100 hover:bg-slate-150 transition-colors border border-slate-200/50 rounded-xl">
@@ -454,97 +444,196 @@
                                 </div>
                                 <button id="dash-filters-toggle" @click="isDashFiltersExpanded = !isDashFiltersExpanded" 
                                     class="w-10 h-[34px] rounded-xl border flex items-center justify-center transition cursor-pointer shrink-0 shadow-sm relative border-slate-200"
-                                    :class="isDashFiltersExpanded ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white text-slate-500 hover:bg-slate-50'">
+                                    :class="isDashFiltersExpanded ? 'bg-indigo-55 border-indigo-200 text-indigo-600 font-bold' : 'bg-white text-slate-500 hover:bg-slate-50'">
                                     <span class="material-symbols-outlined text-[19px]">tune</span>
                                     <!-- Dot badge if any advanced filter is active -->
-                                    <span v-if="dashFilterMaster || dashFilterService || dashFilterDate" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-600 border border-white rounded-full"></span>
+                                    <span v-if="dashFilterMaster || dashFilterService || dashFilterDate" class="absolute top-1 right-1 w-2 h-2 bg-indigo-600 border border-white rounded-full"></span>
                                 </button>
                             </div>
 
                             <!-- Sliding Advanced Filters -->
-                            <div v-if="isDashFiltersExpanded" class="bg-indigo-50/60 border border-indigo-100/70 p-3.5 rounded-2xl flex flex-col gap-2.5 transition-all duration-300" id="dash-filters-pane">
+                            <div v-if="isDashFiltersExpanded" class="bg-indigo-50/60 border border-indigo-100/70 p-3 rounded-xl flex flex-col gap-2 transition-all duration-300" id="dash-filters-pane">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[10px] font-black uppercase text-indigo-700 tracking-wider flex items-center gap-1.5 leading-none">
-                                        <span class="material-symbols-outlined text-[13px] font-black">tune</span> Дополнительные фильтры
+                                    <span class="text-[9px] font-black uppercase text-indigo-700 tracking-wider flex items-center gap-1.5 leading-none">
+                                        <span class="material-symbols-outlined text-[12px] font-black">tune</span> Фильтры
                                     </span>
-                                    <button id="dash-filters-clear" @click="clearAllDashFilters" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition border-0 bg-transparent cursor-pointer">Сбросить</button>
+                                    <button id="dash-filters-clear" @click="clearAllDashFilters" class="text-[9px] font-bold text-slate-400 hover:text-indigo-600 transition border-0 bg-transparent cursor-pointer">Сбросить</button>
                                 </div>
                                 <div class="grid select-none gap-2 text-left" :class="user.Role === 'Master' ? 'grid-cols-2' : 'grid-cols-3'">
                                     <!-- Master filter (hidden or auto prefilled for Masters) -->
                                     <div v-if="user.Role !== 'Master'" class="flex flex-col">
-                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 text-left">Мастер</span>
+                                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 ml-1 text-left">Мастер</span>
                                         <select id="dash-filter-master-select" v-model="dashFilterMaster" class="h-8 py-0 px-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
                                             <option value="">Все мастера</option>
                                             <option v-for="m in mastersList" :key="m.ID" :value="m.ID">{{m.Name || m.Username}}</option>
                                         </select>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 text-left">Услуга</span>
+                                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 ml-1 text-left">Услуга</span>
                                         <select id="dash-filter-service-select" v-model="dashFilterService" class="h-8 py-0 px-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
                                             <option value="">Все услуги</option>
                                             <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
                                         </select>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 text-left">Дата заезда</span>
+                                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 ml-1 text-left">Дата заезда</span>
                                         <input id="dash-filter-date-input" type="date" v-model="dashFilterDate" class="h-8 py-0 px-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all">
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Hero Metric Card -->
-                            <div class="bg-indigo-600 rounded-2xl p-5 text-white shadow-md border border-indigo-500/10 flex flex-col relative overflow-hidden text-left" id="dash-hero-revenue">
-                                <div class="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-[0.06] text-white pointer-events-none select-none">
-                                    <span class="material-symbols-outlined text-[140px]">currency_ruble</span>
-                                </div>
-                                <div class="flex justify-between items-start mb-4 relative z-10">
-                                    <div>
-                                        <span class="text-indigo-200 text-[10px] font-bold uppercase tracking-wider">Выручка за период</span>
-                                        <h2 class="font-heading text-3xl font-extrabold tracking-tight mt-1">{{ dashStats.sum.toLocaleString() }} KGS</h2>
+                            <!-- Combined Hero Stats (Compact) -->
+                            <div class="space-y-3">
+                                <!-- Revenue Card -->
+                                <div class="bg-indigo-600 rounded-2xl p-4 text-white shadow-md border border-indigo-500/10 flex items-center justify-between relative overflow-hidden text-left" id="dash-hero-revenue">
+                                    <div class="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-[0.06] text-white pointer-events-none select-none">
+                                        <span class="material-symbols-outlined text-[100px]">currency_ruble</span>
                                     </div>
-                                    <span class="material-symbols-outlined text-white text-[18px] bg-white/20 rounded-xl p-2 shrink-0">trending_up</span>
-                                </div>
-                                <div class="flex items-center gap-1.5 text-xs text-indigo-100 font-medium relative z-10">
-                                    <span class="material-symbols-outlined text-[15px]">analytics</span>
-                                    <span>Учитываются только завершенные заказы</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Stat Cards Grid -->
-                            <div class="grid grid-cols-2 gap-3" id="dash-stats-grid">
-                                <!-- Orders -->
-                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 flex items-center justify-between text-left" id="dash-stat-orders">
-                                    <div>
-                                        <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Выполнено</span>
-                                        <div class="font-heading text-2xl font-black text-slate-800">{{ dashStats.count }}</div>
-                                        <span class="text-[10px] text-slate-500 font-bold uppercase">заказов</span>
-                                    </div>
-                                    <span class="material-symbols-outlined text-indigo-500 bg-indigo-50 rounded-xl p-2 text-[20px] shrink-0">check_circle</span>
-                                </div>
-                                <!-- Avg check -->
-                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 flex items-center justify-between text-left" id="dash-stat-avg-check">
-                                    <div>
-                                        <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Средний чек</span>
-                                        <div class="font-heading text-xl font-black text-slate-800">
-                                            {{ dashStats.count ? Math.round(dashStats.sum / dashStats.count).toLocaleString() : 0 }}
+                                    <div class="relative z-10">
+                                        <span class="text-indigo-200 text-[9px] font-bold uppercase tracking-wider">Выручка за период</span>
+                                        <h2 class="font-heading text-2xl font-black tracking-tight mt-0.5">{{ dashStats.sum.toLocaleString() }} KGS</h2>
+                                        <div class="flex items-center gap-1 mt-1 text-[9px] text-indigo-100 font-medium">
+                                            <span class="material-symbols-outlined text-[11px]">analytics</span>
+                                            <span>Только завершенные заказы</span>
                                         </div>
-                                        <span class="text-[10px] text-slate-500 font-semibold uppercase">KGS</span>
                                     </div>
-                                    <span class="material-symbols-outlined text-emerald-500 bg-emerald-50 rounded-xl p-2 text-[20px] shrink-0">payments</span>
+                                    <span class="material-symbols-outlined text-white text-[16px] bg-white/20 rounded-xl p-2 shrink-0 relative z-10">trending_up</span>
+                                </div>
+                                
+                                <!-- Compact Stats Grid -->
+                                <div class="grid grid-cols-2 gap-3" id="dash-stats-grid">
+                                    <!-- Orders -->
+                                    <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-150 flex items-center justify-between text-left" id="dash-stat-orders">
+                                        <div>
+                                            <span class="text-slate-400 text-[9px] font-bold uppercase tracking-wider block mb-0.5">Выполнено</span>
+                                            <div class="font-heading text-xl font-black text-slate-800 leading-tight">{{ dashStats.count }}</div>
+                                            <span class="text-[9px] text-slate-500 font-bold uppercase">заказов</span>
+                                        </div>
+                                        <span class="material-symbols-outlined text-indigo-500 bg-indigo-55/10 rounded-lg p-1.5 text-[16px] shrink-0">check_circle</span>
+                                    </div>
+                                    <!-- Avg check -->
+                                    <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-150 flex items-center justify-between text-left" id="dash-stat-avg-check">
+                                        <div>
+                                            <span class="text-slate-400 text-[9px] font-bold uppercase tracking-wider block mb-0.5">Средний чек</span>
+                                            <div class="font-heading text-lg font-black text-slate-800 leading-tight">
+                                                {{ dashStats.count ? Math.round(dashStats.sum / dashStats.count).toLocaleString() : 0 }}
+                                            </div>
+                                            <span class="text-[9px] text-slate-500 font-semibold uppercase">KGS</span>
+                                        </div>
+                                        <span class="material-symbols-outlined text-emerald-500 bg-emerald-55/10 rounded-lg p-1.5 text-[16px] shrink-0">payments</span>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <!-- Mechanic Leaderboard -->
-                            <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm text-left" id="dash-leader-masters">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <span class="material-symbols-outlined text-indigo-500 text-[20px]">engineering</span>
-                                    <h3 class="font-bold text-[14px] text-slate-800 font-heading">Топ мастеров по выручке</h3>
+
+                            <!-- NEW DYNAMIC INTERACTIVE CHART -->
+                            <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-sm text-left flex flex-col gap-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-indigo-500 text-[18px]">bar_chart</span>
+                                        <h3 class="font-bold text-xs text-slate-800 font-heading">Динамика выручки</h3>
+                                    </div>
+                                    <!-- Interval buttons -->
+                                    <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-lg border border-slate-200/50">
+                                        <button type="button" @click="chartInterval = 'day'" 
+                                            class="px-2 py-0.5 rounded-md text-[8px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-none outline-none"
+                                            :class="chartInterval === 'day' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800 bg-transparent'">Дни</button>
+                                        <button type="button" @click="chartInterval = 'week'" 
+                                            class="px-2 py-0.5 rounded-md text-[8px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-none outline-none"
+                                            :class="chartInterval === 'week' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800 bg-transparent'">Недели</button>
+                                        <button type="button" @click="chartInterval = 'month'" 
+                                            class="px-2 py-0.5 rounded-md text-[8px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-none outline-none"
+                                            :class="chartInterval === 'month' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800 bg-transparent'">Месяцы</button>
+                                        <button type="button" @click="chartInterval = 'year'" 
+                                            class="px-2 py-0.5 rounded-md text-[8px] font-extrabold uppercase tracking-wider transition-all cursor-pointer border-none outline-none"
+                                            :class="chartInterval === 'year' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800 bg-transparent'">Годы</button>
+                                    </div>
                                 </div>
-                                <div class="space-y-2.5">
-                                    <div v-for="(stat, master, idx) in dashMasterStats" :key="master" class="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
-                                        <div class="flex items-center gap-2.5 max-w-[65%]">
-                                            <div class="w-7 h-7 rounded-lg flex items-center justify-center font-extrabold text-[10px] uppercase shrink-0" 
-                                                :class="idx === 0 ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-100' : 'bg-slate-100 text-slate-600'">
+
+                                <!-- SVG Bar Chart -->
+                                <div class="relative py-1 select-none">
+                                    <svg viewBox="0 0 360 140" class="w-full h-auto overflow-visible">
+                                        <!-- Definitions for gradients -->
+                                        <defs>
+                                            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#6366f1" />
+                                                <stop offset="100%" stop-color="#4f46e5" />
+                                            </linearGradient>
+                                            <linearGradient id="hoverGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#818cf8" />
+                                                <stop offset="100%" stop-color="#6366f1" />
+                                            </linearGradient>
+                                        </defs>
+
+                                        <!-- Background Horizontal Grid lines -->
+                                        <line x1="30" y1="20" x2="350" y2="20" stroke="#f8fafc" stroke-width="1" />
+                                        <line x1="30" y1="55" x2="350" y2="55" stroke="#f8fafc" stroke-width="1" />
+                                        <line x1="30" y1="90" x2="350" y2="90" stroke="#f8fafc" stroke-width="1" />
+                                        <line x1="30" y1="110" x2="350" y2="110" stroke="#cbd5e1" stroke-width="1.5" />
+
+                                        <!-- Bars & Labels -->
+                                        <g v-for="(item, idx) in dashboardChartData" :key="idx">
+                                            <!-- Draw dynamic bar -->
+                                            <rect 
+                                                :x="35 + idx * (310 / Math.max(dashboardChartData.length, 1)) + ((310 / Math.max(dashboardChartData.length, 1)) - Math.min(24, Math.floor(180 / Math.max(dashboardChartData.length, 1)))) / 2" 
+                                                :y="110 - (Math.max(...dashboardChartData.map(d => d.amount), 1000) > 0 ? (item.amount / Math.max(...dashboardChartData.map(d => d.amount), 1000)) * 85 : 0)" 
+                                                :width="Math.min(24, Math.floor(180 / Math.max(dashboardChartData.length, 1)))" 
+                                                :height="Math.max(...dashboardChartData.map(d => d.amount), 1000) > 0 ? (item.amount / Math.max(...dashboardChartData.map(d => d.amount), 1000)) * 85 : 0" 
+                                                :fill="hoveredBarIndex === idx ? 'url(#hoverGradient)' : 'url(#barGradient)'"
+                                                rx="4" 
+                                                ry="4"
+                                                class="transition-all duration-300 cursor-pointer"
+                                                @mouseenter="hoveredBarIndex = idx"
+                                                @mouseleave="hoveredBarIndex = null"
+                                            />
+                                            
+                                            <!-- Tick marker context -->
+                                            <text 
+                                                :x="35 + idx * (310 / Math.max(dashboardChartData.length, 1)) + (310 / Math.max(dashboardChartData.length, 1)) / 2" 
+                                                y="126" 
+                                                text-anchor="middle" 
+                                                class="text-slate-400 font-bold text-[8px] uppercase tracking-wide fill-current font-sans"
+                                            >
+                                                {{ item.label }}
+                                            </text>
+                                        </g>
+
+                                        <!-- Y Axis tick values for visualization -->
+                                        <text x="5" y="24" class="text-slate-400 font-bold text-[7px] fill-current font-sans">
+                                            {{ Math.max(...dashboardChartData.map(d => d.amount), 1000).toLocaleString() }}
+                                        </text>
+                                        <text x="5" y="65" class="text-slate-400 font-bold text-[7px] fill-current font-sans">
+                                            {{ Math.round(Math.max(...dashboardChartData.map(d => d.amount), 1000) / 2).toLocaleString() }}
+                                        </text>
+                                        <text x="5" y="113" class="text-slate-400 font-bold text-[7px] fill-current font-sans">0</text>
+                                    </svg>
+                                </div>
+
+                                <!-- Summary bar on hover -->
+                                <div class="flex items-center justify-between text-slate-500 text-[10px] font-bold bg-slate-50/70 rounded-xl px-2.5 py-1.5 border border-slate-100">
+                                    <span v-if="hoveredBarIndex === null" class="flex items-center gap-1 text-slate-400 font-sans text-[9px]">
+                                        <i class="bi bi-info-circle"></i> Наведите на столбец или коснитесь
+                                    </span>
+                                    <span v-else class="flex items-center justify-between w-full font-sans">
+                                        <span class="text-indigo-600 font-black uppercase text-[9px]">{{ dashboardChartData[hoveredBarIndex].label }}:</span>
+                                        <span class="flex gap-2 text-slate-600">
+                                            <span>Выручка: <strong class="text-slate-800 font-bold text-[11px]">{{ dashboardChartData[hoveredBarIndex].amount.toLocaleString() }} KGS</strong></span>
+                                            <span>Заказов: <strong class="text-slate-800 font-bold text-[11px]">{{ dashboardChartData[hoveredBarIndex].count }}</strong></span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Mechanic Leaderboard (Compact) -->
+                            <div class="bg-white rounded-2xl p-3.5 border border-slate-150 shadow-sm text-left" id="dash-leader-masters">
+                                <div class="flex items-center gap-1.5 mb-3">
+                                    <span class="material-symbols-outlined text-indigo-500 text-[18px]">engineering</span>
+                                    <h3 class="font-bold text-xs text-slate-800 font-heading">Рейтинг мастеров</h3>
+                                </div>
+                                <div class="space-y-2">
+                                    <div v-for="(stat, master, idx) in dashMasterStats" :key="master" class="flex justify-between items-center p-2 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
+                                        <div class="flex items-center gap-2 max-w-[65%]">
+                                            <div class="w-6.5 h-6.5 rounded-lg flex items-center justify-center font-black text-[9px] uppercase shrink-0" 
+                                                :class="idx === 0 ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500'">
                                                 {{ typeof master === 'string' && master.length > 0 ? master.slice(0, 2) : 'М' }}
                                             </div>
                                             <span class="font-bold text-xs text-slate-700 truncate">{{ master }}</span>
@@ -555,22 +644,22 @@
                                         </div>
                                     </div>
                                     <div v-if="Object.keys(dashMasterStats).length === 0" class="text-center py-4 bg-slate-50/50 rounded-xl">
-                                        <p class="text-slate-400 text-xs font-semibold m-0">Нет данных для отображения</p>
+                                        <p class="text-slate-400 text-[10px] font-semibold m-0">Нет данных для отображения</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Services Leaderboard -->
-                            <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm text-left" id="dash-leader-services">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <span class="material-symbols-outlined text-indigo-500 text-[20px]">build</span>
-                                    <h3 class="font-bold text-[14px] text-slate-800 font-heading">Популярные услуги</h3>
+                            <!-- Services Leaderboard (Compact) -->
+                            <div class="bg-white rounded-2xl p-3.5 border border-slate-150 shadow-sm text-left" id="dash-leader-services">
+                                <div class="flex items-center gap-1.5 mb-3">
+                                    <span class="material-symbols-outlined text-indigo-500 text-[18px]">build</span>
+                                    <h3 class="font-bold text-xs text-slate-800 font-heading">Популярные услуги</h3>
                                 </div>
-                                <div class="space-y-2.5">
-                                    <div v-for="(stat, service, idx) in dashServiceStats" :key="service" class="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
-                                        <div class="flex items-center gap-2.5 max-w-[65%]">
-                                            <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0">
-                                                <span class="material-symbols-outlined text-[15px]">build</span>
+                                <div class="space-y-2">
+                                    <div v-for="(stat, service, idx) in dashServiceStats" :key="service" class="flex justify-between items-center p-2 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
+                                        <div class="flex items-center gap-2 max-w-[65%]">
+                                            <div class="w-6.5 h-6.5 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0">
+                                                <span class="material-symbols-outlined text-[13px]">build</span>
                                             </div>
                                             <span class="font-bold text-xs text-slate-700 truncate" :title="service">{{ service }}</span>
                                         </div>
@@ -580,22 +669,22 @@
                                         </div>
                                     </div>
                                     <div v-if="Object.keys(dashServiceStats).length === 0" class="text-center py-4 bg-slate-50/50 rounded-xl">
-                                        <p class="text-slate-400 text-xs font-semibold m-0">Нет данных для отображения</p>
+                                        <p class="text-slate-400 text-[10px] font-semibold m-0">Нет данных для отображения</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Brands Leaderboard -->
-                            <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm text-left" id="dash-leader-brands">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <span class="material-symbols-outlined text-indigo-500 text-[20px]">directions_car</span>
-                                    <h3 class="font-bold text-[14px] text-slate-800 font-heading">Популярные марки авто</h3>
+                            <!-- Brands Leaderboard (Compact) -->
+                            <div class="bg-white rounded-2xl p-3.5 border border-slate-150 shadow-sm text-left" id="dash-leader-brands">
+                                <div class="flex items-center gap-1.5 mb-3">
+                                    <span class="material-symbols-outlined text-indigo-500 text-[18px]">directions_car</span>
+                                    <h3 class="font-bold text-xs text-slate-800 font-heading">Популярные марки авто</h3>
                                 </div>
-                                <div class="space-y-2.5">
-                                    <div v-for="(stat, brand, idx) in dashBrandStats" :key="brand" class="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
-                                        <div class="flex items-center gap-2.5 max-w-[65%]">
-                                            <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0">
-                                                <span class="material-symbols-outlined text-[15px]">directions_car</span>
+                                <div class="space-y-2">
+                                    <div v-for="(stat, brand, idx) in dashBrandStats" :key="brand" class="flex justify-between items-center p-2 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white" :class="idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''">
+                                        <div class="flex items-center gap-2 max-w-[65%]">
+                                            <div class="w-6.5 h-6.5 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0">
+                                                <span class="material-symbols-outlined text-[13px]">directions_car</span>
                                             </div>
                                             <span class="font-bold text-xs text-slate-700 truncate">{{ brand }}</span>
                                         </div>
@@ -605,7 +694,7 @@
                                         </div>
                                     </div>
                                     <div v-if="Object.keys(dashBrandStats).length === 0" class="text-center py-4 bg-slate-50/50 rounded-xl">
-                                        <p class="text-slate-400 text-xs font-semibold m-0">Нет данных для отображения</p>
+                                        <p class="text-slate-400 text-[10px] font-semibold m-0">Нет данных для отображения</p>
                                     </div>
                                 </div>
                             </div>
@@ -1402,6 +1491,8 @@ export default {
                     dashFilterService: '',
                     dashFilterDate: '',
                     isDashFiltersExpanded: false,
+                    chartInterval: 'day',
+                    hoveredBarIndex: null,
                     
                     showServiceSelector: false,
                     serviceSearch: '',
@@ -1574,6 +1665,152 @@ export default {
                     });
                     let sorted = Object.entries(map).sort((a,b) => b[1].count - a[1].count).slice(0, 5);
                     return Object.fromEntries(sorted);
+                },
+                dashboardChartData() {
+                    if (!this.db || !this.db.records) return [];
+                    let now = new Date();
+                    
+                    // Filter completed records matching current Master/Service filters
+                    let records = this.db.records.filter(r => {
+                        if (r.Status !== 'Выполнен') return false;
+                        if (!r.StartTime) return false;
+                        
+                        // Master Filter
+                        if (this.user && this.user.Role === 'Master') {
+                            if (r.MasterID !== this.currentUserMasterID) return false;
+                        } else if (this.dashFilterMaster) {
+                            if (String(r.MasterID) !== String(this.dashFilterMaster)) return false;
+                        }
+                        
+                        // Service Filter
+                        if (this.dashFilterService) {
+                            let s = [];
+                            try {
+                                s = typeof r.ServicesJSON === 'string' ? JSON.parse(r.ServicesJSON || '[]') : (r.ServicesJSON || []);
+                            } catch(e) { s = []; }
+                            if (!s.includes(this.dashFilterService)) return false;
+                        }
+                        
+                        return true;
+                    });
+
+                    let interval = this.chartInterval || 'day';
+                    
+                    if (interval === 'day') {
+                        // Consecutive 7 days including today
+                        let list = [];
+                        for (let i = 6; i >= 0; i--) {
+                            let d = new Date();
+                            d.setDate(now.getDate() - i);
+                            let dateStr = d.toDateString();
+                            
+                            // Sum up TotalAmount for this day
+                            let dayAmount = 0;
+                            let dayCount = 0;
+                            records.forEach(r => {
+                                if (new Date(r.StartTime).toDateString() === dateStr) {
+                                    dayAmount += (Number(r.TotalAmount) || 0);
+                                    dayCount++;
+                                }
+                            });
+                            
+                            // Format label as "DD.MM"
+                            let dd = String(d.getDate()).padStart(2, '0');
+                            let mm = String(d.getMonth() + 1).padStart(2, '0');
+                            list.push({
+                                label: `${dd}.${mm}`,
+                                amount: dayAmount,
+                                count: dayCount
+                            });
+                        }
+                        return list;
+                        
+                    } else if (interval === 'week') {
+                        // Last 6 weeks of service
+                        let list = [];
+                        for (let i = 5; i >= 0; i--) {
+                            // Calculate monday of the week
+                            let d = new Date();
+                            d.setDate(now.getDate() - (now.getDay() || 7) + 1 - (i * 7));
+                            d.setHours(0,0,0,0);
+                            let startOfWeek = new Date(d);
+                            let endOfWeek = new Date(d);
+                            endOfWeek.setDate(endOfWeek.getDate() + 6);
+                            endOfWeek.setHours(23,59,59,999);
+                            
+                            let weekAmount = 0;
+                            let weekCount = 0;
+                            records.forEach(r => {
+                                let rt = new Date(r.StartTime);
+                                if (rt >= startOfWeek && rt <= endOfWeek) {
+                                    weekAmount += (Number(r.TotalAmount) || 0);
+                                    weekCount++;
+                                }
+                            });
+                            
+                            let startDD = String(startOfWeek.getDate()).padStart(2, '0');
+                            let startMM = String(startOfWeek.getMonth() + 1).padStart(2, '0');
+                            list.push({
+                                label: `${startDD}.${startMM}`,
+                                amount: weekAmount,
+                                count: weekCount
+                            });
+                        }
+                        return list;
+                        
+                    } else if (interval === 'month') {
+                        // Last 6 months of service
+                        let monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+                        let list = [];
+                        for (let i = 5; i >= 0; i--) {
+                            let d = new Date();
+                            d.setMonth(now.getMonth() - i);
+                            let mIndex = d.getMonth();
+                            let yVal = d.getFullYear();
+                            
+                            let monthAmount = 0;
+                            let monthCount = 0;
+                            records.forEach(r => {
+                                let rt = new Date(r.StartTime);
+                                if (rt.getMonth() === mIndex && rt.getFullYear() === yVal) {
+                                    monthAmount += (Number(r.TotalAmount) || 0);
+                                    monthCount++;
+                                }
+                            });
+                            
+                            list.push({
+                                label: `${monthNames[mIndex]}`,
+                                amount: monthAmount,
+                                count: monthCount
+                            });
+                        }
+                        return list;
+                        
+                    } else if (interval === 'year') {
+                        // Last 3 years of service
+                        let list = [];
+                        for (let i = 2; i >= 0; i--) {
+                            let yVal = now.getFullYear() - i;
+                            
+                            let yearAmount = 0;
+                            let yearCount = 0;
+                            records.forEach(r => {
+                                let rt = new Date(r.StartTime);
+                                if (rt.getFullYear() === yVal) {
+                                    yearAmount += (Number(r.TotalAmount) || 0);
+                                    yearCount++;
+                                }
+                            });
+                            
+                            list.push({
+                                label: `${yVal}`,
+                                amount: yearAmount,
+                                count: yearCount
+                            });
+                        }
+                        return list;
+                    }
+                    return [];
                 }
             },
             mounted() {
