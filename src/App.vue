@@ -119,7 +119,7 @@
             <!-- Main Workspace -->
             <main class="flex-1 flex flex-col h-full overflow-hidden relative pb-16 md:pb-0">
                 <!-- Mobile Top Header -->
-                <header class="md:hidden w-full h-11 bg-white/95 backdrop-blur-md border-b border-slate-200/60 px-3.5 flex items-center justify-between shrink-0 z-10 select-none">
+                <header class="md:hidden mx-4 mt-4 mb-2 rounded-2xl h-12 bg-white/75 backdrop-blur-md border border-slate-200/50 shadow-sm px-4 flex items-center justify-between shrink-0 z-20 select-none">
                     <div class="flex items-center gap-1.5" v-if="!isSearchExpanded">
                         <div class="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm shadow-indigo-100">
                             <i class="bi bi-car-front-fill text-white text-[10px]"></i>
@@ -157,7 +157,7 @@
                 </header>
 
                 <!-- Desktop Header -->
-                <header class="hidden md:flex mx-6 mt-4 mb-2 rounded-2xl h-16 bg-white shadow-sm border border-slate-200 px-8 items-center justify-between shrink-0 z-10">
+                <header class="hidden md:flex mx-6 mt-4 mb-2 rounded-2xl h-16 bg-white/70 backdrop-blur-md shadow-sm border border-slate-200/60 px-8 items-center justify-between shrink-0 z-10">
                     <div class="flex items-center gap-4">
                         <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='records'">Журнал Обслуживания</h1>
                         <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='dashboard'">Аналитика и Финансы</h1>
@@ -254,24 +254,24 @@
                                 </div>
 
                                 <!-- Status Filter Individual Buttons ("Islands") -->
-                                <div class="flex flex-wrap gap-2 w-full">
-                                    <button class="flex-1 min-w-[70px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'open' ? 'bg-indigo-600 text-white border-indigo-600 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
+                                <div class="flex flex-wrap gap-1.5 w-full">
+                                    <button class="flex-1 min-w-[65px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'open' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'open'">
-                                        В работе
+                                        Открыт
                                     </button>
-                                    <button class="flex-1 min-w-[70px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'completed' ? 'bg-emerald-600 text-white border-emerald-600 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
+                                    <button class="flex-1 min-w-[65px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'completed' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'completed'">
                                         Выполнен
                                     </button>
-                                    <button class="flex-1 min-w-[70px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'canceled' ? 'bg-rose-600 text-white border-rose-600 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
+                                    <button class="flex-1 min-w-[65px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'canceled' ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'canceled'">
                                         Отменён
                                     </button>
-                                    <button class="flex-1 min-w-[50px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
-                                        :class="recordFilter === 'all' ? 'bg-slate-700 text-white border-slate-700 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
+                                    <button class="flex-1 min-w-[45px] flex h-7 items-center justify-center rounded-xl font-extrabold text-[9px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'all' ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'all'">
                                         Все
                                     </button>
@@ -285,7 +285,7 @@
                                     :class="{'opacity-80': r.Status === 'Выполнен', 'opacity-70 grayscale-[20%]': r.Status === 'Отменён'}">
                                     <div class="flex justify-between items-center mb-3">
                                         <h3 class="font-bold text-[18px] text-text-main tracking-tight uppercase font-heading">{{ r.CarNumber }}</h3>
-                                        <span class="px-2.5 py-1 rounded-md text-[12px] font-semibold uppercase tracking-wider" :class="statusBadgeTw(r.Status)">
+                                        <span class="px-2 py-0.5 rounded-lg text-[9.5px] font-extrabold uppercase tracking-wider border border-slate-200/30 shadow-sm" :class="statusBadgeTw(r.Status)">
                                             {{ r.Status }}
                                         </span>
                                     </div>
@@ -308,7 +308,7 @@
                                                     Завершить
                                                 </button>
                                                 <button v-if="r.Status === 'Выполнен' || r.Status === 'Отменён'" @click.stop="quickStatusChange(r, 'Открыт')" class="px-3 py-1 bg-status-open-bg text-status-open-text text-[11px] font-bold uppercase tracking-wider rounded-md border border-status-open-text/20 hover:bg-amber-100 transition-colors">
-                                                    Вернуть в работу
+                                                    Открыть заново
                                                 </button>
                                             </div>
                                         </div>
@@ -446,7 +446,7 @@
                         </div>
 
                         <!-- СПРАВОЧНИКИ -->
-                        <div v-if="activeTab === 'refs'" class="space-y-6 max-w-md mx-auto w-full pb-20">
+                        <div v-if="activeTab === 'refs' && user.Role !== 'Master'" class="space-y-6 max-w-md mx-auto w-full pb-20">
                             
                             <!-- Grid view -->
                             <div v-if="refTab === 'grid'" class="fade-transition">
@@ -573,7 +573,7 @@
                 </div>
 
                 <!-- Mobile Bottom Navigation Bar -->
-                <nav class="md:hidden fixed bottom-4.5 left-4.5 right-4.5 flex gap-1 rounded-2xl shadow-[0_12px_24px_-4px_rgba(0,0,0,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] border border-slate-200/50 bg-white/95 backdrop-blur-md p-1.5 z-30 select-none">
+                <nav class="md:hidden fixed bottom-4.5 left-4.5 right-4.5 flex gap-1 rounded-2xl shadow-[0_12px_24px_-4px_rgba(0,0,0,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] border border-slate-200/50 bg-white/70 backdrop-blur-md p-1.5 z-30 select-none">
                     <button @click="activeTab='dashboard'" class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none" :class="activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600 bg-transparent'">
                         <div class="flex h-6 items-center justify-center">
                             <span class="material-symbols-outlined text-[19px]" :style="activeTab === 'dashboard' ? 'font-variation-settings: \'FILL\' 1;' : ''">monitoring</span>
@@ -810,7 +810,7 @@
                                                     <i class="bi bi-x-circle"></i> Отменить
                                                 </button>
                                                 <button v-if="recordForm.Status !== 'Открыт'" @click="quickStatusChangeModal('Открыт')" class="py-2 bg-slate-50 text-slate-700 font-bold col-span-2 rounded-xl text-xs hover:bg-slate-100 border border-slate-200 transition cursor-pointer flex items-center justify-center gap-1.5">
-                                                    <i class="bi bi-arrow-counterclockwise"></i> Вернуть в работу
+                                                    <i class="bi bi-arrow-counterclockwise"></i> Вернуть статус Открыт
                                                 </button>
                                             </div>
                                             <button @click="isEditingRecord = true" class="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
