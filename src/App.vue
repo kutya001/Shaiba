@@ -199,12 +199,17 @@
                                     <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
                                         :class="recordFilter === 'open' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
                                         @click="recordFilter = 'open'">
-                                        Работа
+                                        В работе
                                     </button>
                                     <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
                                         :class="recordFilter === 'completed' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
                                         @click="recordFilter = 'completed'">
-                                        Готов
+                                        Выполнен
+                                    </button>
+                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
+                                        :class="recordFilter === 'canceled' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
+                                        @click="recordFilter = 'canceled'">
+                                        Отменён
                                     </button>
                                     <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
                                         :class="recordFilter === 'all' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
@@ -231,7 +236,7 @@
                             <div class="space-y-4">
                                 <article v-for="r in filteredRecords" :key="r.ID" @click="openRecordModal(r)" 
                                     class="bg-surface rounded-2xl p-4 shadow-soft border border-border-subtle/50 active:scale-[0.98] transition-transform cursor-pointer"
-                                    :class="{'opacity-80': r.Status === 'Выполнен', 'opacity-70 grayscale-[20%]': r.Status === 'Отмена'}">
+                                    :class="{'opacity-80': r.Status === 'Выполнен', 'opacity-70 grayscale-[20%]': r.Status === 'Отменён'}">
                                     <div class="flex justify-between items-center mb-3">
                                         <h3 class="font-bold text-[18px] text-text-main tracking-tight uppercase font-heading">{{ r.CarNumber }}</h3>
                                         <span class="px-2.5 py-1 rounded-md text-[12px] font-semibold uppercase tracking-wider" :class="statusBadgeTw(r.Status)">
@@ -256,7 +261,7 @@
                                                 <button v-if="r.Status === 'Открыт'" @click.stop="quickStatusChange(r, 'Выполнен')" class="px-3 py-1 bg-status-completed-bg text-status-completed-text text-[11px] font-bold uppercase tracking-wider rounded-md border border-status-completed-text/20 hover:bg-emerald-100 transition-colors">
                                                     Завершить
                                                 </button>
-                                                <button v-if="r.Status === 'Выполнен' || r.Status === 'Отмена'" @click.stop="quickStatusChange(r, 'Открыт')" class="px-3 py-1 bg-status-open-bg text-status-open-text text-[11px] font-bold uppercase tracking-wider rounded-md border border-status-open-text/20 hover:bg-amber-100 transition-colors">
+                                                <button v-if="r.Status === 'Выполнен' || r.Status === 'Отменён'" @click.stop="quickStatusChange(r, 'Открыт')" class="px-3 py-1 bg-status-open-bg text-status-open-text text-[11px] font-bold uppercase tracking-wider rounded-md border border-status-open-text/20 hover:bg-amber-100 transition-colors">
                                                     Вернуть в работу
                                                 </button>
                                             </div>
@@ -629,211 +634,296 @@
             <!-- ======================= -->
             <div class="modal fade" id="recordModal" tabindex="-1">
                 <div class="modal-dialog modal-fullscreen-md-down modal-lg modal-dialog-centered modal-dialog-scrollable m-0 md:m-auto">
-                    <div class="modal-content md:rounded-3xl border-0 shadow-2xl overflow-hidden font-sans bg-slate-50 relative">
+                    <div class="modal-content h-full md:h-auto md:max-h-[92vh] md:rounded-3xl border-0 shadow-2xl overflow-hidden font-sans bg-slate-50 flex flex-col relative">
                         
                         <!-- Top Nav -->
-                        <div class="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-200 py-3 px-4 flex items-center justify-between shadow-sm md:px-6 md:py-4">
-                            <button type="button" class="text-slate-600 flex w-10 h-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 transition-colors md:hidden" data-bs-dismiss="modal">
-                                <i class="bi bi-arrow-left text-xl"></i>
+                        <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-slate-200/60 py-3 px-4 flex items-center justify-between shadow-sm md:px-5 md:py-3.5">
+                            <button type="button" class="text-slate-600 flex w-9 h-9 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 transition-colors md:hidden" data-bs-dismiss="modal">
+                                <i class="bi bi-arrow-left text-lg"></i>
                             </button>
-                            <h5 class="modal-title font-bold text-slate-800 text-[18px] md:text-xl leading-tight flex-1 flex items-center gap-3 md:justify-start justify-center pr-10 md:pr-0 m-0">
-                                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hidden md:flex items-center justify-center"><i class="bi bi-journal-text"></i></div>
-                                {{ recordForm.ID ? 'Редактировать запись' : 'Новая запись' }}
+                            <h5 class="modal-title font-bold text-slate-800 text-[16px] md:text-lg leading-tight flex-1 flex items-center gap-2.5 md:justify-start justify-center pr-9 md:pr-0 m-0">
+                                <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 hidden md:flex items-center justify-center"><i class="bi bi-journal-text text-sm"></i></div>
+                                {{ recordForm.ID ? (isEditingRecord ? 'Редактировать запись' : 'Просмотр записи') : 'Новая запись' }}
                             </h5>
                             <button type="button" class="btn-close text-slate-400 focus:ring-0 hidden md:block" data-bs-dismiss="modal"></button>
                         </div>
                         
-                        <div class="modal-body p-4 md:p-8 space-y-5 md:space-y-6 pb-40 md:pb-24 bg-slate-50 overflow-y-auto">
+                        <div class="modal-body flex-1 overflow-y-auto p-3.5 md:p-5 bg-slate-50">
                             <template v-if="!isEditingRecord">
-                                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-                                    <div class="flex justify-between items-start mb-6">
-                                        <div>
-                                            <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">{{ recordForm.CarNumber || 'Без номера' }}</h2>
-                                            <p class="text-base font-bold text-slate-500 mt-1">{{ getBrandName(recordForm.BrandID) }} {{ getModelName(recordForm.ModelID) }}</p>
-                                        </div>
-                                        <span class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest border" :class="statusBadgeTw(recordForm.Status)">
-                                            {{ recordForm.Status }}
-                                        </span>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-2 gap-4 mb-6">
-                                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Клиент</span>
-                                            <div class="text-sm font-bold text-slate-700">{{ recordForm.ClientName || '—' }}</div>
-                                            <a v-if="recordForm.Phone" :href="'tel:' + recordForm.Phone" class="block mt-1 text-xs font-bold text-indigo-600 hover:underline">{{ recordForm.Phone }}</a>
-                                        </div>
-                                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Мастер</span>
-                                            <div class="text-sm font-bold text-slate-700">{{ getMasterName(recordForm.MasterID) || 'Не назначен' }}</div>
-                                            <div class="mt-1 text-xs font-semibold text-slate-500">{{ new Date(recordForm.StartTime_LOCAL).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) }}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-6">
-                                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Услуги</h4>
-                                        <div class="space-y-2">
-                                            <div v-for="sid in recordForm.ServicesJSON" :key="sid" class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg">
-                                                <span class="text-sm font-bold text-slate-700">{{ getServiceName(sid) }}</span>
-                                                <span class="text-sm font-black text-slate-800">{{ Number(getServicePrice(sid)).toLocaleString() }}</span>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4">
+                                    <!-- Left column: Main properties -->
+                                    <div class="space-y-3.5">
+                                        <!-- Vehicle Card -->
+                                        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm relative overflow-hidden">
+                                            <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-50/30 rounded-full translate-x-8 -translate-y-8 select-none pointer-events-none md:block hidden"></div>
+                                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Автомобиль</span>
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 shrink-0">
+                                                    <i class="bi bi-car-front-fill text-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight m-0 leading-tight">{{ recordForm.CarNumber || 'Без номера' }}</h2>
+                                                    <p class="text-[11px] font-bold text-slate-500 m-0 mt-0.5">{{ getBrandName(recordForm.BrandID) }} {{ getModelName(recordForm.ModelID) }}</p>
+                                                </div>
                                             </div>
-                                            <div v-if="!recordForm.ServicesJSON || !recordForm.ServicesJSON.length" class="text-sm text-slate-500 font-medium italic">Нет услуг</div>
                                         </div>
-                                        <div class="mt-3 text-right">
-                                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2">Итого:</span>
-                                            <span class="text-lg font-black text-indigo-600">{{ Number(recordForm.TotalAmount).toLocaleString() }} KGS</span>
+
+                                        <!-- Client & Master Info Card -->
+                                        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3.5">
+                                            <div>
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Клиент</span>
+                                                <div class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                                                    <i class="bi bi-person text-slate-400 text-sm"></i>
+                                                    {{ recordForm.ClientName || '—' }}
+                                                </div>
+                                                <a v-if="recordForm.Phone" :href="'tel:' + recordForm.Phone" class="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-indigo-600 hover:underline bg-indigo-50 px-2 py-0.5 rounded-lg transition-colors">
+                                                    <i class="bi bi-telephone text-[9px]"></i>
+                                                    {{ recordForm.Phone }}
+                                                </a>
+                                            </div>
+                                            
+                                            <div class="pt-3 border-t border-slate-100">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Сотрудник / Мастер</span>
+                                                <div class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                                                    <i class="bi bi-person-gear text-slate-400 text-sm"></i>
+                                                    {{ getMasterName(recordForm.MasterID) || 'Не назначен' }}
+                                                </div>
+                                                <div class="mt-1 text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                                                    <i class="bi bi-clock text-slate-400 text-[10px]"></i>
+                                                    {{ new Date(recordForm.StartTime_LOCAL).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Status & Date Tracker -->
+                                        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Текущий статус</span>
+                                                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border inline-block" :class="statusBadgeTw(recordForm.Status)">
+                                                        {{ recordForm.Status }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Дата заезда</span>
+                                                    <span class="text-xs font-bold text-slate-500">
+                                                        {{ recordForm.StartTime_LOCAL ? new Date(recordForm.StartTime_LOCAL).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : 'Недавно' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Display completion date & execution time if status is completed -->
+                                            <div v-if="recordForm.Status === 'Выполнен' && recordForm.EndTime" class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                                                <div>
+                                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Дата завершения</span>
+                                                    <span class="text-xs font-bold text-slate-700">
+                                                        {{ new Date(recordForm.EndTime).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Время выполнения</span>
+                                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-black border border-emerald-100/50 inline-block">
+                                                        {{ getDuration(recordForm.StartTime, recordForm.EndTime) }}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div v-if="recordForm.Comment" class="mb-6 p-4 bg-amber-50 rounded-xl border border-amber-100">
-                                        <p class="text-sm font-medium text-amber-800 m-0"><strong class="uppercase text-[11px] tracking-wider block mb-1">Комментарий:</strong>{{ recordForm.Comment }}</p>
-                                    </div>
-
-                                    <div class="flex flex-col gap-3 pt-4 border-t border-slate-100" v-if="user && (user.Role === 'Superadmin' || user.Role === 'SenMaster' || (recordForm.Status !== 'Выполнен' && recordForm.Status !== 'Отмена'))">
-                                        <div class="grid grid-cols-2 gap-3">
-                                            <button v-if="recordForm.Status !== 'Выполнен'" @click="quickStatusChangeModal('Выполнен')" class="py-2.5 bg-emerald-50 text-emerald-700 font-bold rounded-xl text-sm hover:bg-emerald-100 transition shadow-sm border border-emerald-200">Выполнить</button>
-                                            <button v-if="recordForm.Status !== 'Отмена'" @click="quickStatusChangeModal('Отмена')" class="py-2.5 bg-red-50 text-red-600 font-bold rounded-xl text-sm hover:bg-red-100 transition shadow-sm border border-red-200">Отменить</button>
-                                            <button v-if="recordForm.Status !== 'Открыт'" @click="quickStatusChangeModal('Открыт')" class="py-2.5 bg-slate-50 text-slate-700 font-bold col-span-2 rounded-xl text-sm hover:bg-slate-100 transition shadow-sm border border-slate-200">Переоткрыть</button>
+                                    <!-- Right column: Services list, Comments, Actions -->
+                                    <div class="space-y-3.5">
+                                        <!-- Services invoice card -->
+                                        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+                                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Состав работ и услуг</span>
+                                            <div class="space-y-1 max-h-[140px] overflow-y-auto pr-1">
+                                                <div v-for="sid in recordForm.ServicesJSON" :key="sid" class="flex justify-between items-center bg-slate-50/70 px-2.5 py-2 rounded-xl border border-slate-100">
+                                                    <span class="text-xs font-bold text-slate-700 truncate pr-2">{{ getServiceName(sid) }}</span>
+                                                    <span class="text-xs font-black text-slate-800 shrink-0">{{ Number(getServicePrice(sid)).toLocaleString() }} KGS</span>
+                                                </div>
+                                                <div v-if="!recordForm.ServicesJSON || !recordForm.ServicesJSON.length" class="text-xs text-slate-400 font-semibold italic text-center py-4">Нет услуг в этой записи</div>
+                                            </div>
+                                            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Итого к оплате:</span>
+                                                <span class="text-sm font-black text-indigo-600">{{ Number(recordForm.TotalAmount).toLocaleString() }} <span class="text-[10px] text-slate-400 font-bold">KGS</span></span>
+                                            </div>
                                         </div>
-                                        <button @click="isEditingRecord = true" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm hover:bg-indigo-700 transition shadow-md mt-2">
-                                            <i class="bi bi-pencil-square mr-2"></i>Редактировать запись
-                                        </button>
-                                    </div>
-                                    <div class="pt-4 border-t border-slate-100 text-center" v-else>
-                                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Действия недоступны (запись закрыта)</p>
+
+                                        <!-- Comments -->
+                                        <div v-if="recordForm.Comment" class="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-100">
+                                            <span class="block text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1">Комментарий</span>
+                                            <p class="text-xs font-semibold text-amber-800 m-0 leading-normal">{{ recordForm.Comment }}</p>
+                                        </div>
+
+                                        <!-- Action tools -->
+                                        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-2.5" v-if="user && (user.Role === 'Superadmin' || user.Role === 'SenMaster' || (recordForm.Status !== 'Выполнен' && recordForm.Status !== 'Отменён'))">
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <button v-if="recordForm.Status !== 'Выполнен'" @click="quickStatusChangeModal('Выполнен')" class="py-2 bg-emerald-50 text-emerald-700 font-bold rounded-xl text-xs hover:bg-emerald-100 border border-emerald-200/50 transition cursor-pointer flex items-center justify-center gap-1.5">
+                                                    <i class="bi bi-check-circle"></i> Выполнен
+                                                </button>
+                                                <button v-if="recordForm.Status !== 'Отменён'" @click="quickStatusChangeModal('Отменён')" class="py-2 bg-red-50 text-red-600 font-bold rounded-xl text-xs hover:bg-red-100 border border-red-200/50 transition cursor-pointer flex items-center justify-center gap-1.5">
+                                                    <i class="bi bi-x-circle"></i> Отменить
+                                                </button>
+                                                <button v-if="recordForm.Status !== 'Открыт'" @click="quickStatusChangeModal('Открыт')" class="py-2 bg-slate-50 text-slate-700 font-bold col-span-2 rounded-xl text-xs hover:bg-slate-100 border border-slate-200 transition cursor-pointer flex items-center justify-center gap-1.5">
+                                                    <i class="bi bi-arrow-counterclockwise"></i> Вернуть в работу
+                                                </button>
+                                            </div>
+                                            <button @click="isEditingRecord = true" class="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                                                <i class="bi bi-pencil-square"></i> Изменить запись
+                                            </button>
+                                        </div>
+                                        <div class="p-3 bg-slate-100 rounded-2xl text-center" v-else>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider m-0">Действия недоступны (запись закрыта)</p>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
                             
                             <template v-else>
-                                <!-- Status -->
-                                <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200">
-                                <h3 class="text-slate-800 text-[15px] font-bold mb-3 flex items-center gap-2">
-                                    <i class="bi bi-info-circle text-slate-400 text-lg"></i> Статус и Дата
-                                </h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <select v-model="recordForm.Status" class="form-select w-full px-4 py-3 border rounded-xl font-bold text-[13px] tracking-wide shadow-sm appearance-none bg-no-repeat bg-white" :class="statusBgTw(recordForm.Status)" style="background-position: right 1rem center;">
-                                            <option value="Открыт">ОТКРЫТ</option>
-                                            <option value="Выполнен">ВЫПОЛНЕН</option>
-                                            <option value="Отмена">ОТМЕНА</option>
-                                        </select>
-                                    </div>
-                                    <div class="relative">
-                                        <input type="datetime-local" class="w-full h-[46px] rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-800 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none block" v-model="recordForm.StartTime_LOCAL">
-                                    </div>
-                                </div>
-                            </section>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4">
+                                    <!-- Left Column: Client & Vehicle -->
+                                    <div class="space-y-3.5">
+                                        <!-- Client Details Section -->
+                                        <section class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+                                            <h3 class="text-slate-800 text-[12px] font-bold mb-3 flex items-center gap-2 uppercase tracking-wider select-none">
+                                                <i class="bi bi-person text-indigo-600"></i> Клиент
+                                            </h3>
+                                            <div class="space-y-3">
+                                                <div class="flex flex-col">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Имя Фамилия <span class="text-red-500">*</span></label>
+                                                    <input ref="clientNameInput" v-model="recordForm.ClientName" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 placeholder-slate-405 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" placeholder="Иван Иванов">
+                                                </div>
+                                                <div class="flex flex-col">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Телефон <span class="text-red-500">*</span></label>
+                                                    <input v-model="recordForm.Phone" @input="formatPhoneInput('recordForm', 'Phone')" type="tel" inputmode="numeric" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 placeholder-slate-405 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" placeholder="+996 (700) 123-456">
+                                                </div>
+                                            </div>
+                                        </section>
 
-                            <!-- Client Section -->
-                            <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200">
-                                <h3 class="text-slate-800 text-[15px] font-bold mb-4 flex items-center gap-2">
-                                    <i class="bi bi-person text-slate-400 text-lg"></i> Клиент
-                                </h3>
-                                <div class="space-y-4">
-                                    <div class="flex flex-col">
-                                        <label class="text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wide">Имя Фамилия <span class="text-red-500">*</span></label>
-                                        <input ref="clientNameInput" v-model="recordForm.ClientName" class="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-[15px] font-bold text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" placeholder="Иван Иванов">
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <label class="text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wide">Телефон <span class="text-red-500">*</span></label>
-                                        <input v-model="recordForm.Phone" @input="formatPhoneInput('recordForm', 'Phone')" type="tel" inputmode="numeric" class="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-[15px] font-bold text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" placeholder="+996 (___) ___-___">
-                                    </div>
-                                </div>
-                            </section>
+                                        <!-- Vehicle Details Section -->
+                                        <section class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+                                            <h3 class="text-slate-800 text-[12px] font-bold mb-3 flex items-center gap-2 uppercase tracking-wider select-none">
+                                                <i class="bi bi-car-front text-indigo-600"></i> Автомобиль
+                                            </h3>
+                                            <div class="space-y-3">
+                                                <div class="grid grid-cols-2 gap-2.5">
+                                                    <div class="flex flex-col relative">
+                                                        <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Марка <span class="text-red-500">*</span></label>
+                                                        <select v-model="recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" @change="recordForm.ModelID=''; $nextTick(() => { if($refs.modelInput) $refs.modelInput.focus() })">
+                                                            <option value="">Не выбрано</option>
+                                                            <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="flex flex-col relative">
+                                                        <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Модель <span class="text-red-500">*</span></label>
+                                                        <select ref="modelInput" v-model="recordForm.ModelID" @change="$nextTick(() => { if($refs.clientNameInput) $refs.clientNameInput.focus() })" :disabled="!recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
+                                                            <option value="">Не выбрано</option>
+                                                            <option v-for="m in availableModels" :key="m.ID" :value="m.ID">{{m.Name}}</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
 
-                            <!-- Vehicle Section -->
-                            <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200">
-                                <h3 class="text-slate-800 text-[15px] font-bold mb-4 flex items-center gap-2">
-                                    <i class="bi bi-car-front text-slate-400 text-lg"></i> Автомобиль
-                                </h3>
-                                <div class="space-y-4">
-                                    <div class="flex flex-col">
-                                        <label class="text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wide flex justify-between">
-                                            <span>Госномер <span class="text-red-500">*</span></span>
-                                        </label>
-                                        <div class="flex gap-2 items-center">
-                                            <input ref="carRegionInput" v-model="recordForm.CarRegion" @input="updateCarNumber" maxlength="2" inputmode="numeric" class="w-16 h-12 rounded-xl border border-slate-200 bg-white px-2 text-[16px] font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase text-center" placeholder="01">
-                                            <input ref="carCountryInput" v-model="recordForm.CarCountry" @input="updateCarNumber" maxlength="3" class="w-16 h-12 rounded-xl border border-slate-200 bg-white px-2 text-[16px] font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase text-center" placeholder="KG">
-                                            <input ref="carNumberMainInput" v-model="recordForm.CarNumberMain" @input="updateCarNumber" maxlength="7" class="flex-1 h-12 rounded-xl border border-slate-200 bg-white px-3 text-[16px] font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase tracking-widest text-center" placeholder="123 ABC">
-                                        </div>
+                                                <div class="flex flex-col space-y-2.5">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-0.5 ml-1 uppercase tracking-wider">Госномер <span class="text-red-500">*</span></label>
+                                                    <div class="grid grid-cols-2 gap-2">
+                                                        <div class="flex flex-col">
+                                                            <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Регион</span>
+                                                            <input ref="carRegionInput" v-model="recordForm.CarRegion" @input="updateCarNumber" maxlength="2" inputmode="numeric" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase text-center" placeholder="01">
+                                                        </div>
+                                                        <div class="flex flex-col">
+                                                            <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Страна</span>
+                                                            <input ref="carCountryInput" v-model="recordForm.CarCountry" @input="updateCarNumber" maxlength="3" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase text-center" placeholder="KG">
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Номер автомобиля</span>
+                                                        <input ref="carNumberMainInput" v-model="recordForm.CarNumberMain" @input="updateCarNumber" maxlength="7" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase tracking-wider text-center" placeholder="123 ABC">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
                                     </div>
-                                    <div class="grid grid-cols-1 gap-4">
-                                        <div class="flex flex-col relative">
-                                            <label class="text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wide">Марка <span class="text-red-500">*</span></label>
-                                            <select v-model="recordForm.BrandID" class="form-select w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-[14px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" @change="recordForm.ModelID=''; $nextTick(() => { if($refs.modelInput) $refs.modelInput.focus() })">
-                                                <option value="">Не выбрано</option>
-                                                <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
-                                            </select>
-                                        </div>
-                                        <div class="flex flex-col relative">
-                                            <label class="text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wide">Модель <span class="text-red-500">*</span></label>
-                                            <select ref="modelInput" v-model="recordForm.ModelID" @change="$nextTick(() => { if($refs.clientNameInput) $refs.clientNameInput.focus() })" :disabled="!recordForm.BrandID" class="form-select w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-[14px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
-                                                <option value="">Не выбрано</option>
-                                                <option v-for="m in availableModels" :key="m.ID" :value="m.ID">{{m.Name}}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
 
-                            <!-- Services Section -->
-                            <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200">
-                                <h3 class="text-slate-800 text-[15px] font-bold mb-4 flex items-center gap-2">
-                                    <i class="bi bi-tools text-slate-400 text-lg"></i> Услуги и Работы <span class="text-red-500">*</span>
-                                </h3>
-                                <div class="space-y-3 mb-4">
-                                    <!-- Selected Services List -->
-                                    <div v-for="sid in recordForm.ServicesJSON" :key="sid" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50">
-                                        <div class="flex-1 min-w-0 pr-4">
-                                            <p class="text-slate-800 font-bold text-[14px] leading-tight">{{ getServiceName(sid) }}</p>
-                                        </div>
-                                        <div class="flex items-center gap-3 shrink-0">
-                                            <span class="text-slate-800 font-bold text-[14px] whitespace-nowrap">{{ Number(getServicePrice(sid)).toLocaleString() }} KGS</span>
-                                            <button type="button" @click="toggleService(sid)" class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-red-50" title="Удалить">
-                                                <i class="bi bi-trash"></i>
+                                    <!-- Right Column: Services & Status -->
+                                    <div class="space-y-3.5 flex flex-col justify-between">
+                                        <!-- Services list card -->
+                                        <section class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col flex-1">
+                                            <h3 class="text-slate-800 text-[12px] font-bold mb-3 flex items-center justify-between uppercase tracking-wider select-none">
+                                                <span class="flex items-center gap-2"><i class="bi bi-tools text-indigo-600"></i> Услуги и Работы <span class="text-red-500">*</span></span>
+                                                <span class="text-[10px] text-slate-400 font-extrabold" v-if="recordForm.ServicesJSON.length">{{ recordForm.ServicesJSON.length }} усл.</span>
+                                            </h3>
+                                            
+                                            <div class="space-y-1 mb-3 max-h-[120px] overflow-y-auto pr-1 flex-1">
+                                                <div v-for="sid in recordForm.ServicesJSON" :key="sid" class="flex items-center justify-between px-2 py-1 rounded-lg border border-slate-100 bg-slate-50/50">
+                                                    <span class="text-xs font-bold text-slate-700 truncate pr-2">{{ getServiceName(sid) }}</span>
+                                                    <div class="flex items-center gap-1.5 shrink-0">
+                                                        <span class="text-xs font-extrabold text-slate-800">{{ Number(getServicePrice(sid)).toLocaleString() }} KGS</span>
+                                                        <button type="button" @click="toggleService(sid)" class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-6 h-6 rounded-full hover:bg-red-50" title="Удалить">
+                                                            <i class="bi bi-trash text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div v-if="recordForm.ServicesJSON.length === 0" class="text-center py-4 bg-slate-50/55 rounded-xl border border-slate-100/70 text-slate-400 text-[11px] font-bold italic">
+                                                    Список услуг пока пуст
+                                                </div>
+                                            </div>
+                                            
+                                            <button type="button" @click="showServiceSelector = true" class="w-full h-8.5 flex items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-indigo-150 text-indigo-600 font-bold text-xs hover:bg-indigo-50/40 transition-colors cursor-pointer mt-1 select-none">
+                                                <i class="bi bi-plus-lg"></i> Выбрать услуги
                                             </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div v-if="recordForm.ServicesJSON.length === 0" class="text-center p-4 bg-slate-50 rounded-xl border border-slate-100 text-slate-400 text-sm font-semibold">
-                                        Услуги не выбраны
+                                        </section>
+
+                                        <!-- Status, Master & Time Section -->
+                                        <section class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3 shrink-0">
+                                            <h3 class="text-slate-800 text-[12px] font-bold mb-1 flex items-center gap-2 uppercase tracking-wider select-none">
+                                                <i class="bi bi-person-gear text-indigo-600"></i> Исполнитель и Статус
+                                            </h3>
+                                            
+                                            <div class="grid grid-cols-2 gap-2.5">
+                                                <div class="flex flex-col relative col-span-1">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Мастер <span class="text-red-500">*</span></label>
+                                                    <select v-model="recordForm.MasterID" :disabled="user && user.Role === 'Master'" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
+                                                        <option value="">Не назначен</option>
+                                                        <option v-for="ms in mastersList" :key="ms.ID" :value="ms.ID">{{ms.Name || ms.Username}}</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="flex flex-col col-span-1">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Статус</label>
+                                                    <select v-model="recordForm.Status" class="form-select w-full h-10 rounded-xl border px-2 text-xs font-bold tracking-wide outline-none transition cursor-pointer" :class="statusBgTw(recordForm.Status)">
+                                                        <option value="Открыт">ОТКРЫТ</option>
+                                                        <option value="Выполнен">ВЫПОЛНЕН</option>
+                                                        <option value="Отменён">ОТМЕНЁН</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                                <div class="flex flex-col">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Время заезда</label>
+                                                    <input type="datetime-local" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-2 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none" v-model="recordForm.StartTime_LOCAL">
+                                                </div>
+                                            </div>
+
+                                            <div class="flex flex-col">
+                                                <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Комментарий</label>
+                                                <textarea v-model="recordForm.Comment" class="w-full min-h-[50px] px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 resize-y" rows="2" placeholder="Дополнительная информация или заметки к ремонту..."></textarea>
+                                            </div>
+                                        </section>
                                     </div>
                                 </div>
-                                <button type="button" @click="showServiceSelector = true" class="w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-indigo-200 text-indigo-600 font-bold text-[14px] hover:bg-indigo-50 transition-colors">
-                                    <i class="bi bi-plus-lg text-lg"></i> Добавить услугу
-                                </button>
-                            </section>
-
-                            <!-- Master Section -->
-                            <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200">
-                                <h3 class="text-slate-800 text-[15px] font-bold mb-4 flex items-center gap-2">
-                                    <i class="bi bi-person-gear text-slate-400 text-lg"></i> Мастер <span class="text-red-500">*</span>
-                                </h3>
-                                <select v-model="recordForm.MasterID" :disabled="user && user.Role === 'Master'" class="form-select w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <option value="">Не назначен</option>
-                                    <option v-for="ms in mastersList" :key="ms.ID" :value="ms.ID">{{ms.Name || ms.Username}} ({{ms.Role === 'SenMaster' ? 'Ст. мастер' : 'Мастер'}})</option>
-                                </select>
-                            </section>
-
-                            <!-- Comment Section -->
-                            <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200">
-                                <h3 class="text-slate-800 text-[15px] font-bold mb-3 flex items-center gap-2">
-                                    <i class="bi bi-chat-text text-slate-400 text-lg"></i> Комментарий
-                               </h3>
-                                <textarea v-model="recordForm.Comment" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[14px] font-medium text-slate-700 resize-none" rows="2" placeholder="Доп. информация по ремонту..."></textarea>
-                            </section>
                             </template>
                         </div>
                         
                         <!-- Sticky Bottom Bar -->
-                        <div v-show="isEditingRecord" class="fixed md:absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 pb-6 md:pb-4 shadow-[0_-4px_20px_-2px_rgba(15,23,42,0.05)] z-20 flex justify-between items-center gap-4">
-                            <div class="flex items-center gap-2 px-1">
-                                <span class="text-slate-500 font-bold text-[13px] uppercase tracking-wider hidden sm:inline">Итого:</span>
-                                <span class="text-xl font-black text-indigo-600">{{ Number(recordForm.TotalAmount).toLocaleString() }} <span class="text-sm text-slate-400">KGS</span></span>
+                        <div v-show="isEditingRecord" class="bg-white border-t border-slate-200 px-4 py-3 md:px-5 shrink-0 flex justify-between items-center gap-3">
+                            <div class="flex items-center gap-1.5 px-0.5">
+                                <span class="text-slate-500 font-bold text-[10px] uppercase tracking-wider hidden sm:inline">Итого к оплате:</span>
+                                <span class="text-lg font-black text-indigo-600">{{ Number(recordForm.TotalAmount).toLocaleString() }} <span class="text-[10px] text-slate-400 font-extrabold">KGS</span></span>
                             </div>
-                            <div class="flex gap-3">
-                                <button type="button" class="hidden md:flex h-12 px-5 items-center border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-[14px] transition" data-bs-dismiss="modal">Отмена</button>
-                                <button type="button" @click="saveRecord" :disabled="isSaving" class="h-12 px-6 bg-indigo-600 text-white font-bold text-[15px] rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-200 flex items-center justify-center gap-2 shrink-0">
+                            <div class="flex gap-2">
+                                <button type="button" class="hidden md:flex h-9.5 px-4 items-center border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-xs transition cursor-pointer" data-bs-dismiss="modal">Отмена</button>
+                                <button type="button" @click="saveRecord" :disabled="isSaving" class="h-9.5 px-5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                                     <span v-if="isSaving" class="spinner-border spinner-border-sm"></span>Сохранить
                                 </button>
                             </div>
@@ -1096,7 +1186,7 @@ export default {
                     } else if (this.recordFilter === 'completed') {
                         d = d.filter(r => r.Status === 'Выполнен');
                     } else if (this.recordFilter === 'canceled') {
-                        d = d.filter(r => r.Status === 'Отмена');
+                        d = d.filter(r => r.Status === 'Отменён');
                     }
 
                     if (this.advFilterMaster) {
@@ -1279,14 +1369,32 @@ export default {
                 getServiceName(id) { let s = this.db.services.find(x => x.ID == id); return s ? s.Name : 'Н/Д'; },
                 getServicePrice(id) { let s = this.db.services.find(x => x.ID == id); return s ? (s.Price || 0) : 0; },
 
+                getDuration(start, end) {
+                    if (!start || !end) return '';
+                    let s = new Date(start);
+                    let e = new Date(end);
+                    let diffMs = e - s;
+                    if (diffMs < 0) return '0 мин';
+                    let diffMins = Math.floor(diffMs / 60000);
+                    let hours = Math.floor(diffMins / 60);
+                    let mins = diffMins % 60;
+                    let days = Math.floor(hours / 24);
+                    hours = hours % 24;
+                    
+                    let parts = [];
+                    if (days > 0) parts.push(days + ' дн');
+                    if (hours > 0) parts.push(hours + ' ч');
+                    if (mins > 0 || parts.length === 0) parts.push(mins + ' мин');
+                    return parts.join(' ');
+                },
                 statusBadgeTw(status) {
                     if(status === 'Выполнен') return 'bg-status-completed-bg text-status-completed-text';
-                    if(status === 'Отмена') return 'bg-status-canceled-bg text-status-canceled-text';
+                    if(status === 'Отменён') return 'bg-status-canceled-bg text-status-canceled-text';
                     return 'bg-status-open-bg text-status-open-text';
                 },
                 statusBgTw(status) {
                     if(status === 'Выполнен') return 'bg-status-completed-bg border-status-completed-text/20 text-status-completed-text';
-                    if(status === 'Отмена') return 'bg-status-canceled-bg border-status-canceled-text/20 text-status-canceled-text';
+                    if(status === 'Отменён') return 'bg-status-canceled-bg border-status-canceled-text/20 text-status-canceled-text';
                     return 'bg-status-open-bg border-status-open-text/20 text-status-open-text';
                 },
                 emptyRecord() {
@@ -1296,7 +1404,7 @@ export default {
                     return {
                         ID: null, ClientName: '', Phone: '+996 ', CarNumber: '', BrandID: '', ModelID: '', 
                         MasterID: '', Status: 'Открыт', ServicesJSON: [], TotalAmount: 0, Comment: '',
-                        StartTime_LOCAL: localIso
+                        StartTime_LOCAL: localIso, CarRegion: '', CarCountry: 'KG', CarNumberMain: ''
                     };
                 },
                 formatDate(isoString) {
@@ -1435,8 +1543,14 @@ export default {
                                 this.recordForm.CarCountry = parts[1];
                                 this.recordForm.CarNumberMain = parts.slice(2).join(' ');
                             } else {
+                                this.recordForm.CarRegion = '';
+                                this.recordForm.CarCountry = 'KG';
                                 this.recordForm.CarNumberMain = this.recordForm.CarNumber;
                             }
+                        } else {
+                            this.recordForm.CarRegion = '';
+                            this.recordForm.CarCountry = 'KG';
+                            this.recordForm.CarNumberMain = '';
                         }
 
                     } else {
@@ -1482,6 +1596,16 @@ export default {
                         } else if (!payload.ID) {
                             payload.StartTime = new Date().toISOString();
                         }
+                        
+                        let original = payload.ID ? this.db.records.find(x => x.ID === payload.ID) : null;
+                        if (payload.Status === 'Выполнен') {
+                            if (!payload.EndTime || (original && original.Status !== 'Выполнен')) {
+                                payload.EndTime = new Date().toISOString();
+                            }
+                        } else {
+                            payload.EndTime = '';
+                        }
+                        this.recordForm.EndTime = payload.EndTime;
                         
                         let isNew = !payload.ID;
                         if (isNew) {
