@@ -1486,6 +1486,7 @@ export default {
                         let isNew = !payload.ID;
                         if (isNew) {
                             payload.ID = 'local_' + Date.now();
+                            this.recordForm.ID = payload.ID;
                             this.db.records.unshift(payload);
                             this.dispatchSync('addRow', payload, 'Records');
                         } else {
