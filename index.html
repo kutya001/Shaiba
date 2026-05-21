@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
     <!-- App manifest -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="/Shaiba/manifest.json">
     <meta name="theme-color" content="#4f46e5">
 
     <!-- Vue 3 -->
@@ -27,12 +27,13 @@
     
     <link rel="stylesheet" href="./css/styles.css">
 </head>
-<body>\n<div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+<body>
+    <div id="app"></div>
+    <script type="module" src="src/main.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
           window.addEventListener('load', () => {
-              navigator.serviceWorker.register('./sw.js').then(reg => {
+              navigator.serviceWorker.register('/Shaiba/sw.js').then(reg => {
                   console.log('SW registered!', reg);
               }).catch(err => console.log('SW registration failed', err));
           });
