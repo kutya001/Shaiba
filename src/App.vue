@@ -57,6 +57,8 @@
                         </div>
                     </template>
 
+
+
                     <button @click="handleAuth" :disabled="authLoading" class="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-6 flex justify-center items-center gap-2">
                         <span v-if="authLoading" class="spinner-border spinner-border-sm text-white"></span>
                         <span v-else>{{ authMode === 'login' ? 'Войти в систему' : 'Создать аккаунт' }}</span>
@@ -127,6 +129,14 @@
                         <span class="font-black text-xs tracking-tight text-slate-800">AutoService</span>
                     </div>
 
+                    <!-- "Все" button on mobile header -->
+                    <button v-if="activeTab === 'records' && !isSearchExpanded" @click="setAllStatuses" 
+                        class="h-10 px-3 md:px-3.5 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-md select-none outline-none focus:outline-none"
+                        :class="isAllStatusesActive ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'">
+                        <i class="bi bi-infinity text-sm font-bold"></i>
+                        <span>Все</span>
+                    </button>
+
                     <!-- Expanded Mobile Search -->
                     <div v-else class="flex-1 mr-2 relative h-10 select-none">
                         <input v-model="searchQuery" ref="mobileSearchInput" class="w-full h-10 pl-8 pr-8 rounded-xl bg-white text-slate-800 text-xs font-semibold outline-none border border-slate-200/50 shadow-md focus:border-indigo-500/80" placeholder="Поиск по госномеру...">
@@ -163,6 +173,14 @@
                         <h1 class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none" v-if="activeTab==='dashboard'">Аналитика</h1>
                         <h1 class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none" v-if="activeTab==='refs'">Справочники</h1>
                         <h1 class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none" v-if="activeTab==='users'">Персонал</h1>
+
+                        <!-- "Все" button in Desktop Header -->
+                        <button v-if="activeTab === 'records'" @click="setAllStatuses" 
+                            class="h-9.5 px-3 md:px-3.5 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm select-none outline-none focus:outline-none"
+                            :class="isAllStatusesActive ? 'bg-indigo-600 text-white hover:bg-indigo-700 border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'">
+                            <i class="bi bi-infinity text-xs font-bold"></i>
+                            <span>Все</span>
+                        </button>
 
                         <!-- Search icon & Input in Desktop Header -->
                         <div v-if="activeTab === 'records'" class="flex items-center gap-1.5">
@@ -231,7 +249,7 @@
                                         </span>
                                         <button @click="clearAllFilters" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition">Сбросить</button>
                                     </div>
-                                    <div class="grid grid-cols-1 xs:grid-cols-3 gap-2">
+                                    <div class="grid grid-cols-2 xs:grid-cols-3 gap-2">
                                         <div class="flex flex-col">
                                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Мастер</span>
                                             <select v-model="advFilterMaster" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
@@ -248,7 +266,21 @@
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Дата</span>
-                                            <input type="date" v-model="advFilterDate" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all">
+                                            <input type="date" v-model="advFilterDate" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all w-full">
+                                        </div>
+                                        <div class="flex flex-col col-span-1">
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Марка</span>
+                                            <select v-model="advFilterBrand" @change="advFilterModel = ''" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                                <option value="">Все марки</option>
+                                                <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex flex-col col-span-1">
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Модель</span>
+                                            <select v-model="advFilterModel" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                                <option value="">Все модели</option>
+                                                <option v-for="m in filteredModelsForFilter" :key="m.ID" :value="m.ID">{{m.Name}}</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -257,25 +289,25 @@
                                 <div class="flex gap-2 w-full">
                                     <!-- Открыт -->
                                     <button class="flex-1 min-w-[70px] flex h-9.5 items-center justify-center gap-1 w-full rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
-                                        :class="activeStatuses.includes('Открыт') ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
+                                        :class="(activeStatuses.length === 1 && activeStatuses.includes('Открыт')) ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
                                         @click="toggleStatus('Открыт')">
-                                        <span class="material-symbols-outlined text-[14px]" :class="activeStatuses.includes('Открыт') ? 'text-white' : 'text-indigo-500'">build_circle</span>
+                                        <span class="material-symbols-outlined text-[14px]" :class="(activeStatuses.length === 1 && activeStatuses.includes('Открыт')) ? 'text-white' : 'text-indigo-500'">build_circle</span>
                                         <span>Открыт</span>
                                     </button>
                                     
                                     <!-- Выполнен -->
                                     <button class="flex-1 min-w-[70px] flex h-9.5 items-center justify-center gap-1 w-full rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
-                                        :class="activeStatuses.includes('Выполнен') ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
+                                        :class="(activeStatuses.length === 1 && activeStatuses.includes('Выполнен')) ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
                                         @click="toggleStatus('Выполнен')">
-                                        <span class="material-symbols-outlined text-[14px]" :class="activeStatuses.includes('Выполнен') ? 'text-white' : 'text-emerald-500'">check_circle</span>
+                                        <span class="material-symbols-outlined text-[14px]" :class="(activeStatuses.length === 1 && activeStatuses.includes('Выполнен')) ? 'text-white' : 'text-emerald-500'">check_circle</span>
                                         <span>Выполнен</span>
                                     </button>
                                     
                                     <!-- Отменён -->
                                     <button class="flex-1 min-w-[70px] flex h-9.5 items-center justify-center gap-1 w-full rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
-                                        :class="activeStatuses.includes('Отменён') ? 'bg-rose-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
+                                        :class="(activeStatuses.length === 1 && activeStatuses.includes('Отменён')) ? 'bg-rose-600 text-white' : 'bg-white text-slate-500 hover:text-slate-800'"
                                         @click="toggleStatus('Отменён')">
-                                        <span class="material-symbols-outlined text-[14px]" :class="activeStatuses.includes('Отменён') ? 'text-white' : 'text-rose-500'">cancel</span>
+                                        <span class="material-symbols-outlined text-[14px]" :class="(activeStatuses.length === 1 && activeStatuses.includes('Отменён')) ? 'text-white' : 'text-rose-500'">cancel</span>
                                         <span>Отменён</span>
                                     </button>
                                 </div>
@@ -290,16 +322,16 @@
                                     <!-- ROW 1: [гос.номер] & [мастер] -->
                                     <div class="grid grid-cols-2 gap-2">
                                         <!-- гос.номер -->
-                                        <div class="bg-slate-800 border border-slate-900/40 text-white rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0 shadow-sm">
-                                            <span class="material-symbols-outlined text-[13px] text-slate-300 font-bold">directions_car</span>
-                                            <span class="font-mono font-black text-xs tracking-wider uppercase truncate leading-none">
+                                        <div class="bg-slate-900 border border-slate-950 text-white rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0 shadow-sm">
+                                            <span class="material-symbols-outlined text-[13px] text-amber-400 font-bold leading-none">directions_car</span>
+                                            <span class="font-mono font-black text-xs tracking-wider uppercase truncate leading-none text-slate-100">
                                                 {{ r.CarNumber }}
                                             </span>
                                         </div>
                                         <!-- мастер -->
-                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
-                                            <span class="material-symbols-outlined text-[13px] text-slate-400">engineering</span>
-                                            <span class="text-xs font-semibold text-slate-700 truncate leading-none">
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400 leading-none">engineering</span>
+                                            <span class="text-xs font-bold text-slate-700 truncate leading-none">
                                                 {{ getMasterName(r.MasterID) }}
                                             </span>
                                         </div>
@@ -308,15 +340,15 @@
                                     <!-- ROW 2: [начало] & [Марка - Модель] -->
                                     <div class="grid grid-cols-2 gap-2">
                                         <!-- начало -->
-                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
-                                            <span class="material-symbols-outlined text-[13px] text-indigo-500 font-bold">play_circle</span>
-                                            <span class="text-[11px] font-semibold text-slate-600 leading-none truncate">
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-indigo-500 font-bold leading-none">play_circle</span>
+                                            <span class="text-xs font-bold text-slate-650 leading-none truncate">
                                                 {{ formatDate(r.StartTime).date }} {{ formatDate(r.StartTime).time }}
                                             </span>
                                         </div>
                                         <!-- Марка - Модель -->
-                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
-                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold">minor_crash</span>
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold leading-none">minor_crash</span>
                                             <span class="text-xs font-bold text-slate-800 truncate leading-none">
                                                 {{ getBrandName(r.BrandID) }} {{ getModelName(r.ModelID) }}
                                             </span>
@@ -326,16 +358,16 @@
                                     <!-- ROW 3: [конец] & [время выполнения] -->
                                     <div class="grid grid-cols-2 gap-2">
                                         <!-- конец -->
-                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
-                                            <span class="material-symbols-outlined text-[13px] text-emerald-500 font-bold">stop_circle</span>
-                                            <span class="text-[11px] font-semibold text-slate-600 leading-none truncate">
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-emerald-500 font-bold leading-none">stop_circle</span>
+                                            <span class="text-xs font-bold text-slate-650 leading-none truncate">
                                                 {{ r.EndTime ? (formatDate(r.EndTime).date + ' ' + formatDate(r.EndTime).time) : '—' }}
                                             </span>
                                         </div>
                                         <!-- время выполнения -->
-                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
-                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold">timer</span>
-                                            <span class="text-[11px] font-semibold text-slate-600 leading-none truncate">
+                                        <div class="bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold leading-none">timer</span>
+                                            <span class="text-xs font-bold text-slate-650 leading-none truncate">
                                                 {{ (r.Status === 'Выполнен' && r.EndTime) ? getDuration(r.StartTime, r.EndTime) : 'В процессе' }}
                                             </span>
                                         </div>
@@ -344,15 +376,15 @@
                                     <!-- ROW 4: [Услуга] & [сумма] -->
                                     <div class="grid grid-cols-12 gap-2 items-stretch">
                                         <!-- Услуга -->
-                                        <div class="col-span-8 bg-slate-50 border border-slate-200/50 text-slate-600 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 min-w-0">
-                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold shrink-0">handyman</span>
-                                            <span class="text-[11px] font-semibold text-slate-600 truncate leading-none">
+                                        <div class="col-span-8 bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0">
+                                            <span class="material-symbols-outlined text-[13px] text-slate-400 font-bold shrink-0 leading-none">handyman</span>
+                                            <span class="text-xs font-bold text-slate-600 truncate leading-none">
                                                 {{ getRecordServicesString(r) }}
                                             </span>
                                         </div>
                                         <!-- сумма -->
-                                        <div class="col-span-4 bg-slate-50 border border-slate-200/50 rounded-xl px-2.5 py-1.5 flex items-center justify-center text-center font-bold text-slate-800 min-w-0">
-                                            <span class="text-xs font-black text-slate-900 leading-none font-heading truncate">
+                                        <div class="col-span-4 bg-slate-50 border border-slate-200/50 rounded-xl h-8 px-2.5 flex items-center justify-center text-center font-bold text-slate-800 min-w-0">
+                                            <span class="text-xs font-bold text-slate-900 leading-none font-heading truncate">
                                                 {{ Number(r.TotalAmount || 0).toLocaleString() }} KGS
                                             </span>
                                         </div>
@@ -362,17 +394,17 @@
                                     <div class="grid grid-cols-2 gap-2 mt-1">
                                         <!-- статус записи - кнопка -->
                                         <button @click.stop="toggleStatusDirectly(r)" 
-                                            class="h-9.5 rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
+                                            class="h-9 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
                                             :class="statusButtonClasses(r.Status)">
-                                            <span class="material-symbols-outlined text-[15px] font-black">{{ statusIcon(r.Status) }}</span>
+                                            <span class="material-symbols-outlined text-[15px] font-black leading-none">{{ statusIcon(r.Status) }}</span>
                                             <span>{{ r.Status }}</span>
                                         </button>
 
                                         <!-- статус оплаты - кнопка -->
                                         <button @click.stop="quickPaymentToggle(r)" 
-                                            class="h-9.5 rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
-                                            :class="(r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-rose-100 hover:bg-rose-200 text-rose-700'">
-                                            <span class="material-symbols-outlined text-[15px] font-black">{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'check_circle' : 'cancel' }}</span>
+                                            class="h-9 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
+                                            :class="(r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'bg-emerald-600 text-white hover:bg-emerald-750' : 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'">
+                                            <span class="material-symbols-outlined text-[15px] font-black leading-none">{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'check_circle' : 'cancel' }}</span>
                                             <span>{{ (r.IsPaid === true || String(r.IsPaid).toUpperCase() === 'TRUE') ? 'Оплачен' : 'Не оплачен' }}</span>
                                         </button>
                                     </div>
@@ -1009,17 +1041,21 @@
                                                     <label class="text-slate-500 text-[10px] font-bold mb-0.5 ml-1 uppercase tracking-wider">Госномер <span class="text-red-500">*</span></label>
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div class="flex flex-col">
+                                                            <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Страна</span>
+                                                            <input ref="carCountryInput" v-model="recordForm.CarCountry" @input="onCarCountryInput" maxlength="3" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase text-center" placeholder="KG">
+                                                        </div>
+                                                        <div v-if="recordForm.CarCountry && recordForm.CarCountry.toUpperCase() === 'KG'" class="flex flex-col">
                                                             <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Регион</span>
                                                             <input ref="carRegionInput" v-model="recordForm.CarRegion" @input="updateCarNumber" maxlength="2" inputmode="numeric" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase text-center" placeholder="01">
                                                         </div>
-                                                        <div class="flex flex-col">
-                                                            <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Страна</span>
-                                                            <input ref="carCountryInput" v-model="recordForm.CarCountry" @input="updateCarNumber" maxlength="3" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase text-center" placeholder="KG">
-                                                        </div>
                                                     </div>
-                                                    <div class="flex flex-col">
+                                                    <div v-if="recordForm.CarCountry && recordForm.CarCountry.toUpperCase() === 'KG'" class="flex flex-col">
                                                         <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Номер автомобиля</span>
                                                         <input ref="carNumberMainInput" v-model="recordForm.CarNumberMain" @input="updateCarNumber" maxlength="7" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase tracking-wider text-center" placeholder="123 ABC">
+                                                    </div>
+                                                    <div v-else class="flex flex-col">
+                                                        <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Полный иностранный госномер</span>
+                                                        <input v-model="recordForm.CarNumber" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase tracking-wider text-center" placeholder="A777AA77">
                                                     </div>
                                                 </div>
 
@@ -1033,7 +1069,7 @@
 
                                                 <div class="flex flex-col relative">
                                                     <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Модель <span class="text-red-500">*</span></label>
-                                                    <select ref="modelInput" v-model="recordForm.ModelID" @change="$nextTick(() => { if($refs.clientNameInput) $refs.clientNameInput.focus() })" :disabled="!recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
+                                                    <select ref="modelInput" v-model="recordForm.ModelID" @change="onModelSelect" :disabled="!recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
                                                         <option value="">Не выбрано</option>
                                                         <option v-for="m in availableModels" :key="m.ID" :value="m.ID">{{m.Name}}</option>
                                                     </select>
@@ -1121,7 +1157,7 @@
 
                                             <div class="flex flex-col">
                                                 <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Комментарий</label>
-                                                <textarea v-model="recordForm.Comment" class="w-full min-h-[50px] px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 resize-y" rows="2" placeholder="Дополнительная информация или заметки к ремонту..."></textarea>
+                                                <textarea ref="commentInput" v-model="recordForm.Comment" class="w-full min-h-[50px] px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 resize-y" rows="2" placeholder="Дополнительная информация или заметки к ремонту..."></textarea>
                                             </div>
                                         </section>
                                     </div>
@@ -1144,16 +1180,16 @@
                         </div>
 
                         <!-- Services Bottom Sheet Overlay -->
-                        <div :class="{'opacity-100 visible': showServiceSelector, 'opacity-0 invisible': !showServiceSelector}" class="absolute inset-0 bg-slate-900/40 z-40 backdrop-blur-sm transition-all duration-300" @click="showServiceSelector = false"></div>
+                        <div :class="{'opacity-100 visible': showServiceSelector, 'opacity-0 invisible': !showServiceSelector}" class="absolute inset-0 bg-slate-900/40 z-40 backdrop-blur-sm transition-all duration-300" @click="closeServiceSelector()"></div>
                         
                         <!-- Services Bottom Sheet -->
                         <div :class="{'translate-y-0': showServiceSelector, 'translate-y-full': !showServiceSelector}" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 transform transition-transform duration-300 ease-out shadow-[0_-8px_30px_rgba(0,0,0,0.12)] h-[75%] max-h-[600px] flex flex-col">
-                            <div class="flex justify-center p-3 cursor-grab" @click="showServiceSelector = false">
+                            <div class="flex justify-center p-3 cursor-grab" @click="closeServiceSelector()">
                                 <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
                             </div>
                             <div class="px-5 pb-3 border-b border-slate-100 flex items-center justify-between">
                                 <h3 class="text-slate-800 font-bold text-[18px] m-0">Справочник услуг</h3>
-                                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200" @click="showServiceSelector = false">
+                                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200" @click="closeServiceSelector()">
                                     <i class="bi bi-x-lg"></i>
                                 </button>
                             </div>
@@ -1178,7 +1214,7 @@
                                 </div>
                             </div>
                             <div class="p-4 border-t border-slate-100 bg-white">
-                                <button type="button" @click="showServiceSelector = false" class="w-full h-12 bg-indigo-600 text-white rounded-xl font-bold text-[15px] hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                                <button type="button" @click="closeServiceSelector()" class="w-full h-12 bg-indigo-600 text-white rounded-xl font-bold text-[15px] hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
                                     Готово
                                 </button>
                             </div>
@@ -1344,9 +1380,8 @@ export default {
                     advFilterMaster: '',
                     advFilterService: '',
                     advFilterDate: '',
-                    
-                    loginUsersList: [],
-                    selectedLoginUser: '',
+                    advFilterBrand: '',
+                    advFilterModel: '',
                     
                     userConfigForm: {ID: '', Role: '', Name: '', Phone: ''},
                     isSavingUserConfig: false,
@@ -1380,11 +1415,18 @@ export default {
                 }
             },
             computed: {
+                isAllStatusesActive() {
+                    return this.activeStatuses && this.activeStatuses.length === 3;
+                },
                 mastersList() {
                     return this.db.users.filter(u => u.Role !== 'Superadmin');
                 },
                 currentUserMasterID() {
                     return this.user ? this.user.ID : null;
+                },
+                filteredModelsForFilter() {
+                    if (!this.advFilterBrand) return this.db.models;
+                    return this.db.models.filter(m => String(m.BrandID) === String(this.advFilterBrand));
                 },
                 filteredRecords() {
                     let d = [...this.db.records].sort((a, b) => new Date(b.StartTime || 0) - new Date(a.StartTime || 0));
@@ -1409,6 +1451,12 @@ export default {
 
                     if (this.advFilterMaster) {
                         d = d.filter(r => String(r.MasterID) === String(this.advFilterMaster));
+                    }
+                    if (this.advFilterBrand) {
+                        d = d.filter(r => String(r.BrandID) === String(this.advFilterBrand));
+                    }
+                    if (this.advFilterModel) {
+                        d = d.filter(r => String(r.ModelID) === String(this.advFilterModel));
                     }
                     if (this.advFilterService) {
                         d = d.filter(r => {
@@ -1546,6 +1594,19 @@ export default {
                     this.toasts.push({id, msg, type});
                     setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 4000);
                 },
+                onModelSelect() {
+                    if (this.recordForm.ModelID) {
+                        this.showServiceSelector = true;
+                    }
+                },
+                closeServiceSelector() {
+                    this.showServiceSelector = false;
+                    this.$nextTick(() => {
+                        if (this.$refs.commentInput) {
+                            this.$refs.commentInput.focus();
+                        }
+                    });
+                },
                 
                 async handleAuth() {
                     this.authLoading = true;
@@ -1578,6 +1639,30 @@ export default {
                     }
                 },
                 logout() {
+                    // Hide any active Bootstrap modals to prevent freezing the page
+                    if (this.bsModals) {
+                        Object.keys(this.bsModals).forEach(k => {
+                            if (this.bsModals[k] && typeof this.bsModals[k].hide === 'function') {
+                                try {
+                                    this.bsModals[k].hide();
+                                } catch (e) {
+                                    console.error('Failed to hide modal:', e);
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Explicitly clean up any styling/overlays added by Bootstrap modals
+                    try {
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(el => el.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    } catch (e) {
+                        console.error('Failed to clear modal backdrops:', e);
+                    }
+
                     this.user = null;
                     this.db = { records: [], services: [], brands: [], models: [], users: [] };
                     this.authForm.password = '';
@@ -1659,15 +1744,15 @@ export default {
                     this.advFilterMaster = '';
                     this.advFilterService = '';
                     this.advFilterDate = '';
+                    this.advFilterBrand = '';
+                    this.advFilterModel = '';
                     this.activeStatuses = ['Открыт', 'Выполнен', 'Отменён'];
                 },
                 toggleStatus(status) {
-                    let idx = this.activeStatuses.indexOf(status);
-                    if (idx > -1) {
-                        this.activeStatuses.splice(idx, 1);
-                    } else {
-                        this.activeStatuses.push(status);
-                    }
+                    this.activeStatuses = [status];
+                },
+                setAllStatuses() {
+                    this.activeStatuses = ['Открыт', 'Выполнен', 'Отменён'];
                 },
                 clearAllDashFilters() {
                     this.dashFilterMaster = '';
@@ -1853,14 +1938,14 @@ export default {
                         
                         if (this.recordForm.CarNumber) {
                             let parts = this.recordForm.CarNumber.split(' ');
-                            if (parts.length >= 3 && parts[0].length === 2 && parts[1].length === 2) {
+                            if (parts.length >= 3 && parts[1].toUpperCase() === 'KG') {
                                 this.recordForm.CarRegion = parts[0];
                                 this.recordForm.CarCountry = parts[1];
                                 this.recordForm.CarNumberMain = parts.slice(2).join(' ');
                             } else {
                                 this.recordForm.CarRegion = '';
-                                this.recordForm.CarCountry = 'KG';
-                                this.recordForm.CarNumberMain = this.recordForm.CarNumber;
+                                this.recordForm.CarCountry = 'FOREIGN';
+                                this.recordForm.CarNumberMain = '';
                             }
                         } else {
                             this.recordForm.CarRegion = '';
@@ -1880,19 +1965,34 @@ export default {
                     }
                     this.bsModals.record.show();
                 },
+                onCarCountryInput(e) {
+                    if (this.recordForm.CarCountry) {
+                        this.recordForm.CarCountry = this.recordForm.CarCountry.toUpperCase();
+                    }
+                    if (this.recordForm.CarCountry === 'KG') {
+                        this.recordForm.CarRegion = '';
+                        this.recordForm.CarNumberMain = '';
+                        this.recordForm.CarNumber = '';
+                    } else {
+                        this.recordForm.CarRegion = '';
+                        this.recordForm.CarNumberMain = '';
+                    }
+                },
                 updateCarNumber(e) {
-                    if (this.recordForm.CarRegion && this.recordForm.CarRegion.length === 2 && e && e.target === this.$refs.carRegionInput) {
-                        this.$refs.carCountryInput.focus();
+                    if (this.recordForm.CarCountry && this.recordForm.CarCountry.toUpperCase() === 'KG') {
+                        if (this.recordForm.CarRegion && this.recordForm.CarRegion.length === 2 && e && e.target === this.$refs.carRegionInput) {
+                            if (this.$refs.carCountryInput) this.$refs.carCountryInput.focus();
+                        }
+                        if (this.recordForm.CarCountry && this.recordForm.CarCountry.length === 2 && e && e.target === this.$refs.carCountryInput) {
+                            if (this.$refs.carNumberMainInput) this.$refs.carNumberMainInput.focus();
+                        }
+                        
+                        let parts = [];
+                        if (this.recordForm.CarRegion) parts.push(this.recordForm.CarRegion.toUpperCase());
+                        parts.push('KG');
+                        if (this.recordForm.CarNumberMain) parts.push(this.recordForm.CarNumberMain.toUpperCase());
+                        this.recordForm.CarNumber = parts.join(' ');
                     }
-                    if (this.recordForm.CarCountry && this.recordForm.CarCountry.length === 2 && e && e.target === this.$refs.carCountryInput) {
-                        this.$refs.carNumberMainInput.focus();
-                    }
-                    
-                    let parts = [];
-                    if (this.recordForm.CarRegion) parts.push(this.recordForm.CarRegion.toUpperCase());
-                    if (this.recordForm.CarCountry) parts.push(this.recordForm.CarCountry.toUpperCase());
-                    if (this.recordForm.CarNumberMain) parts.push(this.recordForm.CarNumberMain.toUpperCase());
-                    this.recordForm.CarNumber = parts.join(' ');
                 },
                 async saveRecord() {
                     try {
