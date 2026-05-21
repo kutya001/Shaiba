@@ -301,7 +301,7 @@
                                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Услуга</span>
                                             <select v-model="advFilterService" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
                                                 <option value="">Все услуги</option>
-                                                <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
+                                                <option v-for="s in sortedServices" :key="s.ID" :value="s.ID">{{s.Name}}</option>
                                             </select>
                                         </div>
                                         <div class="flex flex-col">
@@ -312,7 +312,7 @@
                                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Марка</span>
                                             <select v-model="advFilterBrand" @change="advFilterModel = ''" class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
                                                 <option value="">Все марки</option>
-                                                <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
+                                                <option v-for="b in sortedBrands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
                                             </select>
                                         </div>
                                         <div class="flex flex-col col-span-1">
@@ -546,7 +546,7 @@
                                         <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 ml-1 text-left">Услуга</span>
                                         <select id="dash-filter-service-select" v-model="dashFilterService" class="h-8 py-0 px-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
                                             <option value="">Все услуги</option>
-                                            <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
+                                            <option v-for="s in sortedServices" :key="s.ID" :value="s.ID">{{s.Name}}</option>
                                         </select>
                                     </div>
                                     <div class="flex flex-col">
@@ -832,13 +832,9 @@
                                         <span class="material-symbols-outlined text-text-muted">arrow_back</span>
                                     </button>
                                     <h5 class="m-0 font-bold text-text-main text-lg font-heading">{{ refMeta[refTab].title }}</h5>
-                                    <!-- add button for reference -->
-                                    <button @click="openRefModal(-1)" class="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-                                        <span class="material-symbols-outlined">add</span>
-                                    </button>
                                 </div>
                                 
-                                <div class="bg-surface border border-border-subtle/50 rounded-2xl shadow-soft flex flex-col overflow-hidden">
+                                <div v-if="refTab !== 'models'" class="bg-surface border border-border-subtle/50 rounded-2xl shadow-soft flex flex-col overflow-hidden">
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-left border-collapse table-auto">
                                             <thead class="bg-slate-50 border-b border-border-subtle/50">
@@ -866,6 +862,29 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                </div>
+
+                                <div v-else class="space-y-4">
+                                    <div v-for="group in groupedModels" :key="group.brand.ID" class="border border-slate-200/50 rounded-2xl bg-slate-50/50 overflow-hidden shadow-sm">
+                                        <div class="bg-slate-100/70 px-4 py-2.5 flex justify-between items-center border-b border-slate-200/50 select-none">
+                                            <span class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i class="bi bi-car-front-fill text-indigo-500"></i> {{ group.brand.Name }}
+                                            </span>
+                                            <span class="text-[10px] text-indigo-600 font-bold uppercase bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-150/30">{{ group.models.length }} мод.</span>
+                                        </div>
+                                        <div class="divide-y divide-slate-100 bg-white">
+                                            <div v-for="m in group.models" :key="m.ID" @click="openRefModal(m)" class="px-4 py-3 flex justify-between items-center hover:bg-slate-50/60 cursor-pointer transition">
+                                                <span class="text-xs font-bold text-slate-805 text-slate-800">{{ m.Name }}</span>
+                                                <button class="p-1 px-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50/40 rounded-lg transition" @click.stop="delRow(refMeta['models'].sheet, m.ID)">
+                                                    <i class="bi bi-trash-fill text-sm"></i>
+                                                </button>
+                                            </div>
+                                            <div v-if="group.models.length === 0" class="px-4 py-3.5 text-center text-slate-400 font-semibold text-xs bg-slate-50/20 italic">
+                                                Нет моделей
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="db.models && db.models.length === 0" class="px-4 py-6 text-center text-slate-400 font-medium text-sm">Нет моделей</div>
                                 </div>
                             </div>
                             
@@ -940,7 +959,7 @@
                         </div>
                         <span class="text-[9px] font-bold tracking-wider uppercase leading-none mt-1">Записи</span>
                     </button>
-                    <button v-if="user.Role !== 'Master'" @click="activeTab='refs'; refTab='services'" class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none" :class="activeTab === 'refs' ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600 bg-transparent'">
+                    <button v-if="user.Role !== 'Master'" @click="activeTab='refs'; refTab='grid'" class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none" :class="activeTab === 'refs' ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600 bg-transparent'">
                         <div class="flex h-6 items-center justify-center">
                             <span class="material-symbols-outlined text-[19px]" :style="activeTab === 'refs' ? 'font-variation-settings: \'FILL\' 1;' : ''">menu_book</span>
                         </div>
@@ -1256,7 +1275,7 @@
                                                     <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Марка <span class="text-red-500">*</span></label>
                                                     <select v-model="recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" @change="recordForm.ModelID=''; $nextTick(() => { if($refs.modelInput) $refs.modelInput.focus() })">
                                                         <option value="">Не выбрано</option>
-                                                        <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
+                                                        <option v-for="b in sortedBrands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
                                                     </select>
                                                 </div>
 
@@ -1472,7 +1491,7 @@
                             <div v-for="f in refMeta[refTab].fields" :key="f.k">
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">{{ f.l }}</label>
                                 <select v-if="f.t === 'selectBrand'" v-model="refForm[f.k]" class="form-select w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-800 shadow-sm">
-                                    <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
+                                    <option v-for="b in sortedBrands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
                                 </select>
                                 <input v-else :type="f.t==='number'?'number':'text'" v-model="refForm[f.k]" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 shadow-sm">
                             </div>
@@ -1624,9 +1643,20 @@ export default {
                 currentUserMasterID() {
                     return this.user ? this.user.ID : null;
                 },
+                sortedBrands() {
+                    let b = this.db.brands || [];
+                    return [...b].sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()));
+                },
+                sortedServices() {
+                    let s = this.db.services || [];
+                    return [...s].sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()));
+                },
                 filteredModelsForFilter() {
-                    if (!this.advFilterBrand) return this.db.models;
-                    return this.db.models.filter(m => String(m.BrandID) === String(this.advFilterBrand));
+                    let d = this.db.models || [];
+                    if (this.advFilterBrand) {
+                        d = d.filter(m => String(m.BrandID) === String(this.advFilterBrand));
+                    }
+                    return [...d].sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()));
                 },
                 filteredRecords() {
                     let d = [...this.db.records].sort((a, b) => new Date(b.StartTime || 0) - new Date(a.StartTime || 0));
@@ -1679,11 +1709,34 @@ export default {
                         let q = this.serviceSearch.toLowerCase();
                         d = d.filter(s => (s.Name || '').toLowerCase().includes(q));
                     }
-                    return d;
+                    return [...d].sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()));
                 },
                 availableModels() {
                     if(!this.recordForm.BrandID) return [];
-                    return this.db.models.filter(m => String(m.BrandID) === String(this.recordForm.BrandID));
+                    let d = this.db.models.filter(m => String(m.BrandID) === String(this.recordForm.BrandID));
+                    return [...d].sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()));
+                },
+                groupedModels() {
+                    let brands = this.sortedBrands || [];
+                    let models = this.db.models || [];
+                    let result = brands.map(b => {
+                        let bModels = models.filter(m => String(m.BrandID) === String(b.ID));
+                        let sortedBModels = [...bModels].sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()));
+                        return {
+                            brand: b,
+                            models: sortedBModels
+                        };
+                    });
+                    
+                    // Unassigned models
+                    let unassigned = models.filter(m => !m.BrandID || !brands.find(b => String(b.ID) === String(m.BrandID)));
+                    if (unassigned.length > 0) {
+                        result.push({
+                            brand: { ID: '', Name: 'Без марки' },
+                            models: unassigned.sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()))
+                        });
+                    }
+                    return result;
                 },
                 filteredDashRecords() {
                     if (!this.db || !this.db.records) return [];
@@ -2287,6 +2340,9 @@ export default {
 
                 async quickStatusChange(record, newStatus) {
                     try {
+                        if (this.user && this.user.Role === 'Master' && record.Status !== 'Открыт') {
+                            throw new Error('Мастер не может изменять статус закрытых записей');
+                        }
                         let payload = Object.assign({}, record);
                         payload.Status = newStatus;
                         
@@ -2306,6 +2362,9 @@ export default {
 
                 async quickPaymentToggle(record) {
                     try {
+                        if (this.user && this.user.Role === 'Master' && record.Status !== 'Открыт') {
+                            throw new Error('Мастер не может изменять оплату закрытых записей');
+                        }
                         let payload = Object.assign({}, record);
                         payload.IsPaid = !(record.IsPaid === true || String(record.IsPaid).toUpperCase() === 'TRUE');
                         
@@ -2450,6 +2509,12 @@ export default {
                 async saveRecord() {
                     try {
                         let f = this.recordForm;
+                        if (f.ID && !String(f.ID).startsWith('local_') && this.user && this.user.Role === 'Master') {
+                            let original = this.db.records.find(x => x.ID === f.ID);
+                            if (original && original.Status !== 'Открыт') {
+                                throw new Error('Мастер не может изменять закрытые записи со статусом ' + original.Status);
+                            }
+                        }
                         if (!f.ClientName) throw new Error('Пожалуйста, введите Имя Клиента');
                         if (!f.Phone) throw new Error('Пожалуйста, введите Телефон');
                         if (!f.CarNumber) throw new Error('Пожалуйста, введите Госномер');
