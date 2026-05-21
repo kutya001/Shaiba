@@ -120,18 +120,37 @@
             <main class="flex-1 flex flex-col h-full overflow-hidden relative pb-16 md:pb-0">
                 <!-- Mobile Top Header -->
                 <header class="md:hidden w-full h-11 bg-white/95 backdrop-blur-md border-b border-slate-200/60 px-3.5 flex items-center justify-between shrink-0 z-10 select-none">
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5" v-if="!isSearchExpanded">
                         <div class="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm shadow-indigo-100">
                             <i class="bi bi-car-front-fill text-white text-[10px]"></i>
                         </div>
                         <span class="font-bold text-sm tracking-tight text-slate-800">AutoService CRM</span>
                     </div>
-                    
-                    <div class="flex items-center gap-2">
-                        <button v-if="isSyncing" class="px-2 py-0.5 text-indigo-600 font-bold flex items-center gap-1 bg-indigo-50 rounded-lg" style="font-size: 9px;">
-                            <span class="material-symbols-outlined animate-spin font-bold text-[13px]">sync</span> <span class="uppercase tracking-wider hidden xs:inline">Синхрон...</span>
+
+                    <!-- Expanded Mobile Search -->
+                    <div v-else class="flex-1 mr-2 relative">
+                        <input v-model="searchQuery" ref="mobileSearchInput" class="w-full h-8 pl-8 pr-8 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold outline-none border border-slate-200/50 focus:border-indigo-500 focus:bg-white" placeholder="Поиск по госномеру...">
+                        <span class="material-symbols-outlined text-[16px] text-slate-400 absolute left-2.5 top-2">search</span>
+                        <button @click="isSearchExpanded = false; searchQuery = ''" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 flex items-center">
+                            <span class="material-symbols-outlined text-[15px]">close</span>
                         </button>
-                        <button @click="openProfileModal" class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/50 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition" title="Профиль">
+                    </div>
+                    
+                    <div class="flex items-center gap-1.5">
+                        <!-- Search Icon Toggle for Records -->
+                        <button v-if="activeTab === 'records' && !isSearchExpanded" @click="isSearchExpanded = true; $nextTick(() => { if($refs.mobileSearchInput) $refs.mobileSearchInput.focus() })" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                            <span class="material-symbols-outlined text-[18px]">search</span>
+                        </button>
+
+                        <!-- Filter Icon Toggle for Records -->
+                        <button v-if="activeTab === 'records'" @click="isFiltersExpanded = !isFiltersExpanded" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition cursor-pointer" :class="isFiltersExpanded ? 'bg-indigo-50 text-indigo-600 border border-indigo-100/60' : ''">
+                            <span class="material-symbols-outlined text-[18px]">tune</span>
+                        </button>
+
+                        <button v-if="isSyncing" class="px-1.5 py-0.5 text-indigo-600 font-bold flex items-center gap-1 bg-indigo-50 rounded-lg shrink-0" style="font-size: 9px;">
+                            <span class="material-symbols-outlined animate-spin font-bold text-[13px]">sync</span>
+                        </button>
+                        <button @click="openProfileModal" class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/50 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition shrink-0" title="Профиль">
                             <span class="font-bold text-[10px]">{{ user.Username ? user.Username.slice(0,2).toUpperCase() : '?' }}</span>
                         </button>
                     </div>
@@ -139,11 +158,31 @@
 
                 <!-- Desktop Header -->
                 <header class="hidden md:flex mx-6 mt-4 mb-2 rounded-2xl h-16 bg-white shadow-sm border border-slate-200 px-8 items-center justify-between shrink-0 z-10">
-                    <div>
+                    <div class="flex items-center gap-4">
                         <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='records'">Журнал Обслуживания</h1>
                         <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='dashboard'">Аналитика и Финансы</h1>
                         <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='refs'">Управление справочниками</h1>
                         <h1 class="text-xl font-bold text-slate-800 tracking-tight" v-if="activeTab==='users'">Управление персоналом</h1>
+
+                        <!-- Search icon & Input in Desktop Header -->
+                        <div v-if="activeTab === 'records'" class="flex items-center gap-1.5 ml-2">
+                            <button v-if="!isSearchExpanded" @click="isSearchExpanded = true; $nextTick(() => { if($refs.desktopSearchInput) $refs.desktopSearchInput.focus() })" class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:bg-slate-100/85 transition cursor-pointer" title="Поиск записей">
+                                <span class="material-symbols-outlined text-[18px]">search</span>
+                            </button>
+                            <div v-else class="relative flex items-center transition-all duration-300">
+                                <input ref="desktopSearchInput" v-model="searchQuery" class="w-60 h-10 pl-9 pr-8 rounded-xl border border-slate-200/80 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100/40 focus:border-indigo-500 text-xs font-semibold text-slate-700 outline-none transition" placeholder="Поиск по госномеру...">
+                                <span class="material-symbols-outlined text-[18px] text-slate-400 absolute left-3 top-2.5">search</span>
+                                <button @click="isSearchExpanded = false; searchQuery = ''" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 flex items-center">
+                                    <span class="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filters toggle on Desktop Header -->
+                        <button v-if="activeTab === 'records'" @click="isFiltersExpanded = !isFiltersExpanded" class="h-10 px-4 rounded-xl border flex items-center gap-2 text-xs font-bold transition cursor-pointer" :class="isFiltersExpanded ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+                            <span class="material-symbols-outlined text-[18px]">tune</span>
+                            Фильтры
+                        </button>
                     </div>
                     
                     <div class="flex items-center gap-4">
@@ -183,52 +222,59 @@
                         <!-- ЗАПИСИ (Ремонты) -->
                         <div v-if="activeTab === 'records'" class="max-w-md mx-auto w-full space-y-4 pb-20">
                             <!-- Sticky Header elements for Records -->
-                            <div class="sticky top-0 bg-background-light pt-1.5 pb-2 z-10 space-y-2 select-none shadow-[0_8px_20px_-10px_rgba(15,23,42,0.06)] -mx-3 px-3">
-                                <!-- Search -->
-                                <label class="flex flex-col h-10 w-full mb-0">
-                                    <div class="flex w-full flex-1 items-stretch rounded-xl border border-border-subtle bg-slate-50 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100/40 focus-within:border-indigo-500 transition-all">
-                                        <div class="text-muted flex items-center justify-center pl-3">
-                                            <span class="material-symbols-outlined text-[18px] text-slate-400">search</span>
-                                        </div>
-                                        <input v-model="searchQuery" class="flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 h-full placeholder:text-slate-400 px-2.5 text-xs font-semibold text-text-main outline-none" placeholder="Поиск по номеру авто...">
+                            <div class="sticky top-0 bg-background-light pt-1.5 pb-2.5 z-10 space-y-2 select-none shadow-[0_8px_20px_-10px_rgba(15,23,42,0.06)] -mx-3 px-3">
+                                <!-- Advanced Filters - Collapsible sliding container -->
+                                <div v-if="isFiltersExpanded" class="bg-indigo-50/60 border border-indigo-100/70 p-3 rounded-2xl flex flex-col gap-2.5 transition-all duration-300">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-black uppercase text-indigo-700 tracking-wider flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[13px] font-bold">tune</span> Фильтры поиска
+                                        </span>
+                                        <button @click="clearAllFilters" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition">Сбросить</button>
                                     </div>
-                                </label>
-                                
-                                <!-- Status Filter Segmented Control -->
-                                <div class="bg-slate-100 p-0.5 rounded-xl flex w-full border border-slate-200/40 shadow-inner">
-                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
-                                        :class="recordFilter === 'open' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
+                                    <div class="grid grid-cols-1 xs:grid-cols-3 gap-2">
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Мастер</span>
+                                            <select v-model="advFilterMaster" class="h-8 py-0 px-2.5 rounded-xl border border-slate-200/80 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                                <option value="">Все мастера</option>
+                                                <option v-for="m in mastersList" :key="m.ID" :value="m.ID">{{m.Name || m.Username}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Услуга</span>
+                                            <select v-model="advFilterService" class="h-8 py-0 px-2.5 rounded-xl border border-slate-200/80 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all">
+                                                <option value="">Все услуги</option>
+                                                <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Дата</span>
+                                            <input type="date" v-model="advFilterDate" class="h-8 py-0 px-2.5 rounded-xl border border-slate-200/80 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Status Filter Individual Buttons ("Islands") -->
+                                <div class="flex flex-wrap gap-2 w-full">
+                                    <button class="flex-1 min-w-[70px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'open' ? 'bg-indigo-600 text-white border-indigo-600 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'open'">
                                         В работе
                                     </button>
-                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
-                                        :class="recordFilter === 'completed' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
+                                    <button class="flex-1 min-w-[70px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'completed' ? 'bg-emerald-600 text-white border-emerald-600 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'completed'">
                                         Выполнен
                                     </button>
-                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
-                                        :class="recordFilter === 'canceled' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
+                                    <button class="flex-1 min-w-[70px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'canceled' ? 'bg-rose-600 text-white border-rose-600 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'canceled'">
                                         Отменён
                                     </button>
-                                    <button class="flex-1 flex h-7 items-center justify-center rounded-[10px] font-bold text-[10px] uppercase tracking-wider transition-all border-none outline-none cursor-pointer"
-                                        :class="recordFilter === 'all' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'text-slate-500 bg-transparent hover:text-slate-700'"
+                                    <button class="flex-1 min-w-[50px] flex h-8 items-center justify-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer border shadow-sm outline-none"
+                                        :class="recordFilter === 'all' ? 'bg-slate-700 text-white border-slate-700 font-extrabold' : 'bg-white text-slate-600 border-slate-200/80 hover:text-slate-800 hover:bg-slate-50'"
                                         @click="recordFilter = 'all'">
                                         Все
                                     </button>
-                                </div>
-                                
-                                <!-- Advanced Filters -->
-                                <div class="flex gap-1 overflow-x-auto hide-scrollbar pb-0.5">
-                                    <select v-model="advFilterMaster" class="h-7 py-0 px-2.5 shrink-0 rounded-lg border border-border-subtle bg-slate-50 text-[10px] font-bold text-slate-600 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/10 cursor-pointer transition-all max-w-[110px]">
-                                        <option value="">Все мастера</option>
-                                        <option v-for="m in mastersList" :key="m.ID" :value="m.ID">{{m.Name || m.Username}}</option>
-                                    </select>
-                                    <select v-model="advFilterService" class="h-7 py-0 px-2.5 shrink-0 rounded-lg border border-border-subtle bg-slate-50 text-[10px] font-bold text-slate-600 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/10 cursor-pointer transition-all max-w-[110px]">
-                                        <option value="">Все услуги</option>
-                                        <option v-for="s in db.services" :key="s.ID" :value="s.ID">{{s.Name}}</option>
-                                    </select>
-                                    <input type="date" v-model="advFilterDate" class="h-7 py-0 px-2 shrink-0 rounded-lg border border-border-subtle bg-slate-50 text-[10px] font-bold text-slate-600 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all max-w-[100px]">
                                 </div>
                             </div>
 
@@ -805,23 +851,6 @@
                                                 <i class="bi bi-car-front text-indigo-600"></i> Автомобиль
                                             </h3>
                                             <div class="space-y-3">
-                                                <div class="grid grid-cols-2 gap-2.5">
-                                                    <div class="flex flex-col relative">
-                                                        <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Марка <span class="text-red-500">*</span></label>
-                                                        <select v-model="recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" @change="recordForm.ModelID=''; $nextTick(() => { if($refs.modelInput) $refs.modelInput.focus() })">
-                                                            <option value="">Не выбрано</option>
-                                                            <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="flex flex-col relative">
-                                                        <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Модель <span class="text-red-500">*</span></label>
-                                                        <select ref="modelInput" v-model="recordForm.ModelID" @change="$nextTick(() => { if($refs.clientNameInput) $refs.clientNameInput.focus() })" :disabled="!recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
-                                                            <option value="">Не выбрано</option>
-                                                            <option v-for="m in availableModels" :key="m.ID" :value="m.ID">{{m.Name}}</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
                                                 <div class="flex flex-col space-y-2.5">
                                                     <label class="text-slate-500 text-[10px] font-bold mb-0.5 ml-1 uppercase tracking-wider">Госномер <span class="text-red-500">*</span></label>
                                                     <div class="grid grid-cols-2 gap-2">
@@ -838,6 +867,22 @@
                                                         <span class="text-[9px] text-slate-400 font-bold mb-1 ml-1 uppercase tracking-wider">Номер автомобиля</span>
                                                         <input ref="carNumberMainInput" v-model="recordForm.CarNumberMain" @input="updateCarNumber" maxlength="7" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 placeholder-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none uppercase tracking-wider text-center" placeholder="123 ABC">
                                                     </div>
+                                                </div>
+
+                                                <div class="flex flex-col relative">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Марка <span class="text-red-500">*</span></label>
+                                                    <select v-model="recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" @change="recordForm.ModelID=''; $nextTick(() => { if($refs.modelInput) $refs.modelInput.focus() })">
+                                                        <option value="">Не выбрано</option>
+                                                        <option v-for="b in db.brands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="flex flex-col relative">
+                                                    <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Модель <span class="text-red-500">*</span></label>
+                                                    <select ref="modelInput" v-model="recordForm.ModelID" @change="$nextTick(() => { if($refs.clientNameInput) $refs.clientNameInput.focus() })" :disabled="!recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
+                                                        <option value="">Не выбрано</option>
+                                                        <option v-for="m in availableModels" :key="m.ID" :value="m.ID">{{m.Name}}</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                         </section>
@@ -1124,6 +1169,8 @@ export default {
                     loading: true,
                     isSaving: false,
                     searchQuery: '',
+                    isSearchExpanded: false,
+                    isFiltersExpanded: false,
                     recordFilter: 'open',
                     advFilterMaster: '',
                     advFilterService: '',
@@ -1416,6 +1463,11 @@ export default {
                             time: d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
                         };
                     } catch(e) { return { date: '—', time: ''}; }
+                },
+                clearAllFilters() {
+                    this.advFilterMaster = '';
+                    this.advFilterService = '';
+                    this.advFilterDate = '';
                 },
                 parseServices(record) {
                     if (record.ServicesJSON) {
