@@ -457,7 +457,7 @@
                             </div>
                             
                             <!-- FAB -->
-                            <button @click="openRecordModal()" class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-fab active:scale-95 transition-transform z-20 md:bottom-12 md:right-12">
+                            <button @click="openRecordModal()" class="fixed bottom-24 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform z-20 md:bottom-12 md:right-12">
                                 <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'wght' 600;">add</span>
                             </button>
                         </div>
@@ -489,11 +489,47 @@
                                 </button>
                             </div>
 
+                            <!-- Swipeable Quick-Filters for Mobile (Highly convenient and interactive) -->
+                            <div class="space-y-2 select-none" id="mobile-quick-filters">
+                                <!-- Master Chips -->
+                                <div v-if="user.Role !== 'Master'" class="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+                                    <span class="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest shrink-0 mr-1">Мастера:</span>
+                                    <button @click="dashFilterMaster = ''" 
+                                        class="px-2.5 py-1 rounded-full text-[10px] font-extrabold whitespace-nowrap transition-all border shrink-0 outline-none flex items-center gap-1 cursor-pointer"
+                                        :class="dashFilterMaster === '' ? 'bg-indigo-600 text-white border-transparent shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+                                        <span>Все</span>
+                                    </button>
+                                    <button v-for="m in mastersList" :key="m.ID" @click="dashFilterMaster = (String(dashFilterMaster) === String(m.ID)) ? '' : m.ID" 
+                                        class="px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-all border shrink-0 outline-none flex items-center gap-1 cursor-pointer"
+                                        :class="String(dashFilterMaster) === String(m.ID) ? 'bg-indigo-600 text-white border-transparent shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+                                        <span class="w-3.5 h-3.5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black" :class="String(dashFilterMaster) === String(m.ID) ? 'bg-indigo-500 text-indigo-100' : 'bg-indigo-50 text-indigo-500'">
+                                            {{ (m.Name || m.Username || 'М').slice(0,1).toUpperCase() }}
+                                        </span>
+                                        <span>{{ m.Name || m.Username }}</span>
+                                    </button>
+                                </div>
+
+                                <!-- Service Chips -->
+                                <div class="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+                                    <span class="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest shrink-0 mr-1">Услуги:</span>
+                                    <button @click="dashFilterService = ''" 
+                                        class="px-2.5 py-1 rounded-full text-[10px] font-extrabold whitespace-nowrap transition-all border shrink-0 outline-none flex items-center gap-1 cursor-pointer"
+                                        :class="dashFilterService === '' ? 'bg-indigo-600 text-white border-transparent shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+                                        <span>Все</span>
+                                    </button>
+                                    <button v-for="s in (db.services || []).slice(0, 8)" :key="s.ID" @click="dashFilterService = (String(dashFilterService) === String(s.ID)) ? '' : s.ID" 
+                                        class="px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-all border shrink-0 outline-none flex items-center gap-1 cursor-pointer"
+                                        :class="String(dashFilterService) === String(s.ID) ? 'bg-indigo-600 text-white border-transparent shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+                                        <span>{{ s.Name }}</span>
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- Sliding Advanced Filters -->
                             <div v-if="isDashFiltersExpanded" class="bg-indigo-50/60 border border-indigo-100/70 p-3 rounded-xl flex flex-col gap-2 transition-all duration-300" id="dash-filters-pane">
                                 <div class="flex items-center justify-between">
                                     <span class="text-[9px] font-black uppercase text-indigo-700 tracking-wider flex items-center gap-1.5 leading-none">
-                                        <span class="material-symbols-outlined text-[12px] font-black">tune</span> Фильтры
+                                        <span class="material-symbols-outlined text-[12px] font-black">tune</span> Справочный фильтр
                                     </span>
                                     <button id="dash-filters-clear" @click="clearAllDashFilters" class="text-[9px] font-bold text-slate-400 hover:text-indigo-600 transition border-0 bg-transparent cursor-pointer">Сбросить</button>
                                 </div>
@@ -622,6 +658,8 @@
                                                 class="transition-all duration-300 cursor-pointer"
                                                 @mouseenter="hoveredBarIndex = idx"
                                                 @mouseleave="hoveredBarIndex = null"
+                                                @touchstart.passive="hoveredBarIndex = idx"
+                                                @click="hoveredBarIndex = hoveredBarIndex === idx ? null : idx"
                                             />
                                             
                                             <!-- Tick marker context -->
@@ -629,7 +667,8 @@
                                                 :x="35 + idx * (310 / Math.max(dashboardChartData.length, 1)) + (310 / Math.max(dashboardChartData.length, 1)) / 2" 
                                                 y="126" 
                                                 text-anchor="middle" 
-                                                class="text-slate-400 font-bold text-[8px] uppercase tracking-wide fill-current font-sans"
+                                                class="text-slate-450 font-bold text-[8px] uppercase tracking-wide fill-current font-sans"
+                                                @click="hoveredBarIndex = hoveredBarIndex === idx ? null : idx"
                                             >
                                                 {{ item.label }}
                                             </text>
@@ -646,18 +685,39 @@
                                     </svg>
                                 </div>
 
-                                <!-- Summary bar on hover -->
-                                <div class="flex items-center justify-between text-slate-500 text-[10px] font-bold bg-slate-50/70 rounded-xl px-2.5 py-1.5 border border-slate-100">
+                                <!-- Summary bar on hover / touch dynamic details -->
+                                <div class="flex items-center justify-between text-slate-500 text-[10px] font-bold bg-slate-50/70 rounded-xl px-2.5 py-1.5 border border-slate-100 min-h-8">
                                     <span v-if="hoveredBarIndex === null" class="flex items-center gap-1 text-slate-400 font-sans text-[9px]">
-                                        <i class="bi bi-info-circle"></i> Наведите на столбец или коснитесь
+                                        <i class="bi bi-info-circle"></i> Коснитесь столбца для деталей
                                     </span>
                                     <span v-else class="flex items-center justify-between w-full font-sans">
                                         <span class="text-indigo-600 font-black uppercase text-[9px]">{{ dashboardChartData[hoveredBarIndex].label }}:</span>
-                                        <span class="flex gap-2 text-slate-600">
-                                            <span>Выручка: <strong class="text-slate-800 font-bold text-[11px]">{{ dashboardChartData[hoveredBarIndex].amount.toLocaleString() }} KGS</strong></span>
-                                            <span>Заказов: <strong class="text-slate-800 font-bold text-[11px]">{{ dashboardChartData[hoveredBarIndex].count }}</strong></span>
+                                        <span class="flex gap-2 text-slate-650 font-extrabold">
+                                            <span>Выручка: <strong class="text-indigo-650 font-black text-[11px]">{{ dashboardChartData[hoveredBarIndex].amount.toLocaleString() }} KGS</strong></span>
+                                            <span>Заказов: <strong class="text-slate-800 font-black text-[11px]">{{ dashboardChartData[hoveredBarIndex].count }}</strong></span>
                                         </span>
                                     </span>
+                                </div>
+
+                                <!-- AUTO RECALCULATED MULTI-USER ANALYTICS INSIGHTS FOR MOBILE (Dynamic Trend metrics) -->
+                                <div v-if="dashboardInsights" class="mt-1 bg-gradient-to-tr from-slate-50 to-indigo-50/20 border border-slate-100 p-3 rounded-2xl space-y-2">
+                                    <span class="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Аналитические выводы:</span>
+                                    <div class="grid grid-cols-2 gap-2 text-xs">
+                                        <div class="p-2 bg-white rounded-xl border border-slate-100 flex flex-col">
+                                            <span class="text-[8px] text-slate-400 uppercase tracking-wider font-extrabold mb-0.5">Самый прибыльный</span>
+                                            <span class="text-[10px] font-extrabold text-slate-800 truncate">{{ dashboardInsights.peakLabel }}</span>
+                                            <span class="text-indigo-600 font-black text-[11px] mt-0.5">{{ dashboardInsights.peakAmount.toLocaleString() }} KGS</span>
+                                        </div>
+                                        <div class="p-2 bg-white rounded-xl border border-slate-100 flex flex-col">
+                                            <span class="text-[8px] text-slate-400 uppercase tracking-wider font-extrabold mb-0.5">Среднее по периоду</span>
+                                            <span class="text-[10px] font-bold text-slate-500 truncate">за одну шкалу</span>
+                                            <span class="text-emerald-600 font-black text-[11px] mt-0.5">{{ dashboardInsights.avgAmount.toLocaleString() }} KGS</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between px-1 text-[9px] text-slate-450 font-bold">
+                                        <span>Всего выручки в графике:</span>
+                                        <span class="text-slate-800 font-black">{{ dashboardInsights.totalAmount.toLocaleString() }} KGS ({{ dashboardInsights.totalCount }} зак.)</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1850,6 +1910,30 @@ export default {
                         return list;
                     }
                     return [];
+                },
+                dashboardInsights() {
+                    let dData = this.dashboardChartData || [];
+                    if (dData.length === 0) return { peakLabel: '—', peakAmount: 0, avgAmount: 0, totalAmount: 0, totalCount: 0 };
+                    let maxVal = -1;
+                    let peak = null;
+                    let total = 0;
+                    let activeCount = 0;
+                    dData.forEach(d => {
+                        total += d.amount;
+                        activeCount += d.count;
+                        if (d.amount > maxVal) {
+                            maxVal = d.amount;
+                            peak = d;
+                        }
+                    });
+                    let avg = dData.length ? Math.round(total / dData.length) : 0;
+                    return {
+                        peakLabel: peak ? peak.label : '—',
+                        peakAmount: maxVal,
+                        avgAmount: avg,
+                        totalAmount: total,
+                        totalCount: activeCount
+                    };
                 }
             },
             mounted() {
