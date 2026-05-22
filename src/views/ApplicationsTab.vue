@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4 max-w-4xl mx-auto w-full pb-20 animate-fade-in px-4">
-    <!-- Status tabs / filters - Icons only with counts and tooltips as requested -->
-    <div class="flex gap-1.5 overflow-x-auto pb-1.5 border-b border-slate-100/65 scrollbar-none select-none">
+    <!-- Status tabs / filters - Collapsible when isFiltersExpanded is true -->
+    <div v-show="isFiltersExpanded" class="flex gap-1.5 overflow-x-auto pb-3.5 border-b border-slate-100/65 scrollbar-none select-none bg-white border border-slate-150 p-3 rounded-2xl shadow-sm animate-fade-in mb-3">
       <button
         v-for="tab in tabs"
         :key="tab.id"
@@ -225,6 +225,10 @@ export default {
     searchQuery: {
       type: String,
       default: "",
+    },
+    isFiltersExpanded: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ["open-record"],

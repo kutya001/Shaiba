@@ -108,6 +108,7 @@
             :get-master-name="getMasterName"
             :get-service-name="getServiceName"
             :get-service-price="getServicePrice"
+            :search-query="searchQuery"
           />
 
           <RefsTab
@@ -124,6 +125,8 @@
           <UsersTab
             v-if="activeTab === 'users' && user.Role === 'Superadmin'"
             :db="db"
+            :search-query="searchQuery"
+            :is-filters-expanded="isFiltersExpanded"
             @approve-user="approveUser"
             @open-user-config="openUserConfigModal"
           />
@@ -133,6 +136,7 @@
             :db="db"
             :user="user"
             :search-query="searchQuery"
+            :is-filters-expanded="isFiltersExpanded"
             @open-record="openRecordModal"
           />
         </div>

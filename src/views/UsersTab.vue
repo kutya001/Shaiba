@@ -1,18 +1,52 @@
 <template>
   <div class="space-y-4 max-w-md mx-auto w-full pb-20 animate-fade-in">
+    <!-- Header info line -->
     <div class="flex justify-between items-center px-1">
       <h2 class="text-sm font-black text-slate-800 uppercase tracking-wider font-heading flex items-center gap-1.5">
         <span class="material-symbols-outlined text-[16px] text-indigo-500">group</span>
         Штат автосервиса
       </h2>
       <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/40">
-        {{ db.users ? db.users.length : 0 }} чел.
+        {{ filteredUsers.length }} из {{ db.users ? db.users.length : 0 }} чел.
       </span>
+    </div>
+
+    <!-- Collapsible Advanced Filters -->
+    <div v-if="isFiltersExpanded" class="bg-white border border-slate-150 p-3 rounded-2xl shadow-sm space-y-3 animate-fade-in">
+      <div>
+        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Роль</label>
+        <div class="flex flex-wrap gap-1">
+          <button
+            v-for="r in roles"
+            :key="r.val"
+            @click="selectedRole = r.val"
+            class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+            :class="selectedRole === r.val ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'"
+          >
+            {{ r.lbl }}
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Допуск к системе</label>
+        <div class="flex flex-wrap gap-1">
+          <button
+            v-for="s in statuses"
+            :key="s.val"
+            @click="selectedStatus = s.val"
+            class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+            :class="selectedStatus === s.val ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'"
+          >
+            {{ s.lbl }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="space-y-2">
       <div
-        v-for="u in db.users"
+        v-for="u in filteredUsers"
         :key="u.ID"
         class="bg-white border border-slate-150/60 hover:border-indigo-150/80 rounded-xl p-3 shadow-sm hover:shadow transition-all flex items-center justify-between gap-3"
       >
@@ -98,10 +132,10 @@
       </div>
 
       <div
-        v-if="!db.users || db.users.length === 0"
-        class="py-10 text-center text-slate-400 font-medium text-xs"
+        v-if="filteredUsers.length === 0"
+        class="py-10 text-center text-slate-400 font-medium text-xs bg-white rounded-xl border border-slate-100"
       >
-        Нет сотрудников
+        Нет сотрудников, подходящих под критерии
       </div>
     </div>
   </div>
@@ -114,6 +148,60 @@ export default {
     db: {
       type: Object,
       required: true
+    },
+    searchQuery: {
+      type: String,
+      default: ""
+    },
+    isFiltersExpanded: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      selectedRole: "all",
+      selectedStatus: "all",
+      roles: [
+        { val: "all", lbl: "Все роли" },
+        { val: "Superadmin", lbl: "Админ" },
+        { val: "SenMaster", lbl: "Ст. Мастер" },
+        { val: "Master", lbl: "Мастер" }
+      ],
+      statuses: [
+        { val: "all", lbl: "Все статусы" },
+        { val: "Approved", lbl: "Допущен" },
+        { val: "Pending", lbl: "Ожидающие" }
+      ]
+    };
+  },
+  computed: {
+    filteredUsers() {
+      let list = this.db.users || [];
+
+      // Filter by role
+      if (this.selectedRole !== "all") {
+        list = list.filter(u => u.Role === this.selectedRole);
+      }
+
+      // Filter by status
+      if (this.selectedStatus !== "all") {
+        list = list.filter(u => u.Status === this.selectedStatus);
+      }
+
+      // Filter by search query
+      if (this.searchQuery) {
+        const q = this.searchQuery.toLowerCase().trim();
+        list = list.filter(u => {
+          const name = (u.Name || '').toLowerCase();
+          const username = (u.Username || '').toLowerCase();
+          const phone = (u.Phone || '').toLowerCase();
+          const role = (u.Role || '').toLowerCase();
+          return name.includes(q) || username.includes(q) || phone.includes(q) || role.includes(q);
+        });
+      }
+
+      return list;
     }
   }
 }

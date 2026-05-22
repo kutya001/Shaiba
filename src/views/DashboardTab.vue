@@ -745,7 +745,7 @@
 <script>
 export default {
   name: "DashboardTab",
-  props: ["db", "user", "isFiltersExpanded", "currentUserMasterID", "mastersList", "sortedServices", "getBrandName", "getMasterName", "getServiceName", "getServicePrice"],
+  props: ["db", "user", "isFiltersExpanded", "currentUserMasterID", "mastersList", "sortedServices", "getBrandName", "getMasterName", "getServiceName", "getServicePrice", "searchQuery"],
   data() {
     return {
       dashboardPeriod: "all",
@@ -765,6 +765,19 @@ export default {
       return this.db.records.filter((r) => {
         if (r.Status !== "Выполнен") return false;
         if (!r.StartTime) return false;
+
+        // Search query filter
+        if (this.searchQuery) {
+          const q = this.searchQuery.toLowerCase().trim();
+          const targetStr = (
+            (r.CarNumber || "") +
+            " " +
+            (r.ClientName || "") +
+            " " +
+            (this.getMasterName(r.MasterID) || "")
+          ).toLowerCase();
+          if (!targetStr.includes(q)) return false;
+        }
 
         // Role restrictions & Master filter
         if (this.user && this.user.Role === "Master") {
