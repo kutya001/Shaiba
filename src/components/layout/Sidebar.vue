@@ -2,14 +2,16 @@
   <aside
     class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 hidden md:flex z-10 transition-all shadow-sm"
   >
-    <div class="p-6 border-b border-slate-100 flex items-center gap-2">
+    <div class="p-6 border-b border-slate-100 flex items-center gap-2 select-none">
       <div
-        class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-indigo-100"
+        class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm overflow-hidden"
+        :class="store.logoUrl ? '' : 'bg-indigo-600 shadow-indigo-100'"
       >
-        <i class="bi bi-car-front-fill text-white text-sm"></i>
+        <img v-if="store.logoUrl" :src="store.logoUrl" class="w-full h-full object-cover" referrerpolicy="no-referrer" alt="App Logo" />
+        <i v-else :class="store.appIcon || 'bi-car-front-fill'" class="text-white text-base"></i>
       </div>
       <span class="font-bold text-lg tracking-tight font-heading"
-        >AutoService CRM</span
+        >AutoService ERP</span
       >
     </div>
     <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
@@ -166,13 +168,14 @@ export default {
   },
   emits: ["update:activeTab", "update:refTab", "logout", "reopen-welcome"],
   computed: {
+    store() {
+      return useMainStore();
+    },
     user() {
-      const store = useMainStore();
-      return store.user;
+      return this.store.user;
     },
     unprocessedApplicationsCount() {
-      const store = useMainStore();
-      return (store.db.applications || []).filter(
+      return (this.store.db.applications || []).filter(
         (a) => !a['Статус Заявки'] || String(a['Статус Заявки']).trim() === ''
       ).length;
     },

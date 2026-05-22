@@ -1,6 +1,6 @@
 {
-  "name": "Автосервис CRM (GAS)",
-  "description": "SPA для учета автосервиса, работает на базе Google Sheets + GAS + Vue 3",
+  "name": "Автосервис ERP (GAS)",
+  "description": "SPA для учета и управления (ERP) автосервиса, работает на базе Google Sheets + GAS + Vue 3",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

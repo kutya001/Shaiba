@@ -13,14 +13,16 @@
     <div
       class="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-slate-100 z-10 relative"
     >
-      <div class="flex items-center gap-3 mb-8 justify-center">
+      <div class="flex items-center gap-3 mb-8 justify-center select-none">
         <div
-          class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200"
+          class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg overflow-hidden"
+          :class="store.logoUrl ? '' : 'bg-indigo-600 shadow-indigo-200'"
         >
-          <i class="bi bi-car-front-fill text-xl"></i>
+          <img v-if="store.logoUrl" :src="store.logoUrl" class="w-full h-full object-cover" referrerpolicy="no-referrer" alt="App Logo" />
+          <i v-else :class="store.appIcon || 'bi-car-front-fill'" class="text-white text-xl"></i>
         </div>
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">
-          AutoService CRM
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight font-heading">
+          AutoService ERP
         </h2>
       </div>
 
@@ -203,6 +205,9 @@ export default {
     };
   },
   computed: {
+    store() {
+      return useMainStore();
+    },
     hasCustomGasUrl() {
       return !!localStorage.getItem("GAS_URL");
     }

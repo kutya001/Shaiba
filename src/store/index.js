@@ -116,6 +116,9 @@ export const useMainStore = defineStore("main", {
       isPolling: false,
       syncStatus: "synced",
       versionsSupport: true,
+      logoUrl: localStorage.getItem("app_logo_url") || "",
+      welcomeBannerUrl: localStorage.getItem("app_welcome_banner_url") || "",
+      appIcon: localStorage.getItem("app_icon_class") || "bi-car-front-fill",
     };
   },
   getters: {
@@ -174,6 +177,14 @@ export const useMainStore = defineStore("main", {
       setTimeout(() => {
         this.toasts = this.toasts.filter((t) => t.id !== id);
       }, 4000);
+    },
+    updateBranding(logoUrl, welcomeBannerUrl, appIcon) {
+      this.logoUrl = logoUrl || "";
+      this.welcomeBannerUrl = welcomeBannerUrl || "";
+      this.appIcon = appIcon || "bi-car-front-fill";
+      localStorage.setItem("app_logo_url", this.logoUrl);
+      localStorage.setItem("app_welcome_banner_url", this.welcomeBannerUrl);
+      localStorage.setItem("app_icon_class", this.appIcon);
     },
     async loadWelcomeScreenInfo() {
       try {
