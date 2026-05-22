@@ -3,7 +3,7 @@
     class="md:hidden fixed bottom-4.5 left-4.5 right-4.5 flex gap-1 rounded-2xl shadow-[0_12px_24px_-4px_rgba(0,0,0,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] border border-slate-200/50 bg-white/70 backdrop-blur-md p-1.5 z-30 select-none"
   >
     <button
-      v-if="user && user.Role !== 'Master'"
+      v-if="user"
       @click="setTab('applications')"
       class="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer border-none outline-none relative"
       :class="

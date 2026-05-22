@@ -1,46 +1,60 @@
 <template>
   <div class="space-y-4 max-w-4xl mx-auto w-full pb-20 animate-fade-in px-4">
-    <!-- Header with total and search -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-      <div>
-        <h2 class="text-lg font-black text-slate-800 uppercase tracking-wider font-heading flex items-center gap-2">
-          <i class="bi bi-envelope-paper text-indigo-500"></i>
-          Заявки на Запись
+    <!-- Compact Header with Search Trigger -->
+    <div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-2.5">
+      <div class="flex items-center gap-2">
+        <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest font-heading flex items-center gap-1.5 select-none m-0">
+          <i class="bi bi-envelope-paper text-indigo-500 text-[12px]"></i>
+          Заявки
         </h2>
-        <p class="text-xs text-slate-400 mt-1 select-none">
-          Поступающие заявки из Google-формы автоэлектрики
-        </p>
+        <span class="text-[9px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full select-none">
+          {{ applications.length }}
+        </span>
       </div>
 
-      <div class="relative w-full sm:w-64 max-w-xs">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-          <i class="bi bi-search text-sm"></i>
-        </span>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Поиск по имени, номеру..."
-          class="w-full bg-slate-50 hover:bg-slate-100/50 focus:bg-white text-xs text-slate-700 placeholder-slate-400 border border-slate-200 focus:border-indigo-500 rounded-xl py-2 pl-9 pr-4 outline-none transition-all"
-        />
+      <!-- Compact Search Button & Sliding input -->
+      <div class="flex items-center gap-1.5">
+        <div v-show="showSearch" class="relative max-w-xs animate-fade-in">
+          <input
+            ref="searchInput"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Поиск..."
+            class="w-36 bg-slate-50 hover:bg-slate-100/50 focus:bg-white text-[11px] font-medium text-slate-700 placeholder-slate-400 border border-slate-200 focus:border-indigo-500 rounded-lg py-1 pl-2.5 pr-7 outline-none transition-all"
+          />
+          <button
+            @click="showSearch = false; searchQuery = ''"
+            class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 bg-transparent border-none p-0 cursor-pointer"
+          >
+            <i class="bi bi-x text-sm"></i>
+          </button>
+        </div>
+        <button
+          @click="toggleSearch"
+          class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-1.5/70 hover:border-slate-200 transition cursor-pointer"
+          title="Поиск заявок"
+        >
+          <i class="bi bi-search text-xs"></i>
+        </button>
       </div>
     </div>
 
     <!-- Status tabs / filters -->
-    <div class="flex gap-1.5 overflow-x-auto pb-1 border-b border-slate-100/60 scrollbar-none select-none">
+    <div class="flex gap-1.5 overflow-x-auto pb-1 border-b border-slate-100/65 scrollbar-none select-none">
       <button
         v-for="tab in tabs"
         :key="tab.id"
         @click="activeStatusTab = tab.id"
-        class="px-4 py-2 text-xs.5 font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap outline-none border flex items-center gap-1.5"
+        class="px-3.5 py-1.5 text-xs.5 font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap outline-none border flex items-center gap-1.5"
         :class="
           activeStatusTab === tab.id
-            ? 'bg-indigo-600 text-white border-subtle shadow-sm shadow-indigo-100 font-medium'
+            ? 'bg-indigo-650 text-white border-subtle shadow-sm shadow-indigo-100'
             : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
         "
       >
         <span>{{ tab.label }}</span>
         <span
-          class="text-[10px] px-1.5 py-0.5 rounded-full"
+          class="text-[9px] px-1.5 py-0.2 rounded-full font-black"
           :class="
             activeStatusTab === tab.id
               ? 'bg-white/20 text-white'
@@ -61,7 +75,7 @@
       <div
         v-for="app in filteredApplications"
         :key="app['Отметка времени']"
-        class="bg-white border hover:border-slate-300 rounded-xl p-3 shadow-xs hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
+        class="bg-white border hover:border-slate-300 rounded-xl p-3 shadow-xs hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs animate-fade-in"
         :class="{
           'border-amber-200 bg-amber-50/5': isPending(app),
           'border-emerald-200 bg-emerald-50/5': isDone(app),
@@ -72,29 +86,6 @@
         <div class="flex-1 min-w-0 space-y-1.5">
           <!-- Top Row: Name, Phone, Car Badge, Car Name -->
           <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <!-- Compact Status Icon badge -->
-            <span
-              v-if="isPending(app)"
-              class="inline-flex items-center justify-center w-5.5 h-5.5 rounded-full bg-amber-100 text-amber-700 shrink-0"
-              title="Новая заявка"
-            >
-              <i class="bi bi-envelope text-xs font-black"></i>
-            </span>
-            <span
-              v-else-if="isDone(app)"
-              class="inline-flex items-center justify-center w-5.5 h-5.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0"
-              title="Запись создана"
-            >
-              <i class="bi bi-calendar-check-fill text-xs"></i>
-            </span>
-            <span
-              v-else-if="isDeclined(app)"
-              class="inline-flex items-center justify-center w-5.5 h-5.5 rounded-full bg-rose-100 text-rose-600 shrink-0"
-              title="Отклонён"
-            >
-              <i class="bi bi-slash-circle-fill text-xs"></i>
-            </span>
-
             <span class="font-bold text-slate-800 text-sm.5">
               {{ app['Ваше Имя'] || 'Без имени' }}
             </span>
@@ -111,9 +102,9 @@
             <!-- Plate Number -->
             <div
               v-if="app['Государственный номер машины (госномер)']"
-              class="inline-flex items-center gap-0.5 px-1 py-0.2 border border-slate-350 bg-slate-50 text-[9px] rounded font-bold tracking-wider uppercase font-mono shadow-2xs text-slate-800 select-none scale-95"
+              class="inline-flex items-center gap-0.5 px-1.5 py-0.2 border border-slate-300 bg-slate-50 text-[9px] rounded font-bold tracking-wider uppercase font-mono shadow-2xs text-slate-800 select-none scale-95"
             >
-              <span class="text-[8px] text-slate-400 border-r border-slate-350 pr-0.5 select-none font-bold">KG</span>
+              <span class="text-[8px] text-slate-400 border-r border-slate-300 pr-0.5 select-none font-bold">KG</span>
               {{ app['Государственный номер машины (госномер)'] }}
             </div>
 
@@ -157,38 +148,32 @@
         </div>
 
         <!-- Action Panel & Status Badges column -->
-        <div class="flex items-center gap-1.5 shrink-0 justify-end flex-wrap sm:flex-nowrap">
-          <!-- Status icon badge with compact tags -->
-          <div class="flex items-center gap-1 shrink-0">
+        <div class="flex items-center gap-2 shrink-0 justify-end flex-wrap sm:flex-nowrap">
+          <!-- Status icon-only badge (no text, optimized colors) -->
+          <div class="flex items-center justify-center select-none shrink-0" :title="isPending(app) ? 'Открыт' : isDone(app) ? 'Запись создана' : 'Отклонён'">
             <span
               v-if="isPending(app)"
-              class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/50 select-none flex items-center gap-1"
-              title="Не обработан"
+              class="w-6 h-6 rounded-full bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center"
             >
-              <i class="bi bi-envelope-open text-[10px]"></i>
-              Запись
+              <i class="bi bi-envelope text-xs font-bold"></i>
             </span>
             <span
               v-else-if="isDone(app)"
-              class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/40 select-none flex items-center gap-1"
-              title="Запись успешно внесена"
+              class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center"
             >
-              <i class="bi bi-calendar-check-fill text-[10px]"></i>
-              Создано
+              <i class="bi bi-calendar-check-fill text-xs"></i>
             </span>
             <span
               v-else-if="isDeclined(app)"
-              class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200/40 select-none flex items-center gap-1"
-              title="Заявка отклонена"
+              class="w-6 h-6 rounded-full bg-rose-50 text-rose-600 border border-rose-250 flex items-center justify-center animate-fade-in"
             >
-              <i class="bi bi-trash3 text-[10px]"></i>
-              Отклонён
+              <i class="bi bi-slash-circle-fill text-[11px]"></i>
             </span>
           </div>
 
-          <!-- Buttons -->
+          <!-- Action Buttons Control with Role Protections -->
           <div class="flex items-center gap-1 shrink-0">
-            <!-- If record is already created -->
+            <!-- If record is already created (isDone) -->
             <button
               v-if="isDone(app)"
               @click="openLinkedRecord(app['IDRecords'])"
@@ -199,15 +184,16 @@
               Открыть
             </button>
 
-            <!-- If user is Superadmin & not processed -->
-            <template v-else-if="user && user.Role === 'Superadmin'">
+            <!-- Editable Actions: Masters ONLY edit "Открытые" entries, while Admins/Superadmins can process declined too -->
+            <template v-else-if="isPending(app) || (user && user.Role !== 'Master')">
+              <!-- "Запись" - renamed from "Назначить" -->
               <button
                 @click="createRecordFromApp(app)"
                 class="h-7 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-1 text-[11px] font-bold transition border border-indigo-700 shadow-sm cursor-pointer"
-                title="Создать запись на основе заявки"
+                title="Оформить запись клиента"
               >
                 <i class="bi bi-calendar-plus"></i>
-                Назначить
+                Запись
               </button>
 
               <button
@@ -219,14 +205,15 @@
               </button>
             </template>
 
+            <!-- Regular Masters view status label on non-editable processed entries -->
             <span
-              v-else-if="!isDone(app)"
-              class="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded select-none"
+              v-else-if="user && user.Role === 'Master'"
+              class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded select-none uppercase tracking-wider"
             >
-              Просмотр
+              Закрыта
             </span>
 
-            <!-- Delete button for Superadmin -->
+            <!-- Delete button ONLY for Superadmin -->
             <button
               v-if="user && user.Role === 'Superadmin'"
               @click="deleteApplication(app)"
@@ -276,11 +263,12 @@ export default {
   data() {
     return {
       searchQuery: "",
+      showSearch: false,
       activeStatusTab: "pending",
       tabs: [
-        { id: "pending", label: "Не обработаны" },
-        { id: "created", label: "Созданы записи" },
-        { id: "declined", label: "Отклоненные" },
+        { id: "pending", label: "Открытые" },
+        { id: "created", label: "Запись" },
+        { id: "declined", label: "Отклонённые" },
         { id: "all", label: "Все" },
       ],
     };
@@ -363,6 +351,18 @@ export default {
     },
     createRecordFromApp(app) {
       this.$emit("open-record", null, app);
+    },
+    toggleSearch() {
+      this.showSearch = !this.showSearch;
+      if (this.showSearch) {
+        this.$nextTick(() => {
+          if (this.$refs.searchInput) {
+            this.$refs.searchInput.focus();
+          }
+        });
+      } else {
+        this.searchQuery = "";
+      }
     },
     async declineApplication(app) {
       const name = app["Ваше Имя"] || "Клиент";

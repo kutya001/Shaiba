@@ -129,7 +129,7 @@
           />
 
           <ApplicationsTab
-            v-if="activeTab === 'applications' && user.Role !== 'Master'"
+            v-if="activeTab === 'applications'"
             :db="db"
             :user="user"
             @open-record="openRecordModal"

@@ -14,7 +14,7 @@
     </div>
     <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
       <a
-        v-if="user && user.Role !== 'Master'"
+        v-if="user"
         @click="setTab('applications')"
         :class="
           activeTab === 'applications'
