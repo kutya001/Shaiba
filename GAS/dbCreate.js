@@ -5,7 +5,13 @@ function createDatabase() {
     'Records': ['ID', 'ClientName', 'Phone', 'CarNumber', 'BrandID', 'ModelID', 'MasterID', 'StartTime', 'EndTime', 'Status', 'ServicesJSON', 'AdditionalServices', 'TotalAmount', 'Comment', 'IsPaid'],
     'Services': ['ID', 'Name', 'Price'],
     'Brands': ['ID', 'Name'],
-    'Models': ['ID', 'BrandID', 'Name']
+    'Models': ['ID', 'BrandID', 'Name'],
+    'Заявки на Запись': [
+      'Отметка времени', 'Ваше Имя', 'Контактный номер телефона', 'Государственный номер машины (госномер)', 
+      'Марка автомобиля', 'Модель автомобиля', 'Год выпуска автомобиля', 
+      'Выберите необходимые услуги автоэлектрики (если применимо)', 'Предполагаемая дата записи', 'Предполагаемое время записи', 
+      'Краткое описание проблемы или комментарий (по желанию)', 'Адрес электронной почты', 'IDRecords', 'Статус Заявки'
+    ]
   };
 
   for (var tab in tables) {

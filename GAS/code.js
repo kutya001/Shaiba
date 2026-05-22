@@ -175,7 +175,8 @@ function getInitData(role, userId) {
     services: getTable('Services'),
     users: getTable('Users'),
     brands: getTable('Brands'),
-    models: getTable('Models')
+    models: getTable('Models'),
+    applications: getTable('Заявки на Запись')
   };
   return data;
 }
@@ -268,13 +269,27 @@ function updateRow(sheetName, obj) {
   return getInitData(role || 'Master', userId);
 }
 
+function isIdMatch(cellVal, id) {
+  if (String(cellVal) === String(id)) return true;
+  if (!cellVal || !id) return false;
+  if (cellVal instanceof Date) {
+    var cellMs = cellVal.getTime();
+    var idMs = Date.parse(id);
+    if (!isNaN(idMs) && Math.abs(cellMs - idMs) < 2000) return true; // match within 2 seconds tolerance
+    try {
+      if (cellVal.toISOString() === new Date(id).toISOString()) return true;
+    } catch(e) {}
+  }
+  return false;
+}
+
 function updateRowBase(sheetName, id, updates) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(sheetName);
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
   for(var i = 1; i < data.length; i++) {
-    if(data[i][0] === id) {
+    if(isIdMatch(data[i][0], id)) {
       for(var key in updates) {
         var colIndex = headers.indexOf(key);
         if(colIndex > -1) {
@@ -298,7 +313,7 @@ function deleteRow(sheetName, id, role, userId) {
   var sheet = ss.getSheetByName(sheetName);
   var data = sheet.getDataRange().getValues();
   for(var i = 1; i < data.length; i++) {
-    if(data[i][0] === id) {
+    if(isIdMatch(data[i][0], id)) {
       sheet.deleteRow(i + 1);
       break;
     }
@@ -476,7 +491,8 @@ function getDbVersions() {
       services: props.services_version || '1',
       users: props.users_version || '1',
       brands: props.brands_version || '1',
-      models: props.models_version || '1'
+      models: props.models_version || '1',
+      applications: props.applications_version || '1'
     };
   } catch (e) {
     return {
@@ -484,7 +500,8 @@ function getDbVersions() {
       services: '1',
       users: '1',
       brands: '1',
-      models: '1'
+      models: '1',
+      applications: '1'
     };
   }
 }

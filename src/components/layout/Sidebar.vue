@@ -14,6 +14,33 @@
     </div>
     <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
       <a
+        v-if="user && user.Role !== 'Master'"
+        @click="setTab('applications')"
+        :class="
+          activeTab === 'applications'
+            ? 'bg-indigo-50 text-indigo-700'
+            : 'text-slate-600 hover:bg-slate-50'
+        "
+        class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-bold cursor-pointer transition-colors text-sm"
+      >
+        <i
+          class="bi bi-envelope-paper w-5 h-5 text-lg flex items-center justify-center relative"
+        >
+          <span
+            v-if="unprocessedApplicationsCount > 0"
+            class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"
+          ></span>
+        </i>
+        <span>Заявки</span>
+        <span
+          v-if="unprocessedApplicationsCount > 0"
+          class="ml-auto bg-red-100 text-red-600 text-[10px] font-black px-1.5 py-0.5 rounded-full"
+        >
+          {{ unprocessedApplicationsCount }}
+        </span>
+      </a>
+
+      <a
         @click="setTab('records')"
         :class="
           activeTab === 'records'
@@ -131,6 +158,12 @@ export default {
     user() {
       const store = useMainStore();
       return store.user;
+    },
+    unprocessedApplicationsCount() {
+      const store = useMainStore();
+      return (store.db.applications || []).filter(
+        (a) => !a['Статус Заявки'] || String(a['Статус Заявки']).trim() === ''
+      ).length;
     },
   },
   methods: {

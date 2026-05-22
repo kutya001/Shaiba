@@ -127,6 +127,13 @@
             @approve-user="approveUser"
             @open-user-config="openUserConfigModal"
           />
+
+          <ApplicationsTab
+            v-if="activeTab === 'applications' && user.Role !== 'Master'"
+            :db="db"
+            :user="user"
+            @open-record="openRecordModal"
+          />
         </div>
 
         <div
@@ -174,6 +181,7 @@ import AuthView from "./views/AuthView.vue";
 import Sidebar from "./components/layout/Sidebar.vue";
 import Header from "./components/layout/Header.vue";
 import MobileNav from "./components/layout/MobileNav.vue";
+import ApplicationsTab from "./views/ApplicationsTab.vue";
 
 
 export default {
@@ -192,6 +200,7 @@ export default {
     Sidebar,
     Header,
     MobileNav,
+    ApplicationsTab,
 
   },
   data() {
@@ -452,9 +461,9 @@ export default {
         this.$refs.profileModal.open();
       }
     },
-    openRecordModal(record = null) {
+    openRecordModal(record = null, application = null) {
       if (this.$refs.recordModal) {
-        this.$refs.recordModal.open(record);
+        this.$refs.recordModal.open(record, application);
       }
     },
     openRefModal(tab, item = null) {

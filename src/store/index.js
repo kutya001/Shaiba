@@ -106,7 +106,7 @@ export const useMainStore = defineStore("main", {
     }
     return {
       user: savedUser,
-      db: { records: [], services: [], brands: [], models: [], users: [] },
+      db: { records: [], services: [], brands: [], models: [], users: [], applications: [] },
       syncQueue: [],
       isSyncing: false,
       toasts: [],
@@ -255,6 +255,7 @@ export const useMainStore = defineStore("main", {
         brands: [],
         models: [],
         users: [],
+        applications: [],
       };
       this.versions = null;
       this.isPolling = false;
@@ -479,6 +480,7 @@ export const useMainStore = defineStore("main", {
               if (k === "brands") sheetName = "Brands";
               if (k === "models") sheetName = "Models";
               if (k === "users") sheetName = "Users";
+              if (k === "applications") sheetName = "Заявки на Запись";
 
               if (sheetName) {
                 let newData = await runGS("getTable", { sheetName });
@@ -523,6 +525,8 @@ export const useMainStore = defineStore("main", {
                     ];
                   } else if (k === "users") {
                     this.db.users = newData;
+                  } else if (k === "applications") {
+                    this.db.applications = newData;
                   }
                 }
               }
