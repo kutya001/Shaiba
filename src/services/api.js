@@ -38,6 +38,8 @@ export const runGS = async (func, ...args) => {
   } else if (func === "getInitData") {
     payload.role = args[0];
     payload.userId = args[1];
+  } else if (func === "getTable") {
+    payload.sheetName = args[0];
   } else if (func === "addRow") {
     payload.sheetName = args[0];
     payload.obj = args[1];

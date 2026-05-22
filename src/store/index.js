@@ -175,6 +175,21 @@ export const useMainStore = defineStore("main", {
         this.toasts = this.toasts.filter((t) => t.id !== id);
       }, 4000);
     },
+    async loadWelcomeScreenInfo() {
+      try {
+        const screens = await runGS("getTable", "WelcomeScreens");
+        if (Array.isArray(screens) && screens.length > 0) {
+          this.db.welcomescreens = screens;
+          const screen = screens.find((s) => s.ID === "welcome_main") || screens[0];
+          if (screen) {
+            if (screen.Title) localStorage.setItem("welcome_screen_title", screen.Title);
+            if (screen.Text) localStorage.setItem("welcome_screen_text", screen.Text);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load welcome screen info", err);
+      }
+    },
     async loadInitialData() {
       if (!this.user) return;
       this.loading = true;

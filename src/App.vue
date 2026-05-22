@@ -328,6 +328,7 @@ export default {
     },
   },
   mounted() {
+    this.loadWelcomeScreenInfo();
     try {
       let savedUser = localStorage.getItem("currentUser");
       if (savedUser) {
@@ -342,6 +343,7 @@ export default {
   methods: {
     ...mapActions(useMainStore, [
       "showToast",
+      "loadWelcomeScreenInfo",
       "loadInitialData",
       "dispatchSync",
       "processSyncQueue",
