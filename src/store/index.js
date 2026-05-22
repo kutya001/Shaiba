@@ -119,6 +119,8 @@ export const useMainStore = defineStore("main", {
       logoUrl: localStorage.getItem("app_logo_url") || "",
       welcomeBannerUrl: localStorage.getItem("app_welcome_banner_url") || "",
       appIcon: localStorage.getItem("app_icon_class") || "bi-car-front-fill",
+      showGamesLobby: false,
+      activeGameId: null,
     };
   },
   getters: {
@@ -185,6 +187,15 @@ export const useMainStore = defineStore("main", {
       localStorage.setItem("app_logo_url", this.logoUrl);
       localStorage.setItem("app_welcome_banner_url", this.welcomeBannerUrl);
       localStorage.setItem("app_icon_class", this.appIcon);
+    },
+    toggleGamesLobby(show) {
+      this.showGamesLobby = show;
+      if (!show) {
+        this.activeGameId = null;
+      }
+    },
+    setActiveGameId(id) {
+      this.activeGameId = id;
     },
     async loadWelcomeScreenInfo() {
       try {

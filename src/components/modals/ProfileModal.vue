@@ -76,6 +76,14 @@
 
             <!-- Reopen Welcome screen / About app -->
             <button
+              @click="openGamesLobby"
+              class="flex items-center justify-center gap-2 w-full py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100/70 rounded-xl font-bold transition border-none cursor-pointer mb-2"
+              id="btn-open-games-lobby"
+            >
+              <i class="bi bi-controller text-base"></i> Игротека ERP (Мини-игры)
+            </button>
+
+            <button
               @click="reopenWelcome"
               class="flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100/70 rounded-xl font-bold transition border-none cursor-pointer mb-2"
               id="btn-reopen-welcome-modal"
@@ -337,6 +345,10 @@ export default {
     reopenWelcome() {
       this.hide();
       this.$emit("reopen-welcome");
+    },
+    openGamesLobby() {
+      this.hide();
+      this.store.toggleGamesLobby(true);
     },
   },
 };

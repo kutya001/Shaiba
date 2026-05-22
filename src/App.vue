@@ -165,6 +165,7 @@
     <UserConfigModal ref="userConfigModal" :store="store" @save="refreshUsers" />
     <RefModal ref="refModal" />
     <BulkUploadModal ref="bulkModal" />
+    <GameContainer />
   </div>
 </template>
 
@@ -187,6 +188,7 @@ import Sidebar from "./components/layout/Sidebar.vue";
 import Header from "./components/layout/Header.vue";
 import MobileNav from "./components/layout/MobileNav.vue";
 import ApplicationsTab from "./views/ApplicationsTab.vue";
+import GameContainer from "./games/GameContainer.vue";
 
 
 export default {
@@ -206,6 +208,7 @@ export default {
     Header,
     MobileNav,
     ApplicationsTab,
+    GameContainer,
 
   },
   data() {
