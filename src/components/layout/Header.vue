@@ -48,7 +48,7 @@
           @input="onSearchInput"
           ref="mobileSearchInput"
           class="w-full h-10 pl-8 pr-8 rounded-xl bg-white text-slate-800 text-xs font-semibold outline-none border border-slate-200/50 shadow-md focus:border-indigo-500/80"
-          placeholder="Поиск по госномеру..."
+          :placeholder="activeTab === 'refs' ? 'Поиск...' : 'Поиск по госномеру...'"
         />
         <span
           class="material-symbols-outlined text-[16px] text-slate-400 absolute left-2.5 top-3"
@@ -67,7 +67,7 @@
       >
         <!-- Search Icon Toggle for Records -->
         <button
-          v-if="activeTab === 'records' && !localSearchExpanded"
+          v-if="(activeTab === 'records' || activeTab === 'refs') && !localSearchExpanded"
           @click="openSearch"
           class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50/50 transition cursor-pointer"
         >
@@ -144,12 +144,12 @@
 
 
         <!-- Search icon & Input in Desktop Header -->
-        <div v-if="activeTab === 'records'" class="flex items-center gap-1.5">
+        <div v-if="activeTab === 'records' || activeTab === 'refs'" class="flex items-center gap-1.5">
           <button
             v-if="!localSearchExpanded"
             @click="openSearch"
             class="w-9 h-9 rounded-xl bg-slate-50 border border-slate-150 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-indigo-600 transition cursor-pointer"
-            title="Поиск записей"
+            title="Поиск"
           >
             <span class="material-symbols-outlined text-[18px]">search</span>
           </button>
@@ -159,7 +159,7 @@
               :value="searchQuery"
               @input="onSearchInput"
               class="w-60 h-9.5 pl-9 pr-8 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-150/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 outline-none transition"
-              placeholder="Поиск по госномеру..."
+              :placeholder="activeTab === 'refs' ? 'Поиск...' : 'Поиск по госномеру...'"
             />
             <span
               class="material-symbols-outlined text-[18px] text-slate-400 absolute left-3 top-2.5"
@@ -279,6 +279,9 @@ export default {
   watch: {
     isSearchExpanded(v) {
       this.localSearchExpanded = v;
+    },
+    activeTab() {
+      this.closeSearch();
     },
   },
   computed: {

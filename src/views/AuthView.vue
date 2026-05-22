@@ -132,13 +132,64 @@
           Супер-администратором.
         </p>
       </div>
+
+      <!-- Collapsible Apps Script URL Settings -->
+      <div class="mt-8 pt-6 border-t border-slate-100">
+        <button
+          @click="showGasConfig = !showGasConfig"
+          class="w-full flex items-center justify-between text-xs font-bold text-slate-400 hover:text-indigo-600 transition border-none bg-transparent cursor-pointer p-0"
+        >
+          <span class="flex items-center gap-1.5 select-none">
+            <span class="material-symbols-outlined text-[16px]">settings_ethernet</span>
+            Настройка API (Google Apps Script)
+          </span>
+          <span class="material-symbols-outlined text-[16px] transition-transform duration-200" :class="{ 'rotate-180': showGasConfig }">
+            expand_more
+          </span>
+        </button>
+
+        <div v-show="showGasConfig" class="mt-4 space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-150/50 text-left">
+          <p class="text-[11px] text-slate-500 leading-relaxed font-semibold">
+            При ошибке <b>"Failed to fetch"</b>:
+          </p>
+          <ul class="text-[11px] text-slate-500 leading-relaxed list-disc pl-4 space-y-1">
+            <li>Убедитесь, что в макросе Google Sheets выполнен разворот (Deploy) как <b>Веб-приложение (Web App)</b>.</li>
+            <li>Доступ веб-приложения обязательно должен быть задан <b>"Для всех" (Anyone)</b>.</li>
+            <li>Если выполнен вход во многие Google-аккаунты одновременно, Google может блокировать CORS-запрос. Решение - откройте приложение в режиме <b>Инкогнито</b>.</li>
+          </ul>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">URL Веб-приложения:</label>
+            <div class="flex gap-2">
+              <input
+                v-model="gasConfigUrl"
+                type="text"
+                class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono outline-none focus:border-indigo-500 transition"
+                placeholder="https://script.google.com/macros/s/.../exec"
+              />
+              <button
+                @click="saveGasUrl"
+                class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition border-none cursor-pointer"
+              >
+                Сохранить
+              </button>
+            </div>
+            <button
+              v-if="hasCustomGasUrl"
+              @click="resetGasUrl"
+              class="mt-2 text-[10px] font-bold text-red-500 hover:text-red-600 hover:underline border-none bg-transparent cursor-pointer p-0"
+            >
+              Сбросить к заводскому URL
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { useMainStore } from "../store";
-import { runGS } from "../services/api";
+import { runGS, getGasUrl, setGasUrl } from "../services/api";
 import { formatPhoneInput } from "../utils/helpers";
 
 export default {
@@ -147,9 +198,36 @@ export default {
       authMode: "login",
       authForm: { username: "", password: "", name: "", phone: "+996 " },
       authLoading: false,
+      showGasConfig: false,
+      gasConfigUrl: "",
     };
   },
+  computed: {
+    hasCustomGasUrl() {
+      return !!localStorage.getItem("GAS_URL");
+    }
+  },
+  mounted() {
+    this.gasConfigUrl = getGasUrl();
+  },
   methods: {
+    saveGasUrl() {
+      const store = useMainStore();
+      if (!this.gasConfigUrl || !this.gasConfigUrl.startsWith("https://script.google.com/")) {
+        store.showToast("Неверный формат URL. Ссылка должна начинаться с Google Script", "error");
+        return;
+      }
+      setGasUrl(this.gasConfigUrl);
+      store.showToast("URL подключения обновлен!");
+      this.showGasConfig = false;
+    },
+    resetGasUrl() {
+      const store = useMainStore();
+      setGasUrl(null);
+      this.gasConfigUrl = getGasUrl();
+      store.showToast("Сброшено к оригинальному URL");
+      this.showGasConfig = false;
+    },
     onPhoneInput() {
       this.authForm.phone = formatPhoneInput(this.authForm.phone);
     },

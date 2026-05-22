@@ -81,6 +81,55 @@
             </button>
           </div>
 
+          <!-- Google Apps Script URL Settings -->
+          <div
+            v-if="!isEditingProfile"
+            class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm animate-fade-in text-left"
+          >
+            <button
+              @click="showGasConfig = !showGasConfig"
+              class="w-full flex items-center justify-between text-xs font-bold text-slate-500 hover:text-indigo-600 transition border-none bg-transparent cursor-pointer p-0"
+            >
+              <span class="flex items-center gap-1.5 select-none animate-none">
+                <span class="material-symbols-outlined text-[16px]">settings_ethernet</span>
+                Настройка API (Google Apps Script)
+              </span>
+              <span class="material-symbols-outlined text-[16px] transition-transform duration-200" :class="{ 'rotate-180': showGasConfig }">
+                expand_more
+              </span>
+            </button>
+
+            <div v-show="showGasConfig" class="mt-4 space-y-3">
+              <p class="text-[11px] text-slate-500 leading-relaxed font-semibold m-0">
+                При ошибке <b>"Failed to fetch"</b> убедитесь, что URL макроса развернут как Веб-приложение с доступом <b>"Для всех" (Anyone)</b>. При многоаккаунтном входе Google используйте режим <b>Инкогнито</b>.
+              </p>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">URL макроса:</label>
+                <div class="flex gap-2">
+                  <input
+                    v-model="gasConfigUrl"
+                    type="text"
+                    class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono outline-none focus:border-indigo-500 transition"
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                  />
+                  <button
+                    @click="saveGasUrl"
+                    class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition border-none cursor-pointer shrink-0"
+                  >
+                    ОК
+                  </button>
+                </div>
+                <button
+                  v-if="hasCustomGasUrl"
+                  @click="resetGasUrl"
+                  class="mt-2 text-[10px] font-bold text-red-500 hover:text-red-600 hover:underline border-none bg-transparent cursor-pointer p-0"
+                >
+                  Сбросить к заводскому URL
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Edit mode -->
           <div
             v-else
@@ -182,7 +231,7 @@
 
 <script>
 import { useMainStore } from "../../store";
-import { runGS } from "../../services/api";
+import { runGS, getGasUrl, setGasUrl } from "../../services/api";
 import { formatPhoneInput } from "../../utils/helpers";
 
 export default {
@@ -192,9 +241,14 @@ export default {
       profileForm: { username: "", Name: "", Phone: "+996 ", password: "" },
       isSavingProfile: false,
       bsModal: null,
+      showGasConfig: false,
+      gasConfigUrl: "",
     };
   },
   computed: {
+    hasCustomGasUrl() {
+      return !!localStorage.getItem("GAS_URL");
+    },
     store() {
       return useMainStore();
     },
@@ -216,10 +270,26 @@ export default {
         this.profileForm.Phone = this.user.Phone || "+996 ";
         this.profileForm.password = "";
       }
+      this.gasConfigUrl = getGasUrl();
       if (this.bsModal) this.bsModal.show();
     },
     hide() {
       if (this.bsModal) this.bsModal.hide();
+    },
+    saveGasUrl() {
+      if (!this.gasConfigUrl || !this.gasConfigUrl.startsWith("https://script.google.com/")) {
+        this.store.showToast("Неверный формат URL. Ссылка должна начинаться с Google Script", "error");
+        return;
+      }
+      setGasUrl(this.gasConfigUrl);
+      this.store.showToast("URL подключения обновлен!");
+      this.showGasConfig = false;
+    },
+    resetGasUrl() {
+      setGasUrl(null);
+      this.gasConfigUrl = getGasUrl();
+      this.store.showToast("Сброшено к оригинальному URL");
+      this.showGasConfig = false;
     },
     onPhoneInput() {
       this.profileForm.Phone = formatPhoneInput(this.profileForm.Phone);

@@ -1,95 +1,105 @@
 <template>
-  <div class="space-y-4">
-    <h2 class="text-xl font-bold tracking-tight text-slate-800 mb-4 px-2">
-      Персонал и Доступ
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <article
+  <div class="space-y-4 max-w-md mx-auto w-full pb-20 animate-fade-in">
+    <div class="flex justify-between items-center px-1">
+      <h2 class="text-sm font-black text-slate-800 uppercase tracking-wider font-heading flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[16px] text-indigo-500">group</span>
+        Штат автосервиса
+      </h2>
+      <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/40">
+        {{ db.users ? db.users.length : 0 }} чел.
+      </span>
+    </div>
+
+    <div class="space-y-2">
+      <div
         v-for="u in db.users"
         :key="u.ID"
-        class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 hover:shadow-md transition flex flex-col gap-3"
+        class="bg-white border border-slate-150/60 hover:border-indigo-150/80 rounded-xl p-3 shadow-sm hover:shadow transition-all flex items-center justify-between gap-3"
       >
-        <div class="flex justify-between items-start">
-          <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-sm tracking-tighter shrink-0 border border-slate-200"
-            >
-              {{
-                u.Name
-                  ? u.Name.slice(0, 2).toUpperCase()
-                  : u.Username.slice(0, 2).toUpperCase()
-              }}
-            </div>
-            <div>
-              <h3 class="font-bold text-[15px] text-slate-800 m-0">
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <!-- Compact initials avatar -->
+          <div
+            class="w-8.5 h-8.5 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 font-extrabold text-[11px] tracking-tight shrink-0 border border-slate-200/50 uppercase select-none"
+          >
+            {{ u.Name ? u.Name.slice(0, 2) : u.Username.slice(0, 2) }}
+          </div>
+          <!-- Name and detailed badges -->
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <h3 class="font-bold text-xs.5 text-slate-800 m-0 truncate">
                 {{ u.Name || u.Username }}
               </h3>
-              <p class="text-xs font-semibold text-slate-500 m-0">
-                @{{ u.Username }}
-              </p>
+              <span
+                class="px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider font-mono scale-95"
+                :class="u.Role === 'Superadmin'
+                  ? 'bg-red-50 text-red-600 border border-red-150/40'
+                  : u.Role === 'SenMaster'
+                    ? 'bg-amber-50 text-amber-600 border border-amber-150/40'
+                    : 'bg-indigo-50 text-indigo-600 border border-indigo-150/40'"
+              >
+                {{
+                  u.Role === "Superadmin"
+                    ? "Админ"
+                    : u.Role === "SenMaster"
+                      ? "Ст.Мастер"
+                      : "Мастер"
+                }}
+              </span>
+            </div>
+            <!-- Secondary labels -->
+            <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 font-semibold flex-wrap">
+              <span class="truncate">@{{ u.Username }}</span>
+              <span class="text-slate-300">•</span>
+              <a
+                v-if="u.Phone"
+                :href="'tel:' + u.Phone"
+                class="text-indigo-600 hover:text-indigo-700 hover:underline flex items-center gap-0.5 truncate"
+              >
+                <span class="material-symbols-outlined text-[11px]">phone</span>
+                {{ u.Phone }}
+              </a>
+              <span v-else class="text-slate-300">нет телефона</span>
             </div>
           </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Status Badge -->
           <span
-            class="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border"
+            class="px-1.5 py-0.5 rounded text-[8.5px] font-black uppercase tracking-wider border font-mono select-none"
             :class="
               u.Status === 'Approved'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-amber-50 text-amber-700 border-amber-200'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-150/30'
+                : 'bg-amber-50 text-amber-700 border-amber-150/30'
             "
-            >{{ u.Status }}</span
           >
-        </div>
+            {{ u.Status === 'Approved' ? 'Допущен' : 'Ожидает' }}
+          </span>
 
-        <div
-          class="grid grid-cols-2 gap-2 mt-2 bg-slate-50 p-3 rounded-xl border border-slate-100"
-        >
-          <div class="flex flex-col gap-0.5">
-            <span
-              class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-              >Роль</span
+          <!-- Quick Actions -->
+          <div class="flex items-center gap-1">
+            <button
+              v-if="u.Status === 'Pending'"
+              @click="$emit('approve-user', u.ID)"
+              class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center transition border-none cursor-pointer p-0"
+              title="Одобрить доступ"
             >
-            <span class="text-xs font-bold text-slate-700">{{
-              u.Role === "Superadmin"
-                ? "Супер-админ"
-                : u.Role === "SenMaster"
-                  ? "Ст. мастер"
-                  : "Мастер"
-            }}</span>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <span
-              class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-              >Телефон</span
+              <span class="material-symbols-outlined text-[15px] font-bold">done</span>
+            </button>
+            <button
+              @click="$emit('open-user-config', u)"
+              class="w-7 h-7 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center transition border-none cursor-pointer p-0"
+              title="Настройки"
             >
-            <a
-              v-if="u.Phone"
-              :href="'tel:' + u.Phone"
-              class="text-xs font-bold text-indigo-600 hover:underline"
-              >{{ u.Phone }}</a
-            >
-            <span v-else class="text-xs font-bold text-slate-400">—</span>
+              <span class="material-symbols-outlined text-[15px] font-bold">settings</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        <div class="flex items-center gap-2 mt-auto pt-2">
-          <button
-            v-if="u.Status === 'Pending'"
-            @click="$emit('approve-user', u.ID)"
-            class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-[13px] font-bold hover:bg-emerald-700 transition shadow-sm"
-          >
-            Одобрить
-          </button>
-          <button
-            @click="$emit('open-user-config', u)"
-            class="flex-1 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-[13px] font-bold transition"
-          >
-            Настроить
-          </button>
-        </div>
-      </article>
       <div
         v-if="!db.users || db.users.length === 0"
-        class="col-span-full py-10 text-center text-slate-500 font-medium"
+        class="py-10 text-center text-slate-400 font-medium text-xs"
       >
         Нет сотрудников
       </div>

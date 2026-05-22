@@ -1,48 +1,48 @@
 <template>
-  <div class="space-y-6 max-w-md mx-auto w-full pb-20">
+  <div class="space-y-4 max-w-md mx-auto w-full pb-20">
             <!-- Grid view -->
             <div v-if="refTab === 'grid'" class="fade-transition">
               <h1
-                class="text-2xl font-bold tracking-tight text-center mb-6 font-heading text-slate-800"
+                class="text-xl font-bold tracking-tight text-center mb-4 font-heading text-slate-800"
               >
                 Справочники
               </h1>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-3 gap-2.5">
                 <div
                   v-for="(meta, key) in refMeta"
                   :key="key"
                   @click="refTab = key"
-                  class="bg-surface rounded-2xl p-5 shadow-soft border border-border-subtle/50 cursor-pointer flex flex-col items-center justify-center gap-3 text-center active:scale-95 transition-transform hover:shadow-md"
+                  class="bg-surface rounded-xl p-3 shadow-sm border border-border-subtle/50 cursor-pointer flex flex-col items-center justify-center gap-2 text-center active:scale-95 transition-all hover:bg-slate-50"
                 >
                   <div
-                    class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0"
+                    class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"
                   >
                     <span
-                      class="material-symbols-outlined text-2xl font-medium"
+                      class="material-symbols-outlined text-[18px] font-medium"
                       >{{ meta.icon }}</span
                     >
                   </div>
                   <div>
                     <div
-                      class="font-bold text-text-main text-[16px] font-heading"
+                      class="font-bold text-slate-800 text-xs font-heading"
                     >
                       {{ meta.title }}
                     </div>
-                    <div class="text-[11px] text-muted font-medium mt-0.5">
-                      {{ db[key] ? db[key].length : 0 }} записей
+                    <div class="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
+                      {{ db[key] ? db[key].length : 0 }} зап.
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="mt-8">
-                <h2 class="font-bold text-lg mb-3 text-text-main font-heading">
+              <div class="mt-6 border-t border-slate-100 pt-4">
+                <h2 class="font-bold text-xs mb-1.5 text-slate-700 font-heading">
                   Управление данными
                 </h2>
                 <div
-                  class="bg-surface rounded-2xl p-5 shadow-soft border border-border-subtle/50 text-sm text-text-main leading-relaxed"
+                  class="text-[11px] text-slate-500 leading-relaxed font-semibold"
                 >
                   Справочники позволяют быстро заполнять карточки обслуживания.
-                  Добавьте свои услуги, мастеров и марки автомобилей для
+                  Добавьте свои услуги, марки и модели автомобилей для
                   автоматизации работы сервиса.
                 </div>
               </div>
@@ -84,23 +84,23 @@
                         <th
                           v-for="f in refMeta[refTab].fields"
                           :key="f.k"
-                          class="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest"
+                          class="px-3 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
                         >
                           {{ f.l }}
                         </th>
-                        <th class="px-4 py-2 w-16"></th>
+                        <th class="px-3 py-1 w-14"></th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                       <tr
-                        v-for="item in db[refTab]"
+                        v-for="item in (refTab === 'services' ? filteredServices : filteredBrands)"
                         :key="item.ID"
                         class="hover:bg-slate-50 group cursor-pointer"
                         @click="$emit('open-ref-modal', refTab, item)"
                       >
                         <td
                           v-for="f in refMeta[refTab].fields"
-                          class="px-4 py-2 text-sm font-medium text-slate-800 shrink-0"
+                          class="px-3 py-0.5 text-xs font-semibold text-slate-800 shrink-0"
                         >
                           <span v-if="f.t === 'number'">{{
                             Number(item[f.k]).toLocaleString()
@@ -110,21 +110,29 @@
                           }}</span>
                           <span v-else>{{ item[f.k] }}</span>
                         </td>
-                        <td class="px-4 py-2 text-right shrink-0" @click.stop>
+                        <td class="px-3 py-0.5 text-right shrink-0" @click.stop>
                           <button
-                            class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                            class="p-0.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                             @click="$emit('del-row', refMeta[refTab].sheet, item.ID, refTab)"
                           >
-                            <i class="bi bi-trash-fill text-sm"></i>
+                            <i class="bi bi-trash-fill text-xs"></i>
                           </button>
                         </td>
                       </tr>
-                      <tr v-if="db[refTab] && db[refTab].length === 0">
+                      <tr v-if="refTab === 'services' && filteredServices.length === 0">
                         <td
                           :colspan="refMeta[refTab].fields.length + 1"
-                          class="px-4 py-6 text-center text-slate-400 font-medium text-sm"
+                          class="px-3 py-4 text-center text-slate-400 font-medium text-xs"
                         >
-                          Нет записей
+                          Нет услуг
+                        </td>
+                      </tr>
+                      <tr v-if="refTab === 'brands' && filteredBrands.length === 0">
+                        <td
+                          :colspan="refMeta[refTab].fields.length + 1"
+                          class="px-3 py-4 text-center text-slate-400 font-medium text-xs"
+                        >
+                          Нет марок
                         </td>
                       </tr>
                     </tbody>
@@ -132,54 +140,63 @@
                 </div>
               </div>
 
-              <div v-else class="space-y-4">
+              <div v-else class="space-y-3">
                 <div
-                  v-for="group in groupedModels"
+                  v-for="group in filteredGroupedModels"
                   :key="group.brand.ID"
                   class="border border-slate-200/50 rounded-2xl bg-slate-50/50 overflow-hidden shadow-sm"
                 >
                   <div
-                    class="bg-slate-100/70 px-4 py-2.5 flex justify-between items-center border-b border-slate-200/50 select-none"
+                    class="bg-slate-100/70 px-3 py-1 flex justify-between items-center border-b border-slate-200/50 select-none cursor-pointer hover:bg-slate-200/50 transition-colors"
+                    @click="toggleBrand(group.brand.ID)"
                   >
+                    <div class="flex items-center gap-1.5">
+                       <span
+                        class="material-symbols-outlined text-[14px] text-slate-400 transition-transform duration-200"
+                        :class="{ 'rotate-180': searchQuery || expandedBrands.includes(group.brand.ID) }"
+                      >
+                        expand_more
+                      </span>
+                      <span
+                        class="text-[10px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1"
+                      >
+                        <i class="bi bi-car-front-fill text-[11px] text-indigo-500"></i>
+                        {{ group.brand.Name }}
+                      </span>
+                    </div>
                     <span
-                      class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5"
-                    >
-                      <i class="bi bi-car-front-fill text-indigo-500"></i>
-                      {{ group.brand.Name }}
-                    </span>
-                    <span
-                      class="text-[10px] text-indigo-600 font-bold uppercase bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-150/30"
+                      class="text-[8px] text-indigo-600 font-bold uppercase bg-indigo-50 px-1.5 py-0.5 rounded-full border border-indigo-150/30"
                       >{{ group.models.length }} мод.</span
                     >
                   </div>
-                  <div class="divide-y divide-slate-100 bg-white">
+                  <div class="divide-y divide-slate-100 bg-white" v-show="searchQuery || expandedBrands.includes(group.brand.ID)">
                     <div
                       v-for="m in group.models"
                       :key="m.ID"
                       @click="$emit('open-ref-modal', 'models', m)"
-                      class="px-4 py-3 flex justify-between items-center hover:bg-slate-50/60 cursor-pointer transition"
+                      class="px-3 py-0.5 flex justify-between items-center hover:bg-slate-50/60 cursor-pointer transition"
                     >
                       <span
-                        class="text-xs font-bold text-slate-805 text-slate-800"
+                        class="text-xs font-bold text-slate-800"
                         >{{ m.Name }}</span
                       >
                       <button
-                        class="p-1 px-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50/40 rounded-lg transition"
+                        class="p-0.5 px-1 text-slate-400 hover:text-red-600 hover:bg-red-50/40 rounded-lg transition"
                         @click.stop="$emit('del-row', refMeta['models'].sheet, m.ID, 'models')"
                       >
-                        <i class="bi bi-trash-fill text-sm"></i>
+                        <i class="bi bi-trash-fill text-xs"></i>
                       </button>
                     </div>
                     <div
                       v-if="group.models.length === 0"
-                      class="px-4 py-3.5 text-center text-slate-400 font-semibold text-xs bg-slate-50/20 italic"
+                      class="px-3 py-2 text-center text-slate-400 font-semibold text-[11px] bg-slate-50/20 italic"
                     >
                       Нет моделей
                     </div>
                   </div>
                 </div>
                 <div
-                  v-if="db.models && db.models.length === 0"
+                  v-if="filteredGroupedModels.length === 0"
                   class="px-4 py-6 text-center text-slate-400 font-medium text-sm"
                 >
                   Нет моделей
@@ -217,17 +234,68 @@ export default {
     getBrandName: {
         type: Function,
         required: true
+    },
+    searchQuery: {
+      type: String,
+      default: ""
+    }
+  },
+  computed: {
+    filteredServices() {
+      const list = this.db.services || [];
+      if (!this.searchQuery) return list;
+      const q = this.searchQuery.toLowerCase().trim();
+      return list.filter(item => 
+        String(item.Name || '').toLowerCase().includes(q)
+      );
+    },
+    filteredBrands() {
+      const list = this.db.brands || [];
+      if (!this.searchQuery) return list;
+      const q = this.searchQuery.toLowerCase().trim();
+      return list.filter(item => 
+        String(item.Name || '').toLowerCase().includes(q)
+      );
+    },
+    filteredGroupedModels() {
+      const list = this.groupedModels || [];
+      if (!this.searchQuery) return list;
+      const q = this.searchQuery.toLowerCase().trim();
+      
+      return list.map(group => {
+        const brandMatch = String(group.brand.Name || '').toLowerCase().includes(q);
+        if (brandMatch) {
+          return group;
+        }
+        const filteredModelsList = group.models.filter(m => 
+          String(m.Name || '').toLowerCase().includes(q)
+        );
+        return {
+          brand: group.brand,
+          models: filteredModelsList
+        };
+      }).filter(group => group.models.length > 0);
     }
   },
   data() {
       return {
           refTab: 'grid',
+          expandedBrands: [],
           refMeta: {
             services: { title: 'Услуги', icon: 'build', sheet: 'Services', fields: [{k:'Name', l:'Название'}, {k:'Price', l:'Цена (KGS)', t:'number'}] },
             brands: { title: 'Марки', icon: 'directions_car', sheet: 'Brands', fields: [{k:'Name', l:'Марка'}] },
             models: { title: 'Модели', icon: 'list_alt', sheet: 'Models', fields: [{k:'BrandID', l:'Привязка (Марка)', t:'selectBrand'}, {k:'Name', l:'Модель'}] }
           }
       }
+  },
+  methods: {
+    toggleBrand(brandId) {
+      if (this.expandedBrands.includes(brandId)) {
+        this.expandedBrands = this.expandedBrands.filter(id => id !== brandId);
+      } else {
+        this.expandedBrands.push(brandId);
+      }
+    }
   },
   emits: ['open-ref-modal', 'del-row', 'open-bulk-modal']
 }

@@ -1,5 +1,18 @@
-const GAS_URL =
-  "https://script.google.com/macros/s/AKfycbwohflNTW3z1cknnf80XAEhmavcITwdt9PYSUEq6EJP-2EmsxHiRBNvcUSGJ_i-cu-4/exec";
+export const getGasUrl = () => {
+  return (
+    localStorage.getItem("GAS_URL") ||
+    import.meta.env.VITE_GAS_URL ||
+    "https://script.google.com/macros/s/AKfycbwohflNTW3z1cknnf80XAEhmavcITwdt9PYSUEq6EJP-2EmsxHiRBNvcUSGJ_i-cu-4/exec"
+  );
+};
+
+export const setGasUrl = (url) => {
+  if (!url) {
+    localStorage.removeItem("GAS_URL");
+  } else {
+    localStorage.setItem("GAS_URL", url.trim());
+  }
+};
 
 export const runGS = async (func, ...args) => {
   const payload = { action: func };
@@ -45,8 +58,10 @@ export const runGS = async (func, ...args) => {
     payload.userId = args[3];
   }
 
+  const gasUrl = getGasUrl();
+
   try {
-    const response = await fetch(GAS_URL, {
+    const response = await fetch(gasUrl, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(payload),

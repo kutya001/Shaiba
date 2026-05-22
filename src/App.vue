@@ -115,6 +115,7 @@
             :db="db"
             :grouped-models="groupedModels"
             :get-brand-name="getBrandName"
+            :search-query="searchQuery"
             @open-ref-modal="openRefModal"
             @open-bulk-modal="openBulkUploadModal"
             @del-row="delRow"
