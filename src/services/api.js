@@ -89,6 +89,17 @@ export const runGS = async (func, ...args) => {
     }
   } catch (error) {
     console.error("GAS Fetch Error:", error);
+    const errorString = String(error.message || error).toLowerCase();
+    if (errorString.includes("failed to fetch") || errorString.includes("networkerror") || errorString.includes("typeerror")) {
+      throw new Error(
+        "Ошибка соединения (Failed to fetch).\n\n" +
+        "Пожалуйста, проверьте следующие настройки:\n" +
+        "1. Убедитесь, что URL веб-приложения Google Apps Script скопирован верно в настройках профиля.\n" +
+        "2. Проект скрипта должен быть заново развернут через меню «Deploy -> New deployment» типа «Web app» в Google Apps Script.\n" +
+        "3. Обязательно выберите «Execute as: Me» (Запуск от моего имени) и «Who has access: Anyone» (Допуск: Все) при развертывании.\n" +
+        "4. При одновременной авторизации в нескольких аккаунтах Google веб-приложение может блокироваться. Попробуйте войти через режим Инкогнито."
+      );
+    }
     throw error;
   }
 };
