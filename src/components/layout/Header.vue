@@ -92,7 +92,7 @@
           class="flex items-center justify-center shrink-0 px-1 select-none"
         >
           <span
-            v-if="syncStatus === 'synced'"
+            v-if="syncStatus === 'synced' || syncStatus === 'legacy'"
             class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
             title="Синхронизировано"
           ></span>
@@ -217,7 +217,7 @@
           v-if="user"
           class="px-3 h-9.5 bg-slate-50 border border-slate-150 rounded-xl flex items-center gap-2 select-none"
         >
-          <template v-if="syncStatus === 'synced'">
+          <template v-if="syncStatus === 'synced' || syncStatus === 'legacy'">
             <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
             <span class="text-[10px] text-slate-500 font-bold font-mono tracking-tight uppercase">В сети</span>
           </template>

@@ -152,6 +152,46 @@ export default {
         );
         let isNew = !payload.ID;
 
+        // Validation & Uniqueness check
+        const nameVal = String(payload.Name || '').trim();
+        if (!nameVal) {
+          this.store.showToast("Название не может быть пустым", "error");
+          this.isSaving = false;
+          return;
+        }
+        payload.Name = nameVal;
+
+        if (this.activeRefTab === 'services') {
+          const list = this.store.db.services || [];
+          const exists = list.some(x => x.ID !== payload.ID && String(x.Name || '').trim().toLowerCase() === nameVal.toLowerCase());
+          if (exists) {
+            this.store.showToast("Такая услуга уже существует", "error");
+            this.isSaving = false;
+            return;
+          }
+        } else if (this.activeRefTab === 'brands') {
+          const list = this.store.db.brands || [];
+          const exists = list.some(x => x.ID !== payload.ID && String(x.Name || '').trim().toLowerCase() === nameVal.toLowerCase());
+          if (exists) {
+            this.store.showToast("Такая марка уже существует", "error");
+            this.isSaving = false;
+            return;
+          }
+        } else if (this.activeRefTab === 'models') {
+          if (!payload.BrandID) {
+            this.store.showToast("Выберите марку для модели", "error");
+            this.isSaving = false;
+            return;
+          }
+          const list = this.store.db.models || [];
+          const exists = list.some(x => x.ID !== payload.ID && String(x.BrandID) === String(payload.BrandID) && String(x.Name || '').trim().toLowerCase() === nameVal.toLowerCase());
+          if (exists) {
+            this.store.showToast("Такая модель уже существует для выбранной марки", "error");
+            this.isSaving = false;
+            return;
+          }
+        }
+
         if (isNew) {
           payload.ID = "local_" + Date.now();
           if (!this.store.db[this.activeRefTab])

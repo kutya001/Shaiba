@@ -627,41 +627,46 @@
                   </h3>
 
                   <div
-                    class="space-y-1 mb-3 max-h-[120px] overflow-y-auto pr-1 flex-1"
+                    class="space-y-1.5 mb-3 max-h-[150px] overflow-y-auto pr-1 flex-1"
                   >
                     <div
                       v-for="(srv, idx) in recordForm.ServicesJSON"
                       :key="idx"
-                      class="flex flex-col gap-2 px-2.5 py-2 rounded-xl border border-slate-100 bg-slate-50/70"
+                      class="flex items-start justify-between gap-1.5 p-1.5 px-2 bg-slate-50/70 rounded-xl border border-slate-100/50 hover:bg-slate-50 transition-colors"
                     >
-                      <div class="flex justify-between items-center">
-                        <input
-                          type="text"
+                      <div class="flex-1 min-w-0 py-0.5 leading-tight flex items-start">
+                        <textarea
+                          v-if="srv.isCustom"
                           v-model="srv.name"
-                          :disabled="!srv.isCustom"
-                          class="text-xs font-bold text-slate-700 bg-transparent outline-none flex-1 truncate pr-2 placeholder-slate-400"
-                          placeholder="Название услуги"
+                          class="w-full text-[11px] font-bold text-slate-700 bg-transparent border-0 p-0 outline-none focus:ring-0 leading-tight resize-none text-wrap break-words placeholder-slate-400"
+                          rows="1"
+                          placeholder="Название услуги..."
+                          style="min-height: 16px; overflow: hidden;"
+                          @input="e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }"
+                        ></textarea>
+                        <p
+                          v-else
+                          class="text-[11px] font-bold text-slate-700 m-0 break-words text-wrap leading-tight whitespace-normal antialiased"
+                        >
+                          {{ srv.name }}
+                        </p>
+                      </div>
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        <input
+                          type="number"
+                          v-model.number="srv.price"
+                          @input="calcTotal"
+                          class="w-16 h-6 px-1.5 text-right text-[11px] font-black text-slate-800 bg-white border border-slate-200 rounded-md outline-none focus:border-indigo-400"
                         />
-                        <div class="flex items-center gap-1.5 shrink-0">
-                          <input
-                            type="number"
-                            v-model.number="srv.price"
-                            @input="calcTotal"
-                            class="w-20 px-1.5 py-1 text-right text-xs font-black text-slate-800 bg-white border border-slate-200 rounded-md outline-none focus:border-indigo-400"
-                          />
-                          <span
-                            class="text-[10px] font-bold text-slate-400 uppercase"
-                            >KGS</span
-                          >
-                          <button
-                            type="button"
-                            @click="removeService(idx)"
-                            class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-6 h-6 rounded-full hover:bg-red-50"
-                            title="Удалить"
-                          >
-                            <i class="bi bi-trash text-xs"></i>
-                          </button>
-                        </div>
+                        <span class="text-[9px] font-bold text-slate-400">KGS</span>
+                        <button
+                          type="button"
+                          @click="removeService(idx)"
+                          class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-5 h-5 rounded-full hover:bg-neutral-100/70 cursor-pointer border-none"
+                          title="Удалить"
+                        >
+                          <i class="bi bi-trash text-[10px]"></i>
+                        </button>
                       </div>
                     </div>
 
@@ -903,6 +908,21 @@ import { useMainStore } from "../../store";
 import { formatDate, getDuration, formatPhoneInput } from "../../utils/helpers";
 
 export default {
+  directives: {
+    clickOutside: {
+      mounted(el, binding) {
+        el.clickOutsideEvent = function(event) {
+          if (!(el === event.target || el.contains(event.target))) {
+            binding.value(event);
+          }
+        };
+        document.addEventListener("mousedown", el.clickOutsideEvent);
+      },
+      unmounted(el) {
+        document.removeEventListener("mousedown", el.clickOutsideEvent);
+      }
+    }
+  },
   data() {
     return {
       recordForm: this.emptyRecord(),
@@ -953,10 +973,18 @@ export default {
       return m.filter((x) => (x.Name || "").toLowerCase().includes(q));
     },
     filteredServices() {
-      let s = this.store.sortedServices;
-      if (!this.serviceSearch) return s;
+      let s = [...this.store.sortedServices];
+      const customItem = {
+        ID: "custom_item_trigger",
+        Name: "Прочий (вписать вручную)",
+        Price: 0,
+      };
+      if (!this.serviceSearch) {
+        return [customItem, ...s];
+      }
       let q = this.serviceSearch.toLowerCase();
-      return s.filter((x) => x && (x.Name || "").toLowerCase().includes(q));
+      let filtered = s.filter((x) => x && (x.Name || "").toLowerCase().includes(q));
+      return [customItem, ...filtered];
     },
   },
   mounted() {
@@ -1160,6 +1188,11 @@ export default {
       return this.recordForm.ServicesJSON.some((s) => s.id === id);
     },
     toggleService(sid) {
+      if (sid === "custom_item_trigger") {
+        this.addCustomServiceFromName();
+        this.showServiceSelector = false;
+        return;
+      }
       let idx = this.recordForm.ServicesJSON.findIndex((s) => s.id === sid);
       if (idx > -1) {
         this.recordForm.ServicesJSON.splice(idx, 1);
@@ -1175,6 +1208,8 @@ export default {
         }
       }
       this.calcTotal();
+      this.showServiceSelector = false;
+      this.serviceSearch = "";
     },
     removeService(idx) {
       this.recordForm.ServicesJSON.splice(idx, 1);
@@ -1182,10 +1217,10 @@ export default {
     },
     addCustomServiceFromName() {
       const txt = this.serviceSearch.trim();
-      if (!txt) return;
+      const finalName = (txt === "Прочий (вписать вручную)" || !txt) ? "Прочая услуга" : txt;
       this.recordForm.ServicesJSON.push({
-        id: "custom_" + Date.now(),
-        name: txt,
+        id: "custom_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+        name: finalName,
         price: 0,
         isCustom: true,
       });

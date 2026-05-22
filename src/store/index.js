@@ -115,6 +115,7 @@ export const useMainStore = defineStore("main", {
       versions: null,
       isPolling: false,
       syncStatus: "synced",
+      versionsSupport: true,
     };
   },
   getters: {
@@ -224,11 +225,22 @@ export const useMainStore = defineStore("main", {
         this.db = d;
         try {
           this.versions = await runGS("getDbVersions");
+          this.versionsSupport = true;
+          this.syncStatus = "synced";
         } catch (err) {
           this.versions = { records: "1", services: "1", users: "1", brands: "1", models: "1" };
+          const errorMsg = String(err.message || err);
+          if (errorMsg.includes("Неизвестное действие") || errorMsg.includes("getDbVersions")) {
+            this.versionsSupport = false;
+            this.syncStatus = "legacy";
+            console.log("GAS does not support version tracking. Running in legacy sync mode.");
+          } else {
+            this.syncStatus = "synced";
+          }
         }
-        this.syncStatus = "synced";
-        this.startBackgroundSync();
+        if (this.versionsSupport) {
+          this.startBackgroundSync();
+        }
       } catch (e) {
         this.initError = e.message;
       } finally {
@@ -247,6 +259,7 @@ export const useMainStore = defineStore("main", {
       this.versions = null;
       this.isPolling = false;
       this.syncStatus = "synced";
+      this.versionsSupport = true;
       localStorage.removeItem("currentUser");
     },
     async dispatchSync(taskName, payload, sheet = null) {
@@ -404,10 +417,14 @@ export const useMainStore = defineStore("main", {
 
           // Immediately update cached version values so we do not double-download on the next interval
           try {
-            this.versions = await runGS("getDbVersions");
-            this.syncStatus = "synced";
+            if (this.versionsSupport) {
+              this.versions = await runGS("getDbVersions");
+              this.syncStatus = "synced";
+            } else {
+              this.syncStatus = "legacy";
+            }
           } catch (e) {
-            this.syncStatus = "synced";
+            this.syncStatus = this.versionsSupport ? "synced" : "legacy";
           }
         } catch (e) {
           console.error("Ошибка синхронизации:", e);
@@ -420,9 +437,10 @@ export const useMainStore = defineStore("main", {
         }
       }
       this.isSyncing = false;
-      this.syncStatus = "synced";
+      this.syncStatus = this.versionsSupport ? "synced" : "legacy";
     },
     async startBackgroundSync() {
+      if (!this.versionsSupport) return;
       if (this.isPolling) return;
       this.isPolling = true;
 

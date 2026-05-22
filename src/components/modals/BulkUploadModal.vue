@@ -205,6 +205,8 @@ export default {
 
               const exists = (this.db.models || []).some(em => 
                 String(em.BrandID) === String(brandId) && String(em.Name).toLowerCase() === name.toLowerCase()
+              ) || importPayload.models.some(pm =>
+                String(pm.BrandID) === String(brandId) && String(pm.Name).toLowerCase() === name.toLowerCase()
               );
               
               if (!exists) {

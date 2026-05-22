@@ -405,13 +405,15 @@ function bulkImport(data) {
         return String(em.BrandID) === String(brandId) && String(em.Name).toLowerCase() === name.toLowerCase(); 
       });
       if (!exists) {
+        var newId = m.ID || Utilities.getUuid();
         var row = modelsInfo.headers.map(function(h) {
-          if (h === 'ID') return m.ID || Utilities.getUuid();
+          if (h === 'ID') return newId;
           if (h === 'BrandID') return brandId;
           if (h === 'Name') return name;
           return '';
         });
         modelsToAppend.push(row);
+        existingModels.push({ ID: newId, BrandID: brandId, Name: name });
       }
     });
   }
