@@ -515,7 +515,21 @@ export default {
     },
     formatDate(isoString) {
       if (!isoString) return { date: '—', time: '' };
-      try { let d = new Date(isoString); return { date: d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }), time: d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) }; } catch (e) { return { date: '—', time: '' }; }
+      try {
+        let d = new Date(isoString);
+        if (isNaN(d.getTime())) return { date: String(isoString), time: '' };
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const dateStr = `${day}.${month}.${year}`;
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const seconds = String(d.getSeconds()).padStart(2, '0');
+        const timeStr = `${hours}:${minutes}:${seconds}`;
+        return { date: dateStr, time: timeStr };
+      } catch (e) {
+        return { date: String(isoString), time: '' };
+      }
     },
     statusButtonClasses(status) {
       if (status === 'Выполнен') return 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800';

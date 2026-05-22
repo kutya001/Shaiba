@@ -140,16 +140,7 @@
                       <i class="bi bi-clock text-slate-400 text-[10px]"></i>
                       {{
                         recordForm.StartTime_LOCAL
-                          ? new Date(recordForm.StartTime_LOCAL).toLocaleString(
-                              "ru-RU",
-                              {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
-                            )
+                          ? `${formatDate(recordForm.StartTime_LOCAL).date} ${formatDate(recordForm.StartTime_LOCAL).time}`
                           : "—"
                       }}
                     </div>
@@ -181,15 +172,7 @@
                       <span class="text-xs font-bold text-slate-500">
                         {{
                           recordForm.StartTime_LOCAL
-                            ? new Date(
-                                recordForm.StartTime_LOCAL,
-                              ).toLocaleString("ru-RU", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                            ? `${formatDate(recordForm.StartTime_LOCAL).date} ${formatDate(recordForm.StartTime_LOCAL).time}`
                             : "Недавно"
                         }}
                       </span>
@@ -210,13 +193,9 @@
                       >
                       <span class="text-xs font-bold text-slate-700">
                         {{
-                          new Date(recordForm.EndTime).toLocaleString("ru-RU", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
+                          recordForm.EndTime
+                            ? `${formatDate(recordForm.EndTime).date} ${formatDate(recordForm.EndTime).time}`
+                            : "—"
                         }}
                       </span>
                     </div>
@@ -887,7 +866,9 @@
             <input
               type="number"
               v-model="recordForm.TotalAmount"
-              class="w-24 px-2 py-1 bg-white border border-slate-200 rounded text-lg font-black text-indigo-600 text-right outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              readonly
+              class="w-24 px-2 py-1 bg-slate-50 border border-slate-200/80 rounded text-lg font-black text-slate-750 text-right outline-none cursor-not-allowed select-none"
+              title="Сумма рассчитывается автоматически по услугам"
             />
           </div>
           <div class="flex gap-2">
@@ -1010,6 +991,9 @@ export default {
     }
   },
   methods: {
+    formatDate(val) {
+      return formatDate(val);
+    },
     emptyRecord() {
       let now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());

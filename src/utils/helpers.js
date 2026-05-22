@@ -2,16 +2,68 @@ export function formatDate(isoString) {
   if (!isoString) return { date: "—", time: "" };
   try {
     let d = new Date(isoString);
+    if (isNaN(d.getTime())) {
+      return { date: String(isoString), time: "" };
+    }
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const dateStr = `${day}.${month}.${year}`;
+
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    const seconds = String(d.getSeconds()).padStart(2, "0");
+    const timeStr = `${hours}:${minutes}:${seconds}`;
+
     return {
-      date: d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" }),
-      time: d.toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      date: dateStr,
+      time: timeStr,
     };
   } catch (e) {
-    return { date: "—", time: "" };
+    return { date: String(isoString), time: "" };
   }
+}
+
+export function formatLocalDate(val) {
+  if (!val) return "—";
+  let str = String(val).trim();
+  // If in dd.mm.yyyy format already
+  if (/^\d{2}\.\d{2}\.\d{4}$/.test(str)) {
+    return str;
+  }
+  try {
+    let d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}.${month}.${year}`;
+    }
+  } catch (e) {}
+  return val;
+}
+
+export function formatLocalTime(val) {
+  if (!val) return "—";
+  let str = String(val).trim();
+  // If in hh:mm:ss or hh:mm format already
+  if (/^\d{2}:\d{2}(:\d{2})?$/.test(str)) {
+    if (str.length === 5) {
+      return str + ":00";
+    }
+    return str;
+  }
+  // If Google Sheets stored it as standard ISO date or other date
+  try {
+    let d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      const seconds = String(d.getSeconds()).padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
+    }
+  } catch (e) {}
+  return val;
 }
 
 export function getDuration(start, end) {

@@ -150,3 +150,9 @@ span.rounded-lg {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Hide Mobile Bottom Nav when modal forms or detail overlays are open */
+body.modal-open nav.md\:hidden,
+body.dialog-open nav.md\:hidden {
+  display: none !important;
+}
