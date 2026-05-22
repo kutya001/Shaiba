@@ -190,8 +190,8 @@ export const useMainStore = defineStore("main", {
         });
 
         let mergedServices = [
-          ...defaultServices,
           ...d.services.filter((s) => s && String(s.ID).indexOf("ds_") !== 0),
+          ...defaultServices,
         ];
         let sNames = new Set();
         d.services = mergedServices.filter(s => {
@@ -202,8 +202,8 @@ export const useMainStore = defineStore("main", {
         });
 
         let mergedBrands = [
-          ...defaultBrands,
           ...d.brands.filter((b) => b && String(b.ID).indexOf("db_") !== 0),
+          ...defaultBrands,
         ];
         let bNames = new Set();
         d.brands = mergedBrands.filter(b => {
@@ -214,8 +214,8 @@ export const useMainStore = defineStore("main", {
         });
 
         d.models = [
-          ...defaultModels,
           ...d.models.filter((m) => m && String(m.ID).indexOf("dm_") !== 0),
+          ...defaultModels,
         ];
 
         this.db = d;
@@ -286,7 +286,7 @@ export const useMainStore = defineStore("main", {
                 
                 if (key === 'services') {
                   let sNames = new Set();
-                  merged = [...defaultServices, ...newData.filter(s => s && String(s.ID).indexOf("ds_") !== 0)].filter(s => {
+                  merged = [...newData.filter(s => s && String(s.ID).indexOf("ds_") !== 0), ...defaultServices].filter(s => {
                     let n = (s.Name || "").toLowerCase().trim();
                     if (sNames.has(n)) return false;
                     sNames.add(n);
@@ -294,14 +294,14 @@ export const useMainStore = defineStore("main", {
                   });
                 } else if (key === 'brands') {
                   let bNames = new Set();
-                  merged = [...defaultBrands, ...newData.filter(b => b && String(b.ID).indexOf("db_") !== 0)].filter(b => {
+                  merged = [...newData.filter(b => b && String(b.ID).indexOf("db_") !== 0), ...defaultBrands].filter(b => {
                     let n = (b.Name || "").toLowerCase().trim();
                     if (bNames.has(n)) return false;
                     bNames.add(n);
                     return true;
                   });
                 } else if (key === 'models') {
-                  merged = [...defaultModels, ...newData.filter(m => m && String(m.ID).indexOf("dm_") !== 0)];
+                  merged = [...newData.filter(m => m && String(m.ID).indexOf("dm_") !== 0), ...defaultModels];
                 }
                 this.db[key] = merged;
               }

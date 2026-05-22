@@ -381,11 +381,16 @@ function bulkImport(data) {
     data.models.forEach(function(m) {
       var name = String(m.Name || '').trim();
       if (!name) return;
+      
       var brandId = m.BrandID;
-      if (!brandId && m.BrandName) {
-        var b = existingBrands.find(function(eb) { return String(eb.Name).toLowerCase() === String(m.BrandName).toLowerCase(); });
+      // Prefer looking up by BrandName to ensure we get the correct UUID from existingBrands
+      if (m.BrandName) {
+        var b = existingBrands.find(function(eb) { 
+          return String(eb.Name || '').trim().toLowerCase() === String(m.BrandName).trim().toLowerCase(); 
+        });
         if (b) brandId = b.ID;
       }
+      
       if (!brandId) return;
       var exists = existingModels.some(function(em) { 
         return String(em.BrandID) === String(brandId) && String(em.Name).toLowerCase() === name.toLowerCase(); 
