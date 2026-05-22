@@ -394,7 +394,7 @@
                   class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm"
                 >
                   <h3
-                    class="text-slate-800 text-[12px] font-bold mb-3 flex items-center gap-2 uppercase tracking-wider select-none"
+                    class="text-slate-800 text-[10px] font-black mb-3 flex items-center gap-2 uppercase tracking-wider select-none"
                   >
                     <i class="bi bi-person text-indigo-600"></i> Клиент
                   </h3>
@@ -432,7 +432,7 @@
                   class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm"
                 >
                   <h3
-                    class="text-slate-800 text-[12px] font-bold mb-3 flex items-center gap-2 uppercase tracking-wider select-none"
+                    class="text-slate-800 text-[10px] font-black mb-3 flex items-center gap-2 uppercase tracking-wider select-none"
                   >
                     <i class="bi bi-car-front text-indigo-600"></i> Автомобиль
                   </h3>
@@ -598,10 +598,10 @@
               <div class="space-y-3.5 flex flex-col justify-between">
                 <!-- Services list card -->
                 <section
-                  class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col flex-1"
+                  class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col"
                 >
                   <h3
-                    class="text-slate-800 text-[12px] font-bold mb-3 flex items-center justify-between uppercase tracking-wider select-none"
+                    class="text-slate-800 text-[11px] font-black mb-3 flex items-center justify-between uppercase tracking-wider select-none animate-fade-in"
                   >
                     <span class="flex items-center gap-2"
                       ><i class="bi bi-tools text-indigo-600"></i> Услуги и
@@ -613,52 +613,57 @@
                       ></span
                     >
                     <span
-                      class="text-[10px] text-slate-400 font-extrabold"
+                      class="text-[9.5px] text-slate-400 font-extrabold uppercase"
                       v-if="recordForm.ServicesJSON.length"
                       >{{ recordForm.ServicesJSON.length }} усл.</span
                     >
                   </h3>
 
                   <div
-                    class="space-y-1.5 mb-3 max-h-[150px] overflow-y-auto pr-1 flex-1"
+                    class="space-y-2 mb-3 pr-1"
                   >
                     <div
                       v-for="(srv, idx) in recordForm.ServicesJSON"
                       :key="idx"
-                      class="flex items-start justify-between gap-1.5 p-1 px-1.5 bg-slate-50 border border-slate-100 rounded-lg hover:bg-slate-100/50 transition-colors"
+                      class="flex flex-col gap-2 p-2.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 transition-colors"
                     >
-                      <div class="flex-1 min-w-0 py-0.5 leading-tight flex items-start">
+                      <!-- Top row: full-width Service Name -->
+                      <div class="w-full text-xs font-bold text-slate-700 leading-snug break-words text-wrap">
                         <textarea
                           v-if="srv.isCustom"
                           v-model="srv.name"
-                          class="w-full text-[10px] font-bold text-slate-700 bg-transparent border-0 p-0 outline-none focus:ring-0 leading-tight resize-none text-wrap break-words placeholder-slate-400"
+                          class="w-full text-xs font-bold text-slate-700 bg-transparent border-0 p-0 outline-none focus:ring-0 leading-tight resize-none text-wrap break-words placeholder-slate-400"
                           rows="1"
                           placeholder="Название услуги..."
-                          style="min-height: 14px; overflow: hidden;"
+                          style="min-height: 16px; overflow: hidden;"
                           @input="e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }"
                         ></textarea>
                         <p
                           v-else
-                          class="text-[10px] font-bold text-slate-700 m-0 break-words text-wrap leading-tight whitespace-normal antialiased"
+                          class="text-xs font-bold text-slate-750 m-0 break-words text-wrap leading-snug whitespace-normal antialiased"
                         >
                           {{ srv.name }}
                         </p>
                       </div>
-                      <div class="flex items-center gap-1 shrink-0">
-                        <input
-                          type="number"
-                          v-model.number="srv.price"
-                          @input="calcTotal"
-                          class="w-13 h-5 px-1 text-right text-[10px] font-black text-slate-800 bg-white border border-slate-200 rounded-md outline-none focus:border-indigo-400"
-                        />
-                        <span class="text-[8px] font-bold text-slate-400">KGS</span>
+                      <!-- Bottom row: Price Input, KGS label, and Remove button aligned neatly to the right -->
+                      <div class="flex items-center justify-end gap-2 border-t border-slate-250/25 pt-2">
+                        <div class="flex items-center gap-1 shrink-0">
+                          <input
+                            type="number"
+                            v-model.number="srv.price"
+                            @input="calcTotal"
+                            class="w-20 h-7 px-2 text-right text-xs font-black text-slate-800 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100/50"
+                          />
+                          <span class="text-[9px] font-bold text-slate-400 uppercase select-none">KGS</span>
+                        </div>
+                        <div class="h-4 w-[1px] bg-slate-200 shrink-0"></div>
                         <button
                           type="button"
                           @click="removeService(idx)"
-                          class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-4 h-4 rounded-full hover:bg-slate-100 cursor-pointer border-none"
+                          class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-6 h-6 rounded-lg hover:bg-slate-200/50 cursor-pointer border-none shrink-0"
                           title="Удалить"
                         >
-                          <i class="bi bi-trash text-[10px]"></i>
+                          <i class="bi bi-trash text-[11.5px]"></i>
                         </button>
                       </div>
                     </div>
@@ -694,24 +699,24 @@
                         :key="srv.ID"
                         type="button"
                         @mousedown.prevent="toggleService(srv.ID)"
-                        class="w-full px-3 py-2.5 text-[11px] font-bold hover:bg-slate-50 cursor-pointer flex justify-between items-center transition-colors border-b border-slate-50 last:border-0"
+                        class="w-full px-3 py-2.5 text-xs font-semibold hover:bg-slate-50 cursor-pointer flex justify-between items-start gap-3 transition-colors border-b border-slate-50 last:border-0"
                         :class="
                           isServiceSelected(srv.ID) ? 'text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50' : 'text-slate-700'
                         "
                       >
-                        <span class="flex-1 text-left truncate pr-2 flex items-center gap-1.5">
-                          <i v-if="isServiceSelected(srv.ID)" class="bi bi-check text-indigo-600 text-sm"></i>
-                          <i v-else class="bi bi-circle text-slate-300 text-[10px]"></i>
-                          {{ srv.Name }}
+                        <span class="flex-1 text-left flex items-start gap-1.5 whitespace-normal break-words text-wrap leading-snug">
+                          <i v-if="isServiceSelected(srv.ID)" class="bi bi-check text-indigo-600 text-xs mt-0.5 shrink-0 block"></i>
+                          <i v-else class="bi bi-circle text-slate-300 text-[9px] mt-1 shrink-0 block"></i>
+                          <span>{{ srv.Name }}</span>
                         </span>
-                        <span class="text-slate-400 font-black shrink-0">{{ Number(srv.Price).toLocaleString() }} KGS</span>
+                        <span class="text-slate-500 font-extrabold shrink-0 text-right text-xs mt-0.5 min-w-max">{{ Number(srv.Price).toLocaleString() }} KGS</span>
                       </button>
                       
                       <button
                         type="button"
                         @mousedown.prevent="addCustomServiceFromName"
                         v-if="serviceSearch.trim().length > 0 && !filteredServices.some(s => s.Name.toLowerCase() === serviceSearch.trim().toLowerCase())"
-                        class="w-full px-3 py-2.5 text-[11px] font-bold text-white hover:bg-indigo-700 cursor-pointer border-t border-slate-100 flex items-center gap-2 bg-indigo-600 transition"
+                        class="w-full px-3 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 cursor-pointer border-t border-slate-100 flex items-center gap-2 bg-indigo-600 transition"
                       >
                         <i class="bi bi-plus-lg"></i> Добавить "{{ serviceSearch.trim() }}"
                       </button>
@@ -747,7 +752,7 @@
                   class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3 shrink-0"
                 >
                   <h3
-                    class="text-slate-800 text-[12px] font-bold mb-1 flex items-center gap-2 uppercase tracking-wider select-none"
+                    class="text-slate-800 text-[10px] font-black mb-1 flex items-center gap-2 uppercase tracking-wider select-none"
                   >
                     <i class="bi bi-person-gear text-indigo-600"></i>
                     Исполнитель и Статус
