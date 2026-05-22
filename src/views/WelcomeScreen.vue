@@ -185,7 +185,7 @@ export default {
     welcomeText() {
       const screen = this.store.db.welcomescreens?.find((s) => s.ID === "welcome_main") || this.store.db.welcomescreens?.[0];
       if (screen && screen.Text) return screen.Text;
-      return localStorage.getItem("welcome_screen_text") || "Анвар сушняк алыпкел";
+      return localStorage.getItem("welcome_screen_text") || "Система управления заказами и заявками для вашего автосервиса.";
     },
   },
   watch: {
@@ -194,6 +194,22 @@ export default {
       handler(newVal) {
         if (newVal) {
           this.isEditing = false;
+        }
+      },
+    },
+    welcomeTitle: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          localStorage.setItem("welcome_screen_title", newVal);
+        }
+      },
+    },
+    welcomeText: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          localStorage.setItem("welcome_screen_text", newVal);
         }
       },
     },
