@@ -31,6 +31,8 @@ export const runGS = async (func, ...args) => {
   } else if (func === "addRows") {
     payload.sheetName = args[0];
     payload.objects = args[1];
+  } else if (func === "bulkImport") {
+    payload.data = args[0];
   } else if (func === "updateRecord") {
     payload.obj = args[0];
   } else if (func === "updateRow") {

@@ -262,6 +262,8 @@ export const useMainStore = defineStore("main", {
             newData = await runGS("addRow", task.sheet, task.payload);
           } else if (task.taskName === "addRows") {
             newData = await runGS("addRows", task.sheet, task.payload);
+          } else if (task.taskName === "bulkImport") {
+            newData = await runGS("bulkImport", task.payload);
           } else if (task.taskName === "updateRow") {
             newData = await runGS("updateRow", task.sheet, task.payload);
           } else if (task.taskName === "deleteRow") {

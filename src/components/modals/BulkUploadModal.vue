@@ -147,114 +147,107 @@ export default {
       }
       
       this.isProcessing = true;
-      let stats = {
-         servicesAdded: 0,
-         brandsAdded: 0,
-         modelsAdded: 0,
-         skipped: 0
-      };
       
       try {
-         const role = this.user.Role;
-         const userId = this.user.ID;
+         // Check duplicates locally first to update the UI immediately
+         let stats = { services: 0, brands: 0, models: 0, skipped: 0 };
+         
+         // Prepare data for one big request
+         const importPayload = {
+            _role: this.user.Role,
+            _userId: this.user.ID,
+            brands: [],
+            models: [],
+            services: []
+         };
 
-         const brandsToSync = [];
-         const modelsToSync = [];
-         const servicesToSync = [];
+         // Local cache of IDs for newly added brands to correctly link models
+         const brandNameMap = {};
+         (this.db.brands || []).forEach(b => {
+             brandNameMap[String(b.Name).trim().toLowerCase()] = b.ID;
+         });
 
-         // Process Brands
+         // 1. Process Brands
          if (data.brands && Array.isArray(data.brands)) {
-             for (const item of data.brands) {
-                 if (!item.Name) continue;
-                 const exists = (this.db.brands || []).find(b => String(b.Name).trim().toLowerCase() === String(item.Name).trim().toLowerCase());
-                 if (!exists) {
-                     const payload = { ID: this.generateId(), Name: String(item.Name).trim(), _role: role, _userId: userId };
-                     if (!this.db.brands) this.db.brands = [];
-                     this.db.brands.push(payload);
-                     brandsToSync.push(payload);
-                     stats.brandsAdded++;
-                 } else {
-                     stats.skipped++;
-                 }
-             }
+           data.brands.forEach(b => {
+              const name = String(b.Name || '').trim().toLowerCase();
+              if (!name) return;
+              if (!brandNameMap[name]) {
+                 const id = this.generateId();
+                 brandNameMap[name] = id;
+                 importPayload.brands.push({ ID: id, Name: String(b.Name).trim() });
+                 stats.brands++;
+              } else {
+                 stats.skipped++;
+              }
+           });
          }
 
-         if (brandsToSync.length > 0) {
-             this.store.dispatchSync("addRows", brandsToSync, "Brands");
-         }
-         
-         // Process Models
+         // 2. Process Models
          if (data.models && Array.isArray(data.models)) {
-             for (const item of data.models) {
-                 if (!item.Name) continue;
-                 let brandId = item.BrandID;
-                 
-                 if (!brandId && item.BrandName) {
-                     let bFind = (this.db.brands || []).find(b => String(b.Name).trim().toLowerCase() === String(item.BrandName).trim().toLowerCase());
-                     if (bFind) {
-                         brandId = bFind.ID;
-                     } else {
-                         // Adding missing brand immediately to reference it, but this breaks batching a bit for recursive brands
-                         // However, usually brands are already listed or added in brands section.
-                         // For simplicity, we'll add brands one by one IF they are missing in the models section
-                         const newB = { ID: this.generateId(), Name: String(item.BrandName).trim(), _role: role, _userId: userId };
-                         if (!this.db.brands) this.db.brands = [];
-                         this.db.brands.push(newB);
-                         this.store.dispatchSync("addRow", newB, "Brands");
-                         brandId = newB.ID;
-                         stats.brandsAdded++;
-                     }
+           data.models.forEach(m => {
+              const name = String(m.Name || '').trim();
+              if (!name) return;
+              
+              let brandId = m.BrandID;
+              if (!brandId && m.BrandName) {
+                 brandId = brandNameMap[String(m.BrandName).trim().toLowerCase()];
+                 if (!brandId) {
+                    // Implicit brand creation
+                    brandId = this.generateId();
+                    brandNameMap[String(m.BrandName).trim().toLowerCase()] = brandId;
+                    importPayload.brands.push({ ID: brandId, Name: String(m.BrandName).trim() });
+                    stats.brands++;
                  }
-                 
-                 if (!brandId) continue;
-                 
-                 const exists = (this.db.models || []).find(m => 
-                     m.BrandID === brandId && String(m.Name).trim().toLowerCase() === String(item.Name).trim().toLowerCase()
-                 );
-                 if (!exists) {
-                     const payload = { ID: this.generateId(), BrandID: brandId, Name: String(item.Name).trim(), _role: role, _userId: userId };
-                     if (!this.db.models) this.db.models = [];
-                     this.db.models.push(payload);
-                     modelsToSync.push(payload);
-                     stats.modelsAdded++;
-                 } else {
-                     stats.skipped++;
-                 }
-             }
+              }
+
+              if (!brandId) return;
+
+              const exists = (this.db.models || []).some(em => 
+                String(em.BrandID) === String(brandId) && String(em.Name).toLowerCase() === name.toLowerCase()
+              );
+              
+              if (!exists) {
+                 importPayload.models.push({ ID: this.generateId(), BrandID: brandId, Name: name });
+                 stats.models++;
+              } else {
+                 stats.skipped++;
+              }
+           });
          }
 
-         if (modelsToSync.length > 0) {
-             this.store.dispatchSync("addRows", modelsToSync, "Models");
-         }
-         
-         // Process Services
+         // 3. Process Services
          if (data.services && Array.isArray(data.services)) {
-             for (const item of data.services) {
-                 if (!item.Name) continue;
-                 const exists = (this.db.services || []).find(s => String(s.Name).trim().toLowerCase() === String(item.Name).trim().toLowerCase());
-                 if (!exists) {
-                     const payload = { ID: this.generateId(), Name: String(item.Name).trim(), Price: Number(item.Price) || 0, _role: role, _userId: userId };
-                     if (!this.db.services) this.db.services = [];
-                     this.db.services.push(payload);
-                     servicesToSync.push(payload);
-                     stats.servicesAdded++;
-                 } else {
-                     stats.skipped++;
-                 }
-             }
+           data.services.forEach(s => {
+              const name = String(s.Name || '').trim();
+              if (!name) return;
+              const exists = (this.db.services || []).some(es => String(es.Name).toLowerCase() === name.toLowerCase());
+              if (!exists) {
+                 importPayload.services.push({ ID: this.generateId(), Name: name, Price: s.Price || 0 });
+                 stats.services++;
+              } else {
+                 stats.skipped++;
+              }
+           });
          }
 
-         if (servicesToSync.length > 0) {
-             this.store.dispatchSync("addRows", servicesToSync, "Services");
+         if (stats.services === 0 && stats.brands === 0 && stats.models === 0) {
+            this.successText = `Загрузка не требуется, все данные уже есть (дубликатов пропущено: ${stats.skipped})`;
+            this.isProcessing = false;
+            return;
          }
+
+         // Send ONE request
+         this.store.dispatchSync("bulkImport", importPayload);
          
-         this.successText = `Успешно! Добавлено: Услуг (${stats.servicesAdded}), Марок (${stats.brandsAdded}), Моделей (${stats.modelsAdded}). Пропущено дубликатов: ${stats.skipped}.`;
-         this.store.showToast("Справочники обновлены");
+         this.successText = `Обновление запущено! Будет добавлено: Услуг (${stats.services}), Марок (${stats.brands}), Моделей (${stats.models}). Дубликатов пропущено: ${stats.skipped}.`;
+         this.store.showToast("Импорт начат...");
+         
          setTimeout(() => {
             this.hide();
-         }, 2000);
+         }, 2500);
       } catch (err) {
-         this.errorText = "Произошла ошибка при загрузке: " + err.message;
+         this.errorText = "Произошла ошибка: " + err.message;
       } finally {
          this.isProcessing = false;
       }

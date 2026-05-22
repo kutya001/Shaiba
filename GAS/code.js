@@ -40,6 +40,8 @@ function handleRequest(action, payload) {
       result = addRow(payload.sheetName, payload.obj);
     } else if (action === 'addRows') {
       result = addRows(payload.sheetName, payload.objects);
+    } else if (action === 'bulkImport') {
+      result = bulkImport(payload.data);
     } else if (action === 'updateRecord') {
       result = updateRecord(payload.obj);
     } else if (action === 'updateRow') {
@@ -326,4 +328,106 @@ function addRows(sheetName, objects) {
   
   var firstObj = objects[0];
   return sheetName === 'Records' ? getTable('Records') : getInitData(firstObj._role || 'Master', firstObj._userId);
+}
+
+function bulkImport(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var role = data._role || 'Master';
+  var userId = data._userId || '';
+  
+  function getSheetData(name) {
+    var s = ss.getSheetByName(name);
+    var vals = s.getDataRange().getValues();
+    var headers = vals[0];
+    var list = [];
+    for(var i=1; i<vals.length; i++) {
+       var obj = {};
+       for(var j=0; j<headers.length; j++) obj[headers[j]] = vals[i][j];
+       list.push(obj);
+    }
+    return { sheet: s, headers: headers, data: list };
+  }
+
+  // 1. Process Brands
+  var brandsInfo = getSheetData('Brands');
+  var existingBrands = brandsInfo.data;
+  var brandsToAppend = [];
+  if (data.brands) {
+    data.brands.forEach(function(b) {
+      var name = String(b.Name || '').trim();
+      if (!name) return;
+      var exists = existingBrands.some(function(eb) { return String(eb.Name).toLowerCase() === name.toLowerCase(); });
+      if (!exists) {
+        var newId = b.ID || Utilities.getUuid();
+        var row = brandsInfo.headers.map(function(h) {
+          if (h === 'ID') return newId;
+          if (h === 'Name') return name;
+          return '';
+        });
+        brandsToAppend.push(row);
+        existingBrands.push({ ID: newId, Name: name });
+      }
+    });
+  }
+  if (brandsToAppend.length > 0) {
+    brandsInfo.sheet.getRange(brandsInfo.sheet.getLastRow() + 1, 1, brandsToAppend.length, brandsInfo.headers.length).setValues(brandsToAppend);
+  }
+
+  // 2. Process Models
+  var modelsInfo = getSheetData('Models');
+  var existingModels = modelsInfo.data;
+  var modelsToAppend = [];
+  if (data.models) {
+    data.models.forEach(function(m) {
+      var name = String(m.Name || '').trim();
+      if (!name) return;
+      var brandId = m.BrandID;
+      if (!brandId && m.BrandName) {
+        var b = existingBrands.find(function(eb) { return String(eb.Name).toLowerCase() === String(m.BrandName).toLowerCase(); });
+        if (b) brandId = b.ID;
+      }
+      if (!brandId) return;
+      var exists = existingModels.some(function(em) { 
+        return String(em.BrandID) === String(brandId) && String(em.Name).toLowerCase() === name.toLowerCase(); 
+      });
+      if (!exists) {
+        var row = modelsInfo.headers.map(function(h) {
+          if (h === 'ID') return m.ID || Utilities.getUuid();
+          if (h === 'BrandID') return brandId;
+          if (h === 'Name') return name;
+          return '';
+        });
+        modelsToAppend.push(row);
+      }
+    });
+  }
+  if (modelsToAppend.length > 0) {
+    modelsInfo.sheet.getRange(modelsInfo.sheet.getLastRow() + 1, 1, modelsToAppend.length, modelsInfo.headers.length).setValues(modelsToAppend);
+  }
+
+  // 3. Process Services
+  var servicesInfo = getSheetData('Services');
+  var existingServices = servicesInfo.data;
+  var servicesToAppend = [];
+  if (data.services) {
+    data.services.forEach(function(s) {
+      var name = String(s.Name || '').trim();
+      if (!name) return;
+      var exists = existingServices.some(function(es) { return String(es.Name).toLowerCase() === name.toLowerCase(); });
+      if (!exists) {
+        var row = servicesInfo.headers.map(function(h) {
+          if (h === 'ID') return s.ID || Utilities.getUuid();
+          if (h === 'Name') return name;
+          if (h === 'Price') return s.Price || 0;
+          return '';
+        });
+        servicesToAppend.push(row);
+      }
+    });
+  }
+  if (servicesToAppend.length > 0) {
+    servicesInfo.sheet.getRange(servicesInfo.sheet.getLastRow() + 1, 1, servicesToAppend.length, servicesInfo.headers.length).setValues(servicesToAppend);
+  }
+
+  return getInitData(role, userId);
 }
