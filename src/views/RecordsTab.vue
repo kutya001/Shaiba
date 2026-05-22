@@ -365,6 +365,36 @@
                   </div>
                 </div>
 
+                <!-- ROW 4.5: Client & Contact Info with Call & WhatsApp -->
+                <div v-if="r.ClientName || r.Phone" class="flex flex-wrap items-center justify-between gap-1 bg-slate-100/30 border border-slate-200/40 p-1.5 px-2.5 rounded-xl text-[11px]" @click.stop>
+                  <div class="flex items-center gap-1 min-w-0">
+                    <i class="bi bi-person text-slate-450 text-[13px]"></i>
+                    <strong class="text-slate-750 truncate font-bold">{{ r.ClientName || 'Без имени' }}</strong>
+                  </div>
+                  
+                  <div v-if="r.Phone" class="flex items-center gap-1.5 select-none shrink-0">
+                    <!-- Call link -->
+                    <a
+                      :href="'tel:' + formatPhoneForLink(r.Phone)"
+                      class="inline-flex items-center gap-0.5 text-[10px] font-bold text-indigo-650 hover:underline"
+                      title="Позвонить"
+                    >
+                      <i class="bi bi-telephone-fill text-[8.5px]"></i>
+                      <span class="font-mono">{{ formatPhoneForLink(r.Phone) }}</span>
+                    </a>
+                    <span class="text-slate-350 font-light text-[9px]">|</span>
+                    <!-- WhatsApp link -->
+                    <a
+                      :href="getWhatsAppLink(r.Phone)"
+                      target="_blank"
+                      class="text-emerald-650 hover:text-emerald-700 font-bold flex items-center"
+                      title="Написать в WhatsApp"
+                    >
+                      <i class="bi bi-whatsapp text-[10.5px]"></i>
+                    </a>
+                  </div>
+                </div>
+
                 <!-- ROW 5: [статус записи - кнопка] & [статус оплаты - кнопка] -->
                 <div class="grid grid-cols-2 gap-2 mt-1">
                   <!-- статус записи - кнопка -->
@@ -509,6 +539,26 @@ export default {
         if (typeof item === 'object') return item.name;
         let found = this.db.services.find((s) => s.ID === item); return found ? found.Name : '';
       }).filter(Boolean).join(', ');
+    },
+    formatPhoneForLink(phone) {
+      if (!phone) return "";
+      let cleaned = String(phone).replace(/\D/g, "");
+      if (cleaned.startsWith("996")) {
+        if (cleaned.length >= 9) {
+          cleaned = cleaned.slice(-9);
+        }
+      } else if (cleaned.startsWith("0")) {
+        cleaned = cleaned.substring(1);
+      }
+      if (cleaned.length > 9) {
+        cleaned = cleaned.slice(-9);
+      }
+      return "+996" + cleaned;
+    },
+    getWhatsAppLink(phone) {
+      if (!phone) return "";
+      const normalized = this.formatPhoneForLink(phone);
+      return "https://wa.me/" + normalized.replace("+", "");
     }
   }
 };

@@ -99,14 +99,28 @@
                       <i class="bi bi-person text-slate-400 text-sm"></i>
                       {{ recordForm.ClientName || "—" }}
                     </div>
-                    <a
-                      v-if="recordForm.Phone"
-                      :href="'tel:' + recordForm.Phone"
-                      class="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-indigo-600 hover:underline bg-indigo-50 px-2 py-0.5 rounded-lg transition-colors"
-                    >
-                      <i class="bi bi-telephone text-[9px]"></i>
-                      {{ recordForm.Phone }}
-                    </a>
+                    <!-- Dual call and WhatsApp links with on-the-fly normalization -->
+                    <div v-if="recordForm.Phone" class="flex items-center gap-1.5 mt-1.5 select-none scale-95 origin-left">
+                      <!-- Call component -->
+                      <a
+                        :href="'tel:' + formatPhoneForLink(recordForm.Phone)"
+                        class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 hover:text-white bg-indigo-50 hover:bg-indigo-650 px-2.5 py-1 rounded-lg transition-all border border-indigo-200/50"
+                        title="Позвонить"
+                      >
+                        <i class="bi bi-telephone-fill text-[9px]"></i>
+                        <span class="font-mono">{{ formatPhoneForLink(recordForm.Phone) }}</span>
+                      </a>
+                      <!-- WhatsApp component -->
+                      <a
+                        :href="getWhatsAppLink(recordForm.Phone)"
+                        target="_blank"
+                        class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-white bg-emerald-50 hover:bg-emerald-650 px-2 py-1 rounded-lg transition-all border border-emerald-200/50"
+                        title="Написать в WhatsApp"
+                      >
+                        <i class="bi bi-whatsapp text-[10.5px]"></i>
+                        <span>WhatsApp</span>
+                      </a>
+                    </div>
                   </div>
 
                   <div class="pt-3 border-t border-slate-100">
@@ -1237,6 +1251,26 @@ export default {
     },
     onPhoneInput() {
       this.recordForm.Phone = formatPhoneInput(this.recordForm.Phone);
+    },
+    formatPhoneForLink(phone) {
+      if (!phone) return "";
+      let cleaned = String(phone).replace(/\D/g, "");
+      if (cleaned.startsWith("996")) {
+        if (cleaned.length >= 9) {
+          cleaned = cleaned.slice(-9);
+        }
+      } else if (cleaned.startsWith("0")) {
+        cleaned = cleaned.substring(1);
+      }
+      if (cleaned.length > 9) {
+        cleaned = cleaned.slice(-9);
+      }
+      return "+996" + cleaned;
+    },
+    getWhatsAppLink(phone) {
+      if (!phone) return "";
+      const normalized = this.formatPhoneForLink(phone);
+      return "https://wa.me/" + normalized.replace("+", "");
     },
     setCarCountry(type) {
       this.recordForm.CarCountry = type;
