@@ -288,9 +288,9 @@ export default {
       let result = brands.map((b) => {
         let bModels = models.filter((m) => String(m.BrandID) === String(b.ID));
         let sortedBModels = [...bModels].sort((x, y) =>
-          (x.Name || "")
+          String(x.Name || "")
             .toLowerCase()
-            .localeCompare((y.Name || "").toLowerCase()),
+            .localeCompare(String(y.Name || "").toLowerCase()),
         );
         return {
           brand: b,
@@ -307,9 +307,9 @@ export default {
         result.push({
           brand: { ID: "", Name: "Без марки" },
           models: unassigned.sort((x, y) =>
-            (x.Name || "")
+            String(x.Name || "")
               .toLowerCase()
-              .localeCompare((y.Name || "").toLowerCase()),
+              .localeCompare(String(y.Name || "").toLowerCase()),
           ),
         });
       }

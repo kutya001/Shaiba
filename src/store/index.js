@@ -125,30 +125,30 @@ export const useMainStore = defineStore("main", {
       let b = this.db.brands || [];
       const uniqueNames = new Set();
       const bUnique = b.filter(item => {
-          const name = (item.Name || "").toLowerCase().trim();
+          const name = String(item.Name || "").toLowerCase().trim();
           if(uniqueNames.has(name)) return false;
           uniqueNames.add(name);
           return true;
       });
       return bUnique.sort((x, y) =>
-        (x.Name || "")
+        String(x.Name || "")
           .toLowerCase()
-          .localeCompare((y.Name || "").toLowerCase()),
+          .localeCompare(String(y.Name || "").toLowerCase()),
       );
     },
     sortedServices() {
       let s = this.db.services || [];
       const uniqueNames = new Set();
       const sUnique = s.filter(item => {
-          const name = (item.Name || "").toLowerCase().trim();
+          const name = String(item.Name || "").toLowerCase().trim();
           if(uniqueNames.has(name)) return false;
           uniqueNames.add(name);
           return true;
       });
       return sUnique.sort((x, y) =>
-        (x.Name || "")
+        String(x.Name || "")
           .toLowerCase()
-          .localeCompare((y.Name || "").toLowerCase()),
+          .localeCompare(String(y.Name || "").toLowerCase()),
       );
     },
   },
@@ -195,7 +195,7 @@ export const useMainStore = defineStore("main", {
         ];
         let sNames = new Set();
         d.services = mergedServices.filter(s => {
-            let n = (s.Name || "").toLowerCase().trim();
+            let n = String(s.Name || "").toLowerCase().trim();
             if (sNames.has(n)) return false;
             sNames.add(n);
             return true;
@@ -207,7 +207,7 @@ export const useMainStore = defineStore("main", {
         ];
         let bNames = new Set();
         d.brands = mergedBrands.filter(b => {
-            let n = (b.Name || "").toLowerCase().trim();
+            let n = String(b.Name || "").toLowerCase().trim();
             if (bNames.has(n)) return false;
             bNames.add(n);
             return true;
@@ -287,7 +287,7 @@ export const useMainStore = defineStore("main", {
                 if (key === 'services') {
                   let sNames = new Set();
                   merged = [...newData.filter(s => s && String(s.ID).indexOf("ds_") !== 0), ...defaultServices].filter(s => {
-                    let n = (s.Name || "").toLowerCase().trim();
+                    let n = String(s.Name || "").toLowerCase().trim();
                     if (sNames.has(n)) return false;
                     sNames.add(n);
                     return true;
@@ -295,7 +295,7 @@ export const useMainStore = defineStore("main", {
                 } else if (key === 'brands') {
                   let bNames = new Set();
                   merged = [...newData.filter(b => b && String(b.ID).indexOf("db_") !== 0), ...defaultBrands].filter(b => {
-                    let n = (b.Name || "").toLowerCase().trim();
+                    let n = String(b.Name || "").toLowerCase().trim();
                     if (bNames.has(n)) return false;
                     bNames.add(n);
                     return true;

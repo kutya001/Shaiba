@@ -208,7 +208,12 @@ export default {
               );
               
               if (!exists) {
-                 importPayload.models.push({ ID: this.generateId(), BrandID: brandId, Name: name });
+                 importPayload.models.push({ 
+                    ID: this.generateId(), 
+                    BrandID: brandId, 
+                    BrandName: String(m.BrandName || '').trim(), // Added to help server-side lookup
+                    Name: name 
+                 });
                  stats.models++;
               } else {
                  stats.skipped++;
