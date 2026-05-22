@@ -1174,9 +1174,9 @@
                                         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
                                             <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Состав работ и услуг</span>
                                             <div class="space-y-1 max-h-[140px] overflow-y-auto pr-1">
-                                                <div v-for="sid in recordForm.ServicesJSON" :key="sid" class="flex justify-between items-center bg-slate-50/70 px-2.5 py-2 rounded-xl border border-slate-100">
-                                                    <span class="text-xs font-bold text-slate-700 truncate pr-2">{{ getServiceName(sid) }}</span>
-                                                    <span class="text-xs font-black text-slate-800 shrink-0">{{ Number(getServicePrice(sid)).toLocaleString() }} KGS</span>
+                                                <div v-for="(srv, idx) in recordForm.ServicesJSON" :key="idx" class="flex justify-between items-center bg-slate-50/70 px-2.5 py-2 rounded-xl border border-slate-100">
+                                                    <span class="text-xs font-bold text-slate-700 truncate pr-2">{{ srv.name }}</span>
+                                                    <span class="text-xs font-black text-slate-800 shrink-0">{{ Number(srv.price).toLocaleString() }} KGS</span>
                                                 </div>
                                                 <div v-if="!recordForm.ServicesJSON || !recordForm.ServicesJSON.length" class="text-xs text-slate-400 font-semibold italic text-center py-4">Нет услуг в этой записи</div>
                                             </div>
@@ -1273,18 +1273,28 @@
 
                                                 <div class="flex flex-col relative">
                                                     <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Марка <span class="text-red-500">*</span></label>
-                                                    <select v-model="recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" @change="recordForm.ModelID=''; $nextTick(() => { if($refs.modelInput) $refs.modelInput.focus() })">
-                                                        <option value="">Не выбрано</option>
-                                                        <option v-for="b in sortedBrands" :key="b.ID" :value="b.ID">{{b.Name}}</option>
-                                                    </select>
+                                                    <div class="relative">
+                                                        <input type="text" v-model="brandSearchInput" @focus="showBrandDropdown=true" @blur="hideBrandDropdown" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" placeholder="Выберите марку..." />
+                                                        <div v-show="showBrandDropdown" class="absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-100 max-h-48 overflow-y-auto z-50">
+                                                            <div v-for="b in filteredBrandsList" :key="b.ID" @mousedown.prevent="selectBrand(b)" class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                                                {{ b.Name }}
+                                                            </div>
+                                                            <div v-if="filteredBrandsList.length === 0" class="px-3 py-2 text-xs text-slate-400 italic">Ничего не найдено</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div class="flex flex-col relative">
                                                     <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Модель <span class="text-red-500">*</span></label>
-                                                    <select ref="modelInput" v-model="recordForm.ModelID" @change="onModelSelect" :disabled="!recordForm.BrandID" class="form-select w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50">
-                                                        <option value="">Не выбрано</option>
-                                                        <option v-for="m in availableModels" :key="m.ID" :value="m.ID">{{m.Name}}</option>
-                                                    </select>
+                                                    <div class="relative">
+                                                        <input type="text" v-model="modelSearchInput" @focus="showModelDropdown=true" @blur="hideModelDropdown" :disabled="!recordForm.BrandID" class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50" placeholder="Выберите модель..." />
+                                                        <div v-show="showModelDropdown" class="absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-100 max-h-48 overflow-y-auto z-50">
+                                                            <div v-for="m in filteredModelsList" :key="m.ID" @mousedown.prevent="selectModel(m)" class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                                                {{ m.Name }}
+                                                            </div>
+                                                            <div v-if="filteredModelsList.length === 0" class="px-3 py-2 text-xs text-slate-400 italic">Ничего не найдено</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </section>
@@ -1300,13 +1310,16 @@
                                             </h3>
                                             
                                             <div class="space-y-1 mb-3 max-h-[120px] overflow-y-auto pr-1 flex-1">
-                                                <div v-for="sid in recordForm.ServicesJSON" :key="sid" class="flex items-center justify-between px-2 py-1 rounded-lg border border-slate-100 bg-slate-50/50">
-                                                    <span class="text-xs font-bold text-slate-700 truncate pr-2">{{ getServiceName(sid) }}</span>
-                                                    <div class="flex items-center gap-1.5 shrink-0">
-                                                        <span class="text-xs font-extrabold text-slate-800">{{ Number(getServicePrice(sid)).toLocaleString() }} KGS</span>
-                                                        <button type="button" @click="toggleService(sid)" class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-6 h-6 rounded-full hover:bg-red-50" title="Удалить">
-                                                            <i class="bi bi-trash text-xs"></i>
-                                                        </button>
+                                                <div v-for="(srv, idx) in recordForm.ServicesJSON" :key="idx" class="flex flex-col gap-2 px-2.5 py-2 rounded-xl border border-slate-100 bg-slate-50/70">
+                                                    <div class="flex justify-between items-center">
+                                                        <input type="text" v-model="srv.name" :disabled="!srv.isCustom" class="text-xs font-bold text-slate-700 bg-transparent outline-none flex-1 truncate pr-2 placeholder-slate-400" placeholder="Название услуги">
+                                                        <div class="flex items-center gap-1.5 shrink-0">
+                                                            <input type="number" v-model.number="srv.price" @input="calcTotal" class="w-20 px-1.5 py-1 text-right text-xs font-black text-slate-800 bg-white border border-slate-200 rounded-md outline-none focus:border-indigo-400" />
+                                                            <span class="text-[10px] font-bold text-slate-400 uppercase">KGS</span>
+                                                            <button type="button" @click="removeService(idx)" class="text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center w-6 h-6 rounded-full hover:bg-red-50" title="Удалить">
+                                                                <i class="bi bi-trash text-xs"></i>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 
@@ -1315,15 +1328,16 @@
                                                 </div>
                                             </div>
                                             
-                                            <button type="button" @click="showServiceSelector = true" class="w-full h-8.5 flex items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-indigo-150 text-indigo-600 font-bold text-xs hover:bg-indigo-50/40 transition-colors cursor-pointer mt-1 select-none">
-                                                <i class="bi bi-plus-lg"></i> Выбрать услуги
-                                            </button>
+                                            <div class="flex gap-2.5 mt-1">
+                                                <button type="button" @click="showServiceSelector = true" class="flex-1 h-8.5 flex items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-indigo-150 text-indigo-600 font-bold text-xs hover:bg-indigo-50/40 transition-colors cursor-pointer select-none">
+                                                    <i class="bi bi-plus-lg"></i> Выбрать услуги
+                                                </button>
+                                                <button type="button" @click="addCustomService" class="h-8.5 px-3 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer select-none">
+                                                    <i class="bi bi-pencil"></i> Вписать
+                                                </button>
+                                            </div>
 
                                             <div class="flex flex-col mt-3 border-t border-slate-100 pt-3">
-                                                <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Дополнительные услуги</label>
-                                                <textarea ref="additionalServicesInput" v-model="recordForm.AdditionalServices" class="w-full min-h-[50px] px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 resize-y" rows="2" placeholder="Опишите прочие услуги..."></textarea>
-                                            </div>
-                                            <div class="flex flex-col mt-3">
                                                 <label class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider">Комментарий</label>
                                                 <textarea ref="commentInput" v-model="recordForm.Comment" class="w-full min-h-[50px] px-2.5 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 resize-y" rows="2" placeholder="Дополнительная информация или заметки к ремонту..."></textarea>
                                             </div>
@@ -1416,12 +1430,12 @@
                                 </div>
                             </div>
                             <div class="overflow-y-auto flex-1 p-3 space-y-2 pb-8">
-                                <button v-for="srv in filteredServices" :key="srv.ID" @click="toggleService(srv.ID)" class="w-full flex items-center justify-between p-4 rounded-xl transition-colors text-left border" :class="recordForm.ServicesJSON.includes(srv.ID) ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100 hover:bg-slate-50'">
+                                <button v-for="srv in filteredServices" :key="srv.ID" @click="toggleService(srv.ID)" class="w-full flex items-center justify-between p-4 rounded-xl transition-colors text-left border" :class="isServiceSelected(srv.ID) ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100 hover:bg-slate-50'">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-5 h-5 rounded border flex items-center justify-center" :class="recordForm.ServicesJSON.includes(srv.ID) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'">
-                                            <i v-if="recordForm.ServicesJSON.includes(srv.ID)" class="bi bi-check text-sm font-bold"></i>
+                                        <div class="w-5 h-5 rounded border flex items-center justify-center" :class="isServiceSelected(srv.ID) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'">
+                                            <i v-if="isServiceSelected(srv.ID)" class="bi bi-check text-sm font-bold"></i>
                                         </div>
-                                        <span class="text-slate-800 font-bold text-[14px]" :class="{'text-indigo-900': recordForm.ServicesJSON.includes(srv.ID)}">{{ srv.Name }}</span>
+                                        <span class="text-slate-800 font-bold text-[14px]" :class="{'text-indigo-900': isServiceSelected(srv.ID)}">{{ srv.Name }}</span>
                                     </div>
                                     <span class="text-slate-500 font-bold text-[13px]">{{ Number(srv.Price).toLocaleString() }} KGS</span>
                                 </button>
@@ -1625,6 +1639,11 @@ export default {
                     showServiceSelector: false,
                     serviceSearch: '',
 
+                    brandSearchInput: '',
+                    showBrandDropdown: false,
+                    modelSearchInput: '',
+                    showModelDropdown: false,
+
                     refMeta: {
                         services: { title: 'Услуги', icon: 'build', sheet: 'Services', fields: [{k:'Name', l:'Название'}, {k:'Price', l:'Цена (KGS)', t:'number'}] },
                         brands: { title: 'Марки', icon: 'directions_car', sheet: 'Brands', fields: [{k:'Name', l:'Марка'}] },
@@ -1642,6 +1661,19 @@ export default {
                 },
                 currentUserMasterID() {
                     return this.user ? this.user.ID : null;
+                },
+                filteredBrandsList() {
+                    let b = this.sortedBrands;
+                    if (!this.brandSearchInput) return b;
+                    return b.filter(x => x && (x.Name || '').toLowerCase().includes(this.brandSearchInput.toLowerCase()));
+                },
+                filteredModelsList() {
+                    let bId = this.recordForm.BrandID;
+                    if (!bId) return [];
+                    let models = this.db.models.filter(m => String(m.BrandID) === String(bId));
+                    let sorted = [...models].sort((x, y) => (x.Name || '').toLowerCase().localeCompare((y.Name || '').toLowerCase()));
+                    if (!this.modelSearchInput) return sorted;
+                    return sorted.filter(x => x && (x.Name || '').toLowerCase().includes(this.modelSearchInput.toLowerCase()));
                 },
                 sortedBrands() {
                     let b = this.db.brands || [];
@@ -2287,9 +2319,17 @@ export default {
                     });
                     this.recordForm.TotalAmount = sum;
                 },
+                isServiceSelected(sid) {
+                    return this.recordForm.ServicesJSON.some(s => s.id === sid);
+                },
                 toggleService(sid) {
-                    let idx = this.recordForm.ServicesJSON.indexOf(sid);
-                    if (idx === -1) this.recordForm.ServicesJSON.push(sid);
+                    let idx = this.recordForm.ServicesJSON.findIndex(s => s.id === sid);
+                    if (idx === -1) {
+                        let srv = this.db.services.find(s => s.ID === sid);
+                        if (srv) {
+                            this.recordForm.ServicesJSON.push({ id: srv.ID, name: srv.Name, price: srv.Price, isCustom: false });
+                        }
+                    }
                     else this.recordForm.ServicesJSON.splice(idx, 1);
                     this.calcTotal();
                 },
@@ -2336,6 +2376,52 @@ export default {
                          }
                     }
                     this.isSyncing = false;
+                },
+
+                selectBrand(b) {
+                    this.recordForm.BrandID = b.ID;
+                    this.brandSearchInput = b.Name;
+                    this.showBrandDropdown = false;
+                    this.recordForm.ModelID = '';
+                    this.modelSearchInput = '';
+                },
+                hideBrandDropdown() {
+                    this.showBrandDropdown = false;
+                    let b = this.db.brands.find(x => x.ID == this.recordForm.BrandID);
+                    if(b) this.brandSearchInput = b.Name;
+                    else this.brandSearchInput = '';
+                },
+                selectModel(m) {
+                    this.recordForm.ModelID = m.ID;
+                    this.modelSearchInput = m.Name;
+                    this.showModelDropdown = false;
+                    this.showServiceSelector = true;
+                },
+                hideModelDropdown() {
+                    this.showModelDropdown = false;
+                    let m = this.db.models.find(x => x.ID == this.recordForm.ModelID);
+                    if(m) this.modelSearchInput = m.Name;
+                    else this.modelSearchInput = '';
+                },
+                addCustomService() {
+                    this.recordForm.ServicesJSON.push({
+                        id: null,
+                        name: 'Прочая услуга',
+                        price: 0,
+                        isCustom: true
+                    });
+                    this.calcTotal();
+                },
+                removeService(idx) {
+                    this.recordForm.ServicesJSON.splice(idx, 1);
+                    this.calcTotal();
+                },
+                calcTotal() {
+                    let sum = 0;
+                    this.recordForm.ServicesJSON.forEach(srv => {
+                        sum += Number(srv.price) || 0;
+                    });
+                    this.recordForm.TotalAmount = sum;
                 },
 
                 async quickStatusChange(record, newStatus) {
@@ -2408,12 +2494,15 @@ export default {
                     if (!record) return '—';
                     let sids = [];
                     if (record.ServicesJSON) {
-                        sids = typeof record.ServicesJSON === 'string' ? JSON.parse(record.ServicesJSON || '[]') : record.ServicesJSON;
+                        try {
+                            sids = typeof record.ServicesJSON === 'string' ? JSON.parse(record.ServicesJSON || '[]') : record.ServicesJSON;
+                        } catch(e) { sids = []; }
                     }
                     if (!sids || sids.length === 0) return 'Без услуг';
                     
-                    return sids.map(sid => {
-                        let found = this.db.services.find(s => s.ID === sid);
+                    return sids.map(item => {
+                        if (typeof item === 'object') return item.name;
+                        let found = this.db.services.find(s => s.ID === item);
                         return found ? found.Name : '';
                     }).filter(Boolean).join(', ');
                 },
@@ -2439,10 +2528,29 @@ export default {
                     this.bsModals.profile.show();
                 },
                 openRecordModal(record = null) {
+                    this.brandSearchInput = '';
+                    this.modelSearchInput = '';
                     if (record) {
                         this.isEditingRecord = false;
                         this.recordForm = JSON.parse(JSON.stringify(record));
-                        this.recordForm.ServicesJSON = this.recordForm.ServicesJSON || [];
+                        
+                        let parsed = [];
+                        if (this.recordForm.ServicesJSON) {
+                            parsed = typeof this.recordForm.ServicesJSON === 'string' ? JSON.parse(this.recordForm.ServicesJSON) : this.recordForm.ServicesJSON;
+                        }
+                        this.recordForm.ServicesJSON = parsed.map(item => {
+                            if (typeof item === 'string') {
+                                let found = this.db.services.find(x => x.ID === item);
+                                return { id: item, name: found ? found.Name : 'Н/Д', price: found ? found.Price : 0, isCustom: false };
+                            }
+                            return item;
+                        });
+
+                        let b = this.db.brands.find(x => x.ID == this.recordForm.BrandID);
+                        if (b) this.brandSearchInput = b.Name;
+                        let m = this.db.models.find(x => x.ID == this.recordForm.ModelID);
+                        if (m) this.modelSearchInput = m.Name;
+                        
                         this.recordForm.IsPaid = record.IsPaid === true || String(record.IsPaid).toUpperCase() === 'TRUE';
                         if (this.recordForm.StartTime) {
                             let d = new Date(this.recordForm.StartTime);
@@ -2520,9 +2628,12 @@ export default {
                         if (!f.CarNumber) throw new Error('Пожалуйста, введите Госномер');
                         if (!f.BrandID) throw new Error('Пожалуйста, выберите Марку');
                         if (!f.ModelID) throw new Error('Пожалуйста, выберите Модель');
-                        if ((!f.ServicesJSON || f.ServicesJSON.length === 0) && !f.AdditionalServices) throw new Error('Пожалуйста, добавьте хотя бы одну Услугу или заполните "Дополнительные услуги"');
+                        if ((!f.ServicesJSON || f.ServicesJSON.length === 0) && !f.AdditionalServices) throw new Error('Пожалуйста, добавьте хотя бы одну Услугу');
+                        if (f.ServicesJSON && f.ServicesJSON.some(s => !s.name)) throw new Error('Убедитесь, что все услуги имеют название');
 
                         let payload = JSON.parse(JSON.stringify(this.recordForm));
+                        payload.ServicesJSON = JSON.stringify(this.recordForm.ServicesJSON);
+
                         if (payload.StartTime_LOCAL) {
                             payload.StartTime = new Date(payload.StartTime_LOCAL).toISOString();
                         } else if (!payload.ID) {

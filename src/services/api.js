@@ -1,0 +1,58 @@
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwohflNTW3z1cknnf80XAEhmavcITwdt9PYSUEq6EJP-2EmsxHiRBNvcUSGJ_i-cu-4/exec';
+
+export const runGS = async (func, ...args) => {
+    const payload = { action: func };
+    if (func === 'loginUser') {
+       payload.username = args[0];
+       payload.password = args[1];
+    } else if (func === 'registerUser') {
+       payload.username = args[0];
+       payload.password = args[1];
+       payload.name = args[2];
+       payload.phone = args[3];
+    } else if (func === 'approveUser') {
+       payload.userId = args[0];
+       payload.data = args[1];
+    } else if (func === 'getUsernames') {
+       // none
+    } else if (func === 'updateUserProfile') {
+       payload.userId = args[0];
+       payload.username = args[1];
+       payload.password = args[2];
+       payload.name = args[3];
+       payload.phone = args[4];
+    } else if (func === 'getInitData') {
+       payload.role = args[0];
+       payload.userId = args[1];
+    } else if (func === 'addRow') {
+       payload.sheetName = args[0];
+       payload.obj = args[1];
+    } else if (func === 'updateRecord') {
+       payload.obj = args[0];
+    } else if (func === 'updateRow') {
+       payload.sheetName = args[0];
+       payload.obj = args[1];
+    } else if (func === 'deleteRow') {
+       payload.sheetName = args[0];
+       payload.id = args[1];
+       payload.role = args[2];
+       payload.userId = args[3];
+    }
+
+    try {
+        const response = await fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+        });
+        const responseData = await response.json();
+        if (responseData.success) {
+            return responseData.result;
+        } else {
+            throw new Error(responseData.error);
+        }
+    } catch (error) {
+        console.error('GAS Fetch Error:', error);
+        throw error;
+    }
+};
