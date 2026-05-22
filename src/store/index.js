@@ -112,6 +112,9 @@ export const useMainStore = defineStore("main", {
       toasts: [],
       loading: false,
       initError: null,
+      versions: null,
+      isPolling: false,
+      syncStatus: "synced",
     };
   },
   getters: {
@@ -219,6 +222,13 @@ export const useMainStore = defineStore("main", {
         ];
 
         this.db = d;
+        try {
+          this.versions = await runGS("getDbVersions");
+        } catch (err) {
+          this.versions = { records: "1", services: "1", users: "1", brands: "1", models: "1" };
+        }
+        this.syncStatus = "synced";
+        this.startBackgroundSync();
       } catch (e) {
         this.initError = e.message;
       } finally {
@@ -234,11 +244,79 @@ export const useMainStore = defineStore("main", {
         models: [],
         users: [],
       };
+      this.versions = null;
+      this.isPolling = false;
+      this.syncStatus = "synced";
       localStorage.removeItem("currentUser");
     },
     async dispatchSync(taskName, payload, sheet = null) {
       this.isSyncing = true;
       this.syncQueue.push({ taskName, payload, sheet });
+
+      // --- Optimistic UI Updates ---
+      try {
+        if (taskName === "addRow" && sheet) {
+          const key = sheet.toLowerCase();
+          if (this.db[key]) {
+            const tempItem = { 
+              ...payload, 
+              ID: payload.ID || ("temp_" + Math.random().toString(36).substr(2, 9)) 
+            };
+            if (key === "records") {
+              if (tempItem.ServicesJSON) {
+                try {
+                  tempItem.ServicesJSON = typeof tempItem.ServicesJSON === "string" ? JSON.parse(tempItem.ServicesJSON) : tempItem.ServicesJSON;
+                } catch (e) {
+                  tempItem.ServicesJSON = [];
+                }
+              } else {
+                tempItem.ServicesJSON = [];
+              }
+              this.db.records.unshift(tempItem);
+            } else {
+              this.db[key].push(tempItem);
+            }
+          }
+        } else if (taskName === "addRows" && sheet) {
+          const key = sheet.toLowerCase();
+          if (this.db[key] && Array.isArray(payload)) {
+            payload.forEach(item => {
+              const tempItem = { 
+                ...item, 
+                ID: item.ID || ("temp_" + Math.random().toString(36).substr(2, 9)) 
+              };
+              this.db[key].push(tempItem);
+            });
+          }
+        } else if (taskName === "updateRecord") {
+          const idx = this.db.records.findIndex(r => r.ID === payload.ID);
+          if (idx !== -1) {
+            const updated = { ...this.db.records[idx], ...payload };
+            if (updated.ServicesJSON) {
+              try {
+                updated.ServicesJSON = typeof updated.ServicesJSON === "string" ? JSON.parse(updated.ServicesJSON) : updated.ServicesJSON;
+              } catch (e) {}
+            }
+            this.db.records[idx] = updated;
+          }
+        } else if (taskName === "updateRow" && sheet) {
+          const key = sheet.toLowerCase();
+          if (this.db[key]) {
+            const idx = this.db[key].findIndex(r => r.ID === payload.ID);
+            if (idx !== -1) {
+              this.db[key][idx] = { ...this.db[key][idx], ...payload };
+            }
+          }
+        } else if (taskName === "deleteRow" && sheet) {
+          const key = sheet.toLowerCase();
+          if (this.db[key]) {
+            this.db[key] = this.db[key].filter(r => r.ID !== payload);
+          }
+        }
+      } catch (optErr) {
+        console.warn("Optimistic update failed silently:", optErr);
+      }
+      // --- End of Optimistic UI Updates ---
 
       if (this.syncQueue.length === 1) {
         this.processSyncQueue();
@@ -248,6 +326,7 @@ export const useMainStore = defineStore("main", {
       while (this.syncQueue.length > 0) {
         let task = this.syncQueue[0];
         try {
+          this.syncStatus = "updating";
           let newData;
           if (task.taskName === "updateRecord") {
             newData = await runGS("updateRecord", task.payload);
@@ -285,23 +364,23 @@ export const useMainStore = defineStore("main", {
                 let merged = newData;
                 
                 if (key === 'services') {
-                  let sNames = new Set();
-                  merged = [...newData.filter(s => s && String(s.ID).indexOf("ds_") !== 0), ...defaultServices].filter(s => {
-                    let n = String(s.Name || "").toLowerCase().trim();
-                    if (sNames.has(n)) return false;
-                    sNames.add(n);
-                    return true;
-                  });
+                   let sNames = new Set();
+                   merged = [...newData.filter(s => s && String(s.ID).indexOf("ds_") !== 0), ...defaultServices].filter(s => {
+                     let n = String(s.Name || "").toLowerCase().trim();
+                     if (sNames.has(n)) return false;
+                     sNames.add(n);
+                     return true;
+                   });
                 } else if (key === 'brands') {
-                  let bNames = new Set();
-                  merged = [...newData.filter(b => b && String(b.ID).indexOf("db_") !== 0), ...defaultBrands].filter(b => {
-                    let n = String(b.Name || "").toLowerCase().trim();
-                    if (bNames.has(n)) return false;
-                    bNames.add(n);
-                    return true;
-                  });
+                   let bNames = new Set();
+                   merged = [...newData.filter(b => b && String(b.ID).indexOf("db_") !== 0), ...defaultBrands].filter(b => {
+                     let n = String(b.Name || "").toLowerCase().trim();
+                     if (bNames.has(n)) return false;
+                     bNames.add(n);
+                     return true;
+                   });
                 } else if (key === 'models') {
-                  merged = [...newData.filter(m => m && String(m.ID).indexOf("dm_") !== 0), ...defaultModels];
+                   merged = [...newData.filter(m => m && String(m.ID).indexOf("dm_") !== 0), ...defaultModels];
                 }
                 this.db[key] = merged;
               }
@@ -322,8 +401,17 @@ export const useMainStore = defineStore("main", {
             });
           }
           this.syncQueue.shift();
+
+          // Immediately update cached version values so we do not double-download on the next interval
+          try {
+            this.versions = await runGS("getDbVersions");
+            this.syncStatus = "synced";
+          } catch (e) {
+            this.syncStatus = "synced";
+          }
         } catch (e) {
           console.error("Ошибка синхронизации:", e);
+          this.syncStatus = "error";
           this.showToast(
             "Ошибка синхронизации. Будет повторная попытка.",
             "error",
@@ -332,6 +420,111 @@ export const useMainStore = defineStore("main", {
         }
       }
       this.isSyncing = false;
+      this.syncStatus = "synced";
+    },
+    async startBackgroundSync() {
+      if (this.isPolling) return;
+      this.isPolling = true;
+
+      const poll = async () => {
+        if (!this.user) {
+          this.isPolling = false;
+          return;
+        }
+
+        try {
+          if (this.syncStatus === "synced") {
+            this.syncStatus = "checking";
+          }
+          const incoming = await runGS("getDbVersions");
+
+          if (!this.versions) {
+            this.versions = incoming;
+            this.syncStatus = "synced";
+            setTimeout(poll, 6000);
+            return;
+          }
+
+          let changedKeys = [];
+          for (let k in incoming) {
+            if (incoming[k] !== this.versions[k]) {
+              changedKeys.push(k);
+            }
+          }
+
+          if (changedKeys.length > 0) {
+            this.syncStatus = "updating";
+            for (let k of changedKeys) {
+              let sheetName = "";
+              if (k === "records") sheetName = "Records";
+              if (k === "services") sheetName = "Services";
+              if (k === "brands") sheetName = "Brands";
+              if (k === "models") sheetName = "Models";
+              if (k === "users") sheetName = "Users";
+
+              if (sheetName) {
+                let newData = await runGS("getTable", { sheetName });
+                if (Array.isArray(newData)) {
+                  if (k === "records") {
+                    newData.forEach((r) => {
+                      if (r.ServicesJSON) {
+                        try {
+                          r.ServicesJSON = typeof r.ServicesJSON === "string" ? JSON.parse(r.ServicesJSON) : r.ServicesJSON;
+                        } catch (e) {
+                          r.ServicesJSON = [];
+                        }
+                      } else r.ServicesJSON = [];
+                    });
+                    this.db.records = newData;
+                  } else if (k === "services") {
+                    let sNames = new Set();
+                    this.db.services = [
+                      ...newData.filter(s => s && String(s.ID).indexOf("ds_") !== 0),
+                      ...defaultServices,
+                    ].filter(s => {
+                      let n = String(s.Name || "").toLowerCase().trim();
+                      if (sNames.has(n)) return false;
+                      sNames.add(n);
+                      return true;
+                    });
+                  } else if (k === "brands") {
+                    let bNames = new Set();
+                    this.db.brands = [
+                      ...newData.filter(b => b && String(b.ID).indexOf("db_") !== 0),
+                      ...defaultBrands,
+                    ].filter(b => {
+                      let n = String(b.Name || "").toLowerCase().trim();
+                      if (bNames.has(n)) return false;
+                      bNames.add(n);
+                      return true;
+                    });
+                  } else if (k === "models") {
+                    this.db.models = [
+                      ...newData.filter(m => m && String(m.ID).indexOf("dm_") !== 0),
+                      ...defaultModels,
+                    ];
+                  } else if (k === "users") {
+                    this.db.users = newData;
+                  }
+                }
+              }
+            }
+            this.versions = incoming;
+          }
+          this.syncStatus = "synced";
+        } catch (err) {
+          console.warn("Silent version query error:", err);
+          this.syncStatus = "error";
+        }
+
+        if (this.user) {
+          setTimeout(poll, 6000);
+        } else {
+          this.isPolling = false;
+        }
+      };
+
+      setTimeout(poll, 6000);
     },
   },
 });

@@ -26,6 +26,8 @@ function handleRequest(action, payload) {
     var result = null;
     if (action === 'loginUser') {
       result = loginUser(payload.username, payload.password);
+    } else if (action === 'getDbVersions') {
+      result = getDbVersions();
     } else if (action === 'registerUser') {
       result = registerUser(payload.username, payload.password, payload.name, payload.phone);
     } else if (action === 'approveUser') {
@@ -36,6 +38,8 @@ function handleRequest(action, payload) {
       result = updateUserProfile(payload.userId, payload.username, payload.password, payload.name, payload.phone);
     } else if (action === 'getInitData') {
       result = getInitData(payload.role, payload.userId);
+    } else if (action === 'getTable') {
+      result = getTable(payload.sheetName);
     } else if (action === 'addRow') {
       result = addRow(payload.sheetName, payload.obj);
     } else if (action === 'addRows') {
@@ -221,6 +225,7 @@ function addRowBase(sheetName, obj) {
     else row.push(obj[h] !== undefined ? obj[h] : '');
   }
   sheet.appendRow(row);
+  updateSheetVersion(sheetName);
 }
 
 function updateRecord(obj) {
@@ -251,6 +256,7 @@ function updateRecord(obj) {
       break;
     }
   }
+  updateSheetVersion('Records');
   return getTable('Records');
 }
 
@@ -284,6 +290,7 @@ function updateRowBase(sheetName, id, updates) {
       break;
     }
   }
+  updateSheetVersion(sheetName);
 }
 
 function deleteRow(sheetName, id, role, userId) {
@@ -296,6 +303,7 @@ function deleteRow(sheetName, id, role, userId) {
       break;
     }
   }
+  updateSheetVersion(sheetName);
   return sheetName === 'Records' ? getTable('Records') : getInitData(role || 'Master', userId);
 }
 
@@ -325,6 +333,7 @@ function addRows(sheetName, objects) {
   });
   
   sheet.getRange(lastRow + 1, 1, rowsToAppend.length, headers.length).setValues(rowsToAppend);
+  updateSheetVersion(sheetName);
   
   var firstObj = objects[0];
   return sheetName === 'Records' ? getTable('Records') : getInitData(firstObj._role || 'Master', firstObj._userId);
@@ -432,7 +441,48 @@ function bulkImport(data) {
   }
   if (servicesToAppend.length > 0) {
     servicesInfo.sheet.getRange(servicesInfo.sheet.getLastRow() + 1, 1, servicesToAppend.length, servicesInfo.headers.length).setValues(servicesToAppend);
+    updateSheetVersion('Services');
+  }
+  
+  if (brandsToAppend.length > 0) {
+    updateSheetVersion('Brands');
+  }
+  if (modelsToAppend.length > 0) {
+    updateSheetVersion('Models');
   }
 
   return getInitData(role, userId);
+}
+
+// Versioning and Sync
+function updateSheetVersion(sheetName) {
+  try {
+    var key = String(sheetName).toLowerCase() + '_version';
+    var now = String(Date.now());
+    var props = PropertiesService.getScriptProperties();
+    props.setProperty(key, now);
+  } catch (e) {
+    // Fail-safe
+  }
+}
+
+function getDbVersions() {
+  try {
+    var props = PropertiesService.getScriptProperties().getProperties();
+    return {
+      records: props.records_version || '1',
+      services: props.services_version || '1',
+      users: props.users_version || '1',
+      brands: props.brands_version || '1',
+      models: props.models_version || '1'
+    };
+  } catch (e) {
+    return {
+      records: '1',
+      services: '1',
+      users: '1',
+      brands: '1',
+      models: '1'
+    };
+  }
 }

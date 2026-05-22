@@ -86,16 +86,34 @@
           <span class="material-symbols-outlined text-[18px]">tune</span>
         </button>
 
-        <button
-          v-if="isSyncing"
-          class="px-1.5 h-8 text-indigo-600 font-bold flex items-center gap-1 bg-indigo-5/60 rounded-lg shrink-0"
-          style="font-size: 9px"
+        <!-- Mobile Sync Indicator -->
+        <div
+          v-if="user"
+          class="flex items-center justify-center shrink-0 px-1 select-none"
         >
           <span
-            class="material-symbols-outlined animate-spin font-bold text-[13px]"
+            v-if="syncStatus === 'synced'"
+            class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+            title="Синхронизировано"
+          ></span>
+          <span
+            v-else-if="syncStatus === 'checking'"
+            class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"
+            title="Проверка обновлений..."
+          ></span>
+          <span
+            v-else-if="syncStatus === 'updating'"
+            class="material-symbols-outlined text-[12px] text-indigo-600 animate-spin"
+            title="Синхронизация..."
             >sync</span
           >
-        </button>
+          <span
+            v-else-if="syncStatus === 'error'"
+            class="material-symbols-outlined text-[12px] text-red-500 font-bold"
+            title="Ошибка сети"
+            >gpp_maybe</span
+          >
+        </div>
         <button
           v-if="user"
           @click="$emit('open-profile')"
@@ -194,15 +212,28 @@
         v-if="user"
         class="flex items-center gap-4 bg-white shadow-md border border-slate-200/50 rounded-2xl p-2 px-4 h-14"
       >
-        <button
-          v-if="isSyncing"
-          class="px-2.5 h-9.5 border border-indigo-100 bg-indigo-50 text-indigo-600 rounded-xl transition-all font-bold flex items-center gap-1.5 animate-pulse"
+        <!-- Desktop Sync Status Badge -->
+        <div
+          v-if="user"
+          class="px-3 h-9.5 bg-slate-50 border border-slate-150 rounded-xl flex items-center gap-2 select-none"
         >
-          <span class="material-symbols-outlined animate-spin font-bold text-sm"
-            >sync</span
-          >
-          <span class="text-[9px] uppercase tracking-wider">Синхронизация</span>
-        </button>
+          <template v-if="syncStatus === 'synced'">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+            <span class="text-[10px] text-slate-500 font-bold font-mono tracking-tight uppercase">В сети</span>
+          </template>
+          <template v-else-if="syncStatus === 'checking'">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
+            <span class="text-[10px] text-indigo-600 font-bold font-mono tracking-tight uppercase">Проверка...</span>
+          </template>
+          <template v-else-if="syncStatus === 'updating'">
+            <span class="material-symbols-outlined text-sm text-indigo-600 animate-spin">sync</span>
+            <span class="text-[10px] text-indigo-600 font-bold font-mono tracking-tight uppercase">Обновление...</span>
+          </template>
+          <template v-else-if="syncStatus === 'error'">
+            <span class="material-symbols-outlined text-sm text-red-500 font-bold animate-pulse">cloud_off</span>
+            <span class="text-[10px] text-red-500 font-bold font-mono tracking-tight uppercase">Ошибка сети</span>
+          </template>
+        </div>
 
         <select
           v-if="activeTab === 'dashboard'"
@@ -288,6 +319,10 @@ export default {
     user() {
       const store = useMainStore();
       return store.user;
+    },
+    syncStatus() {
+      const store = useMainStore();
+      return store.syncStatus;
     },
   },
   methods: {
