@@ -38,6 +38,8 @@ function handleRequest(action, payload) {
       result = getInitData(payload.role, payload.userId);
     } else if (action === 'addRow') {
       result = addRow(payload.sheetName, payload.obj);
+    } else if (action === 'addRows') {
+      result = addRows(payload.sheetName, payload.objects);
     } else if (action === 'updateRecord') {
       result = updateRecord(payload.obj);
     } else if (action === 'updateRow') {
@@ -293,4 +295,35 @@ function deleteRow(sheetName, id, role, userId) {
     }
   }
   return sheetName === 'Records' ? getTable('Records') : getInitData(role || 'Master', userId);
+}
+
+function addRows(sheetName, objects) {
+  if (!objects || !Array.isArray(objects) || objects.length === 0) return getInitData('Master', '');
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var lastRow = sheet.getLastRow();
+  
+  var rowsToAppend = [];
+  var now = new Date().toISOString();
+  
+  objects.forEach(function(obj) {
+    if (!obj.ID) obj.ID = Utilities.getUuid();
+    var row = [];
+    for(var i = 0; i < headers.length; i++) {
+      var h = headers[i];
+      if (h === 'StartTime' && sheetName === 'Records') row.push(now);
+      else if (h === 'EndTime') row.push('');
+      else if (h === 'ServicesJSON') row.push(typeof obj[h] === 'string' ? obj[h] : JSON.stringify(obj[h] || []));
+      else if (h === 'Phone' && obj[h] && typeof obj[h] === 'string' && obj[h].startsWith('+')) row.push("'" + obj[h]);
+      else row.push(obj[h] !== undefined ? obj[h] : '');
+    }
+    rowsToAppend.push(row);
+  });
+  
+  sheet.getRange(lastRow + 1, 1, rowsToAppend.length, headers.length).setValues(rowsToAppend);
+  
+  var firstObj = objects[0];
+  return sheetName === 'Records' ? getTable('Records') : getInitData(firstObj._role || 'Master', firstObj._userId);
 }

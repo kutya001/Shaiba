@@ -260,6 +260,8 @@ export const useMainStore = defineStore("main", {
             this.db.users = newData;
           } else if (task.taskName === "addRow") {
             newData = await runGS("addRow", task.sheet, task.payload);
+          } else if (task.taskName === "addRows") {
+            newData = await runGS("addRows", task.sheet, task.payload);
           } else if (task.taskName === "updateRow") {
             newData = await runGS("updateRow", task.sheet, task.payload);
           } else if (task.taskName === "deleteRow") {

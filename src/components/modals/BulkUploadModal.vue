@@ -157,28 +157,30 @@ export default {
       try {
          const role = this.user.Role;
          const userId = this.user.ID;
-         
-         // Helper to add row
-         const addRowToStore = (sheet, tab, rowData) => {
-             const payload = Object.assign({ _role: role, _userId: userId, ID: this.generateId() }, rowData);
-             if (!this.db[tab]) this.db[tab] = [];
-             this.db[tab].push(payload);
-             this.store.dispatchSync("addRow", payload, sheet);
-             return payload;
-         };
 
-         // Process Brands first
+         const brandsToSync = [];
+         const modelsToSync = [];
+         const servicesToSync = [];
+
+         // Process Brands
          if (data.brands && Array.isArray(data.brands)) {
              for (const item of data.brands) {
                  if (!item.Name) continue;
                  const exists = (this.db.brands || []).find(b => String(b.Name).trim().toLowerCase() === String(item.Name).trim().toLowerCase());
                  if (!exists) {
-                     addRowToStore("Brands", "brands", { Name: String(item.Name).trim() });
+                     const payload = { ID: this.generateId(), Name: String(item.Name).trim(), _role: role, _userId: userId };
+                     if (!this.db.brands) this.db.brands = [];
+                     this.db.brands.push(payload);
+                     brandsToSync.push(payload);
                      stats.brandsAdded++;
                  } else {
                      stats.skipped++;
                  }
              }
+         }
+
+         if (brandsToSync.length > 0) {
+             this.store.dispatchSync("addRows", brandsToSync, "Brands");
          }
          
          // Process Models
@@ -187,32 +189,42 @@ export default {
                  if (!item.Name) continue;
                  let brandId = item.BrandID;
                  
-                 // if BrandName is provided, find it
                  if (!brandId && item.BrandName) {
                      let bFind = (this.db.brands || []).find(b => String(b.Name).trim().toLowerCase() === String(item.BrandName).trim().toLowerCase());
                      if (bFind) {
                          brandId = bFind.ID;
                      } else {
-                         // add brand
-                         let newB = addRowToStore("Brands", "brands", { Name: String(item.BrandName).trim() });
+                         // Adding missing brand immediately to reference it, but this breaks batching a bit for recursive brands
+                         // However, usually brands are already listed or added in brands section.
+                         // For simplicity, we'll add brands one by one IF they are missing in the models section
+                         const newB = { ID: this.generateId(), Name: String(item.BrandName).trim(), _role: role, _userId: userId };
+                         if (!this.db.brands) this.db.brands = [];
+                         this.db.brands.push(newB);
+                         this.store.dispatchSync("addRow", newB, "Brands");
                          brandId = newB.ID;
                          stats.brandsAdded++;
                      }
                  }
                  
-                 if (!brandId) continue; // skip model if no brand linked
+                 if (!brandId) continue;
                  
-                 // double check duplicate
                  const exists = (this.db.models || []).find(m => 
                      m.BrandID === brandId && String(m.Name).trim().toLowerCase() === String(item.Name).trim().toLowerCase()
                  );
                  if (!exists) {
-                     addRowToStore("Models", "models", { BrandID: brandId, Name: String(item.Name).trim() });
+                     const payload = { ID: this.generateId(), BrandID: brandId, Name: String(item.Name).trim(), _role: role, _userId: userId };
+                     if (!this.db.models) this.db.models = [];
+                     this.db.models.push(payload);
+                     modelsToSync.push(payload);
                      stats.modelsAdded++;
                  } else {
                      stats.skipped++;
                  }
              }
+         }
+
+         if (modelsToSync.length > 0) {
+             this.store.dispatchSync("addRows", modelsToSync, "Models");
          }
          
          // Process Services
@@ -221,12 +233,19 @@ export default {
                  if (!item.Name) continue;
                  const exists = (this.db.services || []).find(s => String(s.Name).trim().toLowerCase() === String(item.Name).trim().toLowerCase());
                  if (!exists) {
-                     addRowToStore("Services", "services", { Name: String(item.Name).trim(), Price: Number(item.Price) || 0 });
+                     const payload = { ID: this.generateId(), Name: String(item.Name).trim(), Price: Number(item.Price) || 0, _role: role, _userId: userId };
+                     if (!this.db.services) this.db.services = [];
+                     this.db.services.push(payload);
+                     servicesToSync.push(payload);
                      stats.servicesAdded++;
                  } else {
                      stats.skipped++;
                  }
              }
+         }
+
+         if (servicesToSync.length > 0) {
+             this.store.dispatchSync("addRows", servicesToSync, "Services");
          }
          
          this.successText = `Успешно! Добавлено: Услуг (${stats.servicesAdded}), Марок (${stats.brandsAdded}), Моделей (${stats.modelsAdded}). Пропущено дубликатов: ${stats.skipped}.`;
