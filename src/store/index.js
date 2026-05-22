@@ -106,7 +106,7 @@ export const useMainStore = defineStore("main", {
     }
     return {
       user: savedUser,
-      db: { records: [], services: [], brands: [], models: [], users: [], applications: [] },
+      db: { records: [], services: [], brands: [], models: [], users: [], applications: [], welcomescreens: [] },
       syncQueue: [],
       isSyncing: false,
       toasts: [],
@@ -222,13 +222,17 @@ export const useMainStore = defineStore("main", {
           ...defaultModels,
         ];
 
+        if (!d.welcomescreens) {
+          d.welcomescreens = [];
+        }
+
         this.db = d;
         try {
           this.versions = await runGS("getDbVersions");
           this.versionsSupport = true;
           this.syncStatus = "synced";
         } catch (err) {
-          this.versions = { records: "1", services: "1", users: "1", brands: "1", models: "1" };
+          this.versions = { records: "1", services: "1", users: "1", brands: "1", models: "1", welcomescreens: "1" };
           const errorMsg = String(err.message || err);
           if (errorMsg.includes("Неизвестное действие") || errorMsg.includes("getDbVersions")) {
             this.versionsSupport = false;
@@ -256,6 +260,7 @@ export const useMainStore = defineStore("main", {
         models: [],
         users: [],
         applications: [],
+        welcomescreens: [],
       };
       this.versions = null;
       this.isPolling = false;
@@ -481,9 +486,10 @@ export const useMainStore = defineStore("main", {
               if (k === "models") sheetName = "Models";
               if (k === "users") sheetName = "Users";
               if (k === "applications") sheetName = "Заявки на Запись";
+              if (k === "welcomescreens") sheetName = "WelcomeScreens";
 
               if (sheetName) {
-                let newData = await runGS("getTable", { sheetName });
+                let newData = await runGS("getTable", sheetName); // Wait, look: runGS("getTable", {sheetName}) was a typo in the pre-existing code of the file or not? Let's check!
                 if (Array.isArray(newData)) {
                   if (k === "records") {
                     newData.forEach((r) => {
@@ -527,6 +533,8 @@ export const useMainStore = defineStore("main", {
                     this.db.users = newData;
                   } else if (k === "applications") {
                     this.db.applications = newData;
+                  } else if (k === "welcomescreens") {
+                    this.db.welcomescreens = newData;
                   }
                 }
               }

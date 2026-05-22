@@ -34,7 +34,7 @@
     v-else
     class="flex flex-col md:flex-row h-screen w-full bg-slate-50 text-slate-900 overflow-hidden"
   >
-    <Sidebar :active-tab="activeTab" @update:active-tab="activeTab = $event" @logout="logout" />
+    <Sidebar :active-tab="activeTab" @update:active-tab="activeTab = $event" @logout="logout" @reopen-welcome="showWelcome = true" />
 
     <main
       class="flex-1 flex flex-col h-full overflow-hidden relative pb-16 md:pb-0"
@@ -132,6 +132,7 @@
             v-if="activeTab === 'applications'"
             :db="db"
             :user="user"
+            :search-query="searchQuery"
             @open-record="openRecordModal"
           />
         </div>
@@ -155,7 +156,7 @@
       <MobileNav :active-tab="activeTab" @update:active-tab="activeTab = $event" />
     </main>
 
-    <ProfileModal ref="profileModal" :store="store" @logout="logout" />
+    <ProfileModal ref="profileModal" :store="store" @logout="logout" @reopen-welcome="showWelcome = true" />
     <RecordModal ref="recordModal" :store="store" :user="user" />
     <UserConfigModal ref="userConfigModal" :store="store" @save="refreshUsers" />
     <RefModal ref="refModal" />

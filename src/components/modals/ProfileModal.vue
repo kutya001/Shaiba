@@ -73,6 +73,16 @@
             </div>
 
             <div class="w-full h-px bg-slate-100 my-4"></div>
+
+            <!-- Reopen Welcome screen / About app -->
+            <button
+              @click="reopenWelcome"
+              class="flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100/70 rounded-xl font-bold transition border-none cursor-pointer mb-2"
+              id="btn-reopen-welcome-modal"
+            >
+              <i class="bi bi-info-circle-fill"></i> О приложении
+            </button>
+
             <button
               @click="triggerLogout"
               class="flex items-center justify-center gap-2 w-full py-2.5 text-red-600 hover:bg-red-50 rounded-xl font-bold transition border-none bg-transparent cursor-pointer"
@@ -235,6 +245,7 @@ import { runGS, getGasUrl, setGasUrl } from "../../services/api";
 import { formatPhoneInput } from "../../utils/helpers";
 
 export default {
+  emits: ["logout", "reopen-welcome"],
   data() {
     return {
       isEditingProfile: false,
@@ -322,6 +333,10 @@ export default {
     triggerLogout() {
       this.hide();
       this.store.logout();
+    },
+    reopenWelcome() {
+      this.hide();
+      this.$emit("reopen-welcome");
     },
   },
 };

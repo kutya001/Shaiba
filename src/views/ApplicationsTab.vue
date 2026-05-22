@@ -1,68 +1,32 @@
 <template>
   <div class="space-y-4 max-w-4xl mx-auto w-full pb-20 animate-fade-in px-4">
-    <!-- Compact Header with Search Trigger -->
-    <div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-2.5">
-      <div class="flex items-center gap-2">
-        <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest font-heading flex items-center gap-1.5 select-none m-0">
-          <i class="bi bi-envelope-paper text-indigo-500 text-[12px]"></i>
-          Заявки
-        </h2>
-        <span class="text-[9px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full select-none">
-          {{ applications.length }}
-        </span>
-      </div>
-
-      <!-- Compact Search Button & Sliding input -->
-      <div class="flex items-center gap-1.5">
-        <div v-show="showSearch" class="relative max-w-xs animate-fade-in">
-          <input
-            ref="searchInput"
-            v-model="searchQuery"
-            type="text"
-            placeholder="Поиск..."
-            class="w-36 bg-slate-50 hover:bg-slate-100/50 focus:bg-white text-[11px] font-medium text-slate-700 placeholder-slate-400 border border-slate-200 focus:border-indigo-500 rounded-lg py-1 pl-2.5 pr-7 outline-none transition-all"
-          />
-          <button
-            @click="showSearch = false; searchQuery = ''"
-            class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 bg-transparent border-none p-0 cursor-pointer"
-          >
-            <i class="bi bi-x text-sm"></i>
-          </button>
-        </div>
-        <button
-          @click="toggleSearch"
-          class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-1.5/70 hover:border-slate-200 transition cursor-pointer"
-          title="Поиск заявок"
-        >
-          <i class="bi bi-search text-xs"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Status tabs / filters -->
-    <div class="flex gap-1.5 overflow-x-auto pb-1 border-b border-slate-100/65 scrollbar-none select-none">
+    <!-- Status tabs / filters - Icons only with counts and tooltips as requested -->
+    <div class="flex gap-1.5 overflow-x-auto pb-1.5 border-b border-slate-100/65 scrollbar-none select-none">
       <button
         v-for="tab in tabs"
         :key="tab.id"
         @click="activeStatusTab = tab.id"
-        class="px-3.5 py-1.5 text-xs.5 font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap outline-none border flex items-center gap-1.5"
+        class="px-4 py-2.5 text-xs.5 font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap outline-none border flex items-center gap-2 shadow-2xs"
         :class="
           activeStatusTab === tab.id
-            ? 'bg-indigo-650 text-white border-subtle shadow-sm shadow-indigo-100'
-            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
+            ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-700 shadow-sm shadow-indigo-100'
+            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-650'
         "
+        :title="tab.label"
       >
-        <span>{{ tab.label }}</span>
+        <i :class="tab.icon" class="text-[13px] font-bold"></i>
         <span
-          class="text-[9px] px-1.5 py-0.2 rounded-full font-black"
+          class="text-[10px] px-2 py-0.5 rounded-full font-black font-mono leading-none flex items-center justify-center min-w-[20px]"
           :class="
             activeStatusTab === tab.id
               ? 'bg-white/20 text-white'
               : tab.id === 'pending'
-                ? 'bg-amber-100 text-amber-700'
+                ? 'bg-amber-100 text-amber-750'
                 : tab.id === 'created'
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-slate-100 text-slate-600'
+                  ? 'bg-emerald-100 text-emerald-750'
+                  : tab.id === 'declined'
+                    ? 'bg-rose-100 text-rose-750'
+                    : 'bg-slate-100 text-slate-600'
           "
         >
           {{ getTabCount(tab.id) }}
@@ -258,18 +222,20 @@ export default {
       type: Object,
       required: true,
     },
+    searchQuery: {
+      type: String,
+      default: "",
+    },
   },
   emits: ["open-record"],
   data() {
     return {
-      searchQuery: "",
-      showSearch: false,
       activeStatusTab: "pending",
       tabs: [
-        { id: "pending", label: "Открытые" },
-        { id: "created", label: "Запись" },
-        { id: "declined", label: "Отклонённые" },
-        { id: "all", label: "Все" },
+        { id: "pending", label: "Открытые (Новые)", icon: "bi bi-envelope" },
+        { id: "created", label: "Запись оформлена", icon: "bi bi-calendar-check" },
+        { id: "declined", label: "Отклонённые", icon: "bi bi-slash-circle" },
+        { id: "all", label: "Все заявки", icon: "bi bi-grid" },
       ],
     };
   },
@@ -351,18 +317,6 @@ export default {
     },
     createRecordFromApp(app) {
       this.$emit("open-record", null, app);
-    },
-    toggleSearch() {
-      this.showSearch = !this.showSearch;
-      if (this.showSearch) {
-        this.$nextTick(() => {
-          if (this.$refs.searchInput) {
-            this.$refs.searchInput.focus();
-          }
-        });
-      } else {
-        this.searchQuery = "";
-      }
     },
     async declineApplication(app) {
       const name = app["Ваше Имя"] || "Клиент";

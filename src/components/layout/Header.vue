@@ -20,7 +20,9 @@
                   ? 'bi-journals'
                   : activeTab === 'users'
                     ? 'bi-people-fill'
-                    : 'bi-car-front-fill'
+                    : activeTab === 'applications'
+                      ? 'bi-envelope-paper-fill'
+                      : 'bi-car-front-fill'
             "
           ></i>
         </div>
@@ -34,7 +36,9 @@
                 ? "Справочники"
                 : activeTab === "users"
                   ? "Персонал"
-                  : "AutoService"
+                  : activeTab === "applications"
+                    ? "Заявки"
+                    : "AutoService"
           }}
         </span>
       </div>
@@ -48,7 +52,7 @@
           @input="onSearchInput"
           ref="mobileSearchInput"
           class="w-full h-10 pl-8 pr-8 rounded-xl bg-white text-slate-800 text-xs font-semibold outline-none border border-slate-200/50 shadow-md focus:border-indigo-500/80"
-          :placeholder="activeTab === 'refs' ? 'Поиск...' : 'Поиск по госномеру...'"
+          :placeholder="activeTab === 'refs' ? 'Поиск...' : activeTab === 'applications' ? 'Поиск по заявкам...' : 'Поиск по госномеру...'"
         />
         <span
           class="material-symbols-outlined text-[16px] text-slate-400 absolute left-2.5 top-3"
@@ -65,9 +69,9 @@
       <div
         class="flex items-center gap-1.5 h-10 bg-white shadow-md border border-slate-200/50 rounded-xl p-1"
       >
-        <!-- Search Icon Toggle for Records -->
+        <!-- Search Icon Toggle for Records, Refs and Applications -->
         <button
-          v-if="(activeTab === 'records' || activeTab === 'refs') && !localSearchExpanded"
+          v-if="(activeTab === 'records' || activeTab === 'refs' || activeTab === 'applications') && !localSearchExpanded"
           @click="openSearch"
           class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50/50 transition cursor-pointer"
         >
@@ -158,11 +162,17 @@
         >
           Персонал
         </h1>
+        <h1
+          class="text-sm font-black text-slate-800 tracking-wider uppercase m-0 leading-none select-none font-heading"
+          v-if="activeTab === 'applications'"
+        >
+          Заявки
+        </h1>
 
 
 
         <!-- Search icon & Input in Desktop Header -->
-        <div v-if="activeTab === 'records' || activeTab === 'refs'" class="flex items-center gap-1.5">
+        <div v-if="activeTab === 'records' || activeTab === 'refs' || activeTab === 'applications'" class="flex items-center gap-1.5">
           <button
             v-if="!localSearchExpanded"
             @click="openSearch"
@@ -177,7 +187,7 @@
               :value="searchQuery"
               @input="onSearchInput"
               class="w-60 h-9.5 pl-9 pr-8 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-150/20 focus:border-indigo-500 text-xs font-semibold text-slate-700 outline-none transition"
-              :placeholder="activeTab === 'refs' ? 'Поиск...' : 'Поиск по госномеру...'"
+              :placeholder="activeTab === 'refs' || activeTab === 'applications' ? 'Поиск...' : 'Поиск по госномеру...'"
             />
             <span
               class="material-symbols-outlined text-[18px] text-slate-400 absolute left-3 top-2.5"

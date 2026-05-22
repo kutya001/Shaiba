@@ -176,7 +176,8 @@ function getInitData(role, userId) {
     users: getTable('Users'),
     brands: getTable('Brands'),
     models: getTable('Models'),
-    applications: getTable('Заявки на Запись')
+    applications: getTable('Заявки на Запись'),
+    welcomescreens: getTable('WelcomeScreens')
   };
   return data;
 }
@@ -186,8 +187,20 @@ function getInitData(role, userId) {
 // ========================
 
 function getTable(sheetName) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  if (!sheet) return [];
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet) {
+    if (sheetName === 'WelcomeScreens') {
+      sheet = ss.insertSheet(sheetName);
+      sheet.appendRow(['ID', 'Title', 'Text']);
+      sheet.getRange(1, 1, 1, 3).setFontWeight('bold');
+      sheet.setFrozenRows(1);
+      sheet.appendRow(['welcome_main', 'Добро пожаловать!', 'Анвар сушняк алыпкел']);
+      updateSheetVersion('WelcomeScreens');
+    } else {
+      return [];
+    }
+  }
   var data = sheet.getDataRange().getValues();
   if (data.length < 2) return [];
   var headers = data[0];
@@ -492,7 +505,8 @@ function getDbVersions() {
       users: props.users_version || '1',
       brands: props.brands_version || '1',
       models: props.models_version || '1',
-      applications: props.applications_version || '1'
+      applications: props.applications_version || '1',
+      welcomescreens: props.welcomescreens_version || '1'
     };
   } catch (e) {
     return {
@@ -501,7 +515,8 @@ function getDbVersions() {
       users: '1',
       brands: '1',
       models: '1',
-      applications: '1'
+      applications: '1',
+      welcomescreens: '1'
     };
   }
 }

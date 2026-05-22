@@ -110,6 +110,17 @@
           Персонал
         </a>
       </template>
+
+      <!-- About / Welcome screen link -->
+      <a
+        v-if="user"
+        @click="$emit('reopen-welcome')"
+        class="flex items-center gap-3 px-4 py-2 text-sm rounded-lg font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors"
+        id="sidebar-reopen-welcome"
+      >
+        <i class="bi bi-info-circle w-4 h-4 flex items-center justify-center"></i>
+        О приложении
+      </a>
     </nav>
     <div
       v-if="user"
@@ -153,7 +164,7 @@ export default {
       required: true,
     },
   },
-  emits: ["update:activeTab", "update:refTab", "logout"],
+  emits: ["update:activeTab", "update:refTab", "logout", "reopen-welcome"],
   computed: {
     user() {
       const store = useMainStore();
