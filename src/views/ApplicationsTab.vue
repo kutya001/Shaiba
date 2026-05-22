@@ -246,7 +246,23 @@ export default {
   computed: {
     applications() {
       // Ensure it is always an array
-      return this.db.applications || [];
+      const rawList = this.db.applications || [];
+      if (this.user && this.user.Role === "Master") {
+        const myMid = this.store.currentUserMasterID;
+        return rawList.filter((app) => {
+          const isDone = String(app["Статус Заявки"]).trim() === "Создана запись";
+          const recordId = app["IDRecords"];
+          if (isDone || recordId) {
+            const linkedRec = this.db.records?.find((r) => String(r.ID) === String(recordId));
+            if (linkedRec) {
+              return String(linkedRec.MasterID) === String(myMid);
+            }
+            return false;
+          }
+          return true;
+        });
+      }
+      return rawList;
     },
     filteredApplications() {
       let list = [...this.applications];
