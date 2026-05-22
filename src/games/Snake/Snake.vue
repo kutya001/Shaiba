@@ -1,22 +1,26 @@
 <template>
-  <div class="flex flex-col items-center justify-between h-full bg-slate-950 text-white p-4 select-none relative">
+  <div
+    class="flex flex-col items-center justify-between h-full bg-slate-950 text-white p-4 select-none relative"
+    @touchstart="onTouchStart"
+    @touchend="onTouchEnd"
+  >
     <!-- Game Header: Score & Record -->
-    <div class="w-full flex justify-between items-center bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 shadow-inner mb-3">
+    <div class="w-full flex justify-between items-center bg-slate-900 border border-slate-800 rounded-2xl px-4 py-2.5 shadow-inner mb-2.5">
       <div>
-        <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Счёт</span>
-        <span class="text-xl font-extrabold text-emerald-400 font-mono leading-none">{{ score }}</span>
+        <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Счёт</span>
+        <span class="text-base font-extrabold text-emerald-400 font-mono leading-none">{{ score }}</span>
       </div>
       <div class="text-right">
-        <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Рекорд</span>
-        <span class="text-xl font-extrabold text-indigo-400 font-mono leading-none">{{ highscore }}</span>
+        <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Рекорд</span>
+        <span class="text-base font-extrabold text-indigo-400 font-mono leading-none">{{ highscore }}</span>
       </div>
     </div>
 
     <!-- Canvas Wrapper with custom proportions -->
-    <div class="flex-1 w-full max-w-sm flex items-center justify-center relative">
+    <div class="flex-1 w-full max-w-sm flex items-center justify-center relative my-1">
       <canvas
         ref="gameCanvas"
-        class="border-2 border-slate-800 rounded-2xl bg-slate-900/40 shadow-2xl aspect-square w-full"
+        class="border-2 border-slate-850 rounded-2xl bg-slate-900/30 shadow-2xl aspect-square w-full"
         width="400"
         height="400"
       ></canvas>
@@ -24,20 +28,20 @@
       <!-- Game Over Overlay -->
       <div
         v-if="gameOver"
-        class="absolute inset-0 bg-slate-950/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center animate-fade-in z-10"
+        class="absolute inset-0 bg-slate-950/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center animate-fade-in z-10"
       >
         <div class="w-16 h-16 bg-red-500/10 border border-red-500/25 rounded-full flex items-center justify-center text-red-500 mb-4 animate-bounce">
           <i class="bi bi-skull text-3xl"></i>
         </div>
-        <h2 class="text-2xl font-black text-white leading-tight mb-1 font-heading">
+        <h2 class="text-xl font-black text-white leading-tight mb-1 font-heading">
           ИГРА ОКОНЧЕНА
         </h2>
         <p class="text-xs font-semibold text-slate-400 mb-4">
-          Вы набрали: <span class="text-emerald-400 font-bold font-mono">{{ score }} очков</span>
+          Счёт: <span class="text-emerald-400 font-bold font-mono">{{ score }} очков</span>
         </p>
         <button
           @click="restartGame"
-          class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition border-none shadow-md shadow-indigo-500/35 cursor-pointer active:scale-95"
+          class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition border-none shadow-md cursor-pointer active:scale-95"
         >
           Играть снова
         </button>
@@ -46,70 +50,37 @@
       <!-- Start Overlay -->
       <div
         v-if="!hasStarted && !gameOver"
-        class="absolute inset-0 bg-slate-950/80 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center z-10"
+        class="absolute inset-0 bg-slate-950/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center z-10"
       >
-        <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/25 rounded-full flex items-center justify-center text-emerald-400 mb-4">
+        <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/25 rounded-full flex items-center justify-center text-emerald-400 mb-4 animate-pulse">
           <i class="bi bi-play-circle-fill text-3xl"></i>
         </div>
-        <h2 class="text-xl font-black text-white mb-2 font-heading">
-          ЗМЕЙКА
+        <h2 class="text-lg font-black text-white mb-1 font-heading uppercase tracking-wide">
+          Змейка HD
         </h2>
-        <p class="text-xs font-semibold text-slate-400 max-w-[240px] mb-5">
-          Управляйте змейкой, собирайте светящиеся элементы и побейте рекорд!
+        <p class="text-[11px] font-semibold text-slate-400 max-w-[200px] mb-5 leading-normal">
+          Управляйте свайпами в пяти направлениях, собирайте элементы и бейте рекорды!
         </p>
         <button
           @click="startGame"
-          class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition border-none shadow-md shadow-emerald-550/35 cursor-pointer active:scale-95"
+          class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition border-none shadow-md cursor-pointer active:scale-95"
         >
-          СТАРТИРОВАТЬ
+          СТАРТ
         </button>
       </div>
     </div>
 
-    <!-- On screen D-Pad optimized for phones -->
-    <div class="w-full max-w-[220px] shrink-0 mt-3 aspect-square grid grid-cols-3 gap-2 p-2 select-none">
-      <div></div>
-      <button
-        @click="changeDirection('UP')"
-        class="h-14 bg-slate-800/80 active:bg-indigo-600 active:text-white hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow border-none cursor-pointer"
-        title="Вверх"
-      >
-        <i class="bi bi-chevron-up text-xl font-black"></i>
-      </button>
-      <div></div>
-
-      <button
-        @click="changeDirection('LEFT')"
-        class="h-14 bg-slate-800/80 active:bg-indigo-600 active:text-white hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow border-none cursor-pointer"
-        title="Влево"
-      >
-        <i class="bi bi-chevron-left text-xl font-black"></i>
-      </button>
-      <div class="flex items-center justify-center text-slate-600">
-        <i class="bi bi-controller text-lg"></i>
-      </div>
-      <button
-        @click="changeDirection('RIGHT')"
-        class="h-14 bg-slate-800/80 active:bg-indigo-600 active:text-white hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow border-none cursor-pointer"
-        title="Вправо"
-      >
-        <i class="bi bi-chevron-right text-xl font-black"></i>
-      </button>
-
-      <div></div>
-      <button
-        @click="changeDirection('DOWN')"
-        class="h-14 bg-slate-800/80 active:bg-indigo-600 active:text-white hover:bg-slate-700 text-slate-300 rounded-2xl flex items-center justify-center transition shadow border-none cursor-pointer"
-        title="Вниз"
-      >
-        <i class="bi bi-chevron-down text-xl font-black"></i>
-      </button>
-      <div></div>
+    <!-- Adaptive instructions with dynamic visual aid -->
+    <div class="w-full max-w-[320px] py-2.5 px-3 bg-slate-900 border border-slate-800/60 rounded-2xl text-center text-slate-400 text-[10px] font-semibold leading-normal shrink-0 mt-3 flex items-center justify-center gap-1.5">
+      <i class="bi bi-phone-vibrate text-indigo-400 text-sm"></i>
+      <span>Проведите пальцем (<span class="text-slate-200 text-xs">Свайп</span>) на игровом поле для поворота.</span>
     </div>
   </div>
 </template>
 
 <script>
+import { playSound } from "../../utils/audioHelper";
+
 export default {
   data() {
     return {
@@ -125,6 +96,7 @@ export default {
       tileCount: 20,
       gameInterval: null,
       speed: 130, // MS per tick
+      touchStart: { x: 0, y: 0 }
     };
   },
   mounted() {
@@ -165,6 +137,7 @@ export default {
       this.score = 0;
       this.direction = "RIGHT";
       this.nextDirection = "RIGHT";
+      this.speed = 130;
       
       // Snake center initialization
       this.snake = [
@@ -177,6 +150,7 @@ export default {
       
       if (this.gameInterval) clearInterval(this.gameInterval);
       this.gameInterval = setInterval(this.gameLoop, this.speed);
+      playSound.levelUp();
     },
     restartGame() {
       this.startGame();
@@ -192,6 +166,7 @@ export default {
       }
     },
     gameLoop() {
+      if (!this.hasStarted || this.gameOver) return;
       this.direction = this.nextDirection;
       
       // Move snake head
@@ -224,11 +199,12 @@ export default {
           this.highscore = this.score;
           localStorage.setItem("game_snake_highscore", this.highscore);
         }
+        playSound.score();
         this.spawnFood();
         
         // Slightly increase speed
-        if (this.speed > 70) {
-          this.speed -= 2;
+        if (this.speed > 75) {
+          this.speed -= 3;
           clearInterval(this.gameInterval);
           this.gameInterval = setInterval(this.gameLoop, this.speed);
         }
@@ -295,7 +271,7 @@ export default {
           segment.y * this.gridSize + pad,
           this.gridSize - pad * 2,
           this.gridSize - pad * 2,
-          6
+          5
         );
         ctx.fill();
       });
@@ -309,14 +285,29 @@ export default {
         clearInterval(this.gameInterval);
         this.gameInterval = null;
       }
+      playSound.gameOver();
     },
     changeDirection(dir) {
       if (!this.hasStarted || this.gameOver) return;
       
-      if (dir === "UP" && this.direction !== "DOWN") this.nextDirection = "UP";
-      else if (dir === "DOWN" && this.direction !== "UP") this.nextDirection = "DOWN";
-      else if (dir === "LEFT" && this.direction !== "RIGHT") this.nextDirection = "LEFT";
-      else if (dir === "RIGHT" && this.direction !== "LEFT") this.nextDirection = "RIGHT";
+      let changed = false;
+      if (dir === "UP" && this.direction !== "DOWN") {
+        this.nextDirection = "UP";
+        changed = true;
+      } else if (dir === "DOWN" && this.direction !== "UP") {
+        this.nextDirection = "DOWN";
+        changed = true;
+      } else if (dir === "LEFT" && this.direction !== "RIGHT") {
+        this.nextDirection = "LEFT";
+        changed = true;
+      } else if (dir === "RIGHT" && this.direction !== "LEFT") {
+        this.nextDirection = "RIGHT";
+        changed = true;
+      }
+
+      if (changed) {
+        playSound.tick();
+      }
     },
     handleKeyDown(event) {
       if (!this.hasStarted || this.gameOver) return;
@@ -326,6 +317,43 @@ export default {
       else if (event.code === "ArrowLeft" || event.code === "KeyA") this.changeDirection("LEFT");
       else if (event.code === "ArrowRight" || event.code === "KeyD") this.changeDirection("RIGHT");
     },
-  },
+    onTouchStart(e) {
+      if (!this.hasStarted || this.gameOver) return;
+      const touch = e.touches[0];
+      this.touchStart = {
+        x: touch.clientX,
+        y: touch.clientY
+      };
+    },
+    onTouchEnd(e) {
+      if (!this.hasStarted || this.gameOver) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - this.touchStart.x;
+      const dy = touch.clientY - this.touchStart.y;
+      
+      const minDistance = 25; // threshold for swipe action
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (Math.abs(dx) > minDistance) {
+          if (dx > 0) this.changeDirection("RIGHT");
+          else this.changeDirection("LEFT");
+        }
+      } else {
+        if (Math.abs(dy) > minDistance) {
+          if (dy > 0) this.changeDirection("DOWN");
+          else this.changeDirection("UP");
+        }
+      }
+    }
+  }
 };
 </script>
+
+<style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+</style>

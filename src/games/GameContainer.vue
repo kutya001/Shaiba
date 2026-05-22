@@ -4,39 +4,39 @@
     class="fixed inset-0 bg-slate-950 z-[99999] flex flex-col font-sans text-white select-none overflow-hidden animate-fade-in"
   >
     <!-- Top Stats Panel Bar (Cross-saving on cookie, cache, LocalStorage) -->
-    <header class="w-full bg-slate-900 border-b border-slate-800 p-4 shrink-0 flex items-center justify-between shadow-lg">
-      <!-- Top Left: Arrow Back Action -->
-      <div class="flex items-center gap-3">
+    <header class="w-full bg-slate-900 border-b border-slate-800 px-3 py-2 shrink-0 flex items-center justify-between shadow-lg">
+      <!-- Top Left: Arrow Back Action - compact icon only -->
+      <div class="flex items-center gap-2">
         <button
           @click="goBack"
-          class="h-10 px-4 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-xl flex items-center gap-2 transition-all font-bold text-xs border-none cursor-pointer"
+          class="h-9 w-9 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-xl flex items-center justify-center transition-all font-bold border-none cursor-pointer"
           id="btn-game-container-back"
+          title="Назад"
         >
-          <i class="bi bi-arrow-left text-sm font-black"></i>
-          <span>Назад</span>
+          <i class="bi bi-arrow-left text-lg font-black animate-pulse"></i>
         </button>
         
         <div class="hidden sm:flex flex-col text-left">
-          <span class="text-[10px] font-black uppercase text-indigo-400 tracking-wider">Развлечения</span>
-          <h1 class="text-xs font-semibold text-slate-200 m-0">Игры Автосервиса (ERP)</h1>
+          <span class="text-[9px] font-black uppercase text-indigo-400 tracking-wider">Развлечения</span>
+          <h1 class="text-xs font-semibold text-slate-200 m-0 leading-none">Игры ERP</h1>
         </div>
       </div>
 
-      <!-- Top Right: Play Info Card (Profile, Who plays, Time) -->
-      <div class="bg-slate-955 border border-indigo-500/15 rounded-xl px-3.5 py-1.5 flex items-center gap-3 shadow-inner">
-        <div class="text-right flex flex-col justify-center">
-          <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Профиль</span>
-          <span class="text-[10px] font-extrabold text-slate-200 leading-none">@{{ user?.Username || 'Гость' }}</span>
+      <!-- Top Right: Play Info Card (Profile, Who plays, Time) - very compact -->
+      <div class="bg-slate-950/60 border border-indigo-500/15 rounded-xl px-2 py-1 flex items-center gap-2 shadow-inner">
+        <div class="text-right flex flex-col justify-center leading-none">
+          <span class="text-[7px] font-black text-slate-500 uppercase tracking-widest block">Профиль</span>
+          <span class="text-[9px] font-extrabold text-slate-300">@{{ user?.Username || 'Гость' }}</span>
         </div>
-        <div class="w-px h-6 bg-slate-800"></div>
-        <div class="text-right flex flex-col justify-center">
-          <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Кто играет</span>
-          <span class="text-[10px] font-extrabold text-indigo-400 leading-none truncate max-w-[100px]">{{ user?.Name || 'Аноним' }}</span>
+        <div class="w-px h-5 bg-slate-800"></div>
+        <div class="text-right flex flex-col justify-center leading-none">
+          <span class="text-[7px] font-black text-slate-500 uppercase tracking-widest block">Играет</span>
+          <span class="text-[9px] font-extrabold text-indigo-400 truncate max-w-[80px]">{{ user?.Name || 'Аноним' }}</span>
         </div>
-        <div class="w-px h-6 bg-slate-800"></div>
-        <div class="text-center bg-slate-900/50 px-2 py-1 rounded-lg border border-slate-800 flex items-center gap-1.5 min-w-[70px]">
-          <i class="bi bi-clock-history text-cyan-400 text-xs animate-spin" style="animation-duration: 4s;"></i>
-          <span class="text-[11px] font-extrabold font-mono text-cyan-400 leading-none">
+        <div class="w-px h-5 bg-slate-800"></div>
+        <div class="text-center bg-slate-900/50 px-1.5 py-0.5 rounded-lg border border-slate-800 flex items-center gap-1 min-w-[55px]">
+          <i class="bi bi-clock-history text-cyan-400 text-[10px] animate-spin" style="animation-duration: 4s;"></i>
+          <span class="text-[10px] font-extrabold font-mono text-cyan-400 leading-none">
             {{ formattedPlaytime }}
           </span>
         </div>
@@ -44,95 +44,111 @@
     </header>
 
     <!-- Main Workspace Container -->
-    <main class="flex-grow w-full overflow-y-auto relative flex flex-col items-center p-4">
-      <!-- 1. Games Directory Selector Lobby grid -->
-      <div v-if="!store.activeGameId" class="w-full max-w-4xl py-6 animate-fade-in">
-        <div class="text-center mb-8">
-          <span class="px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-black text-[9px] uppercase tracking-widest rounded-full">
-            Досуг в перерывах
-          </span>
-          <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white mt-2 font-heading">
-            Выберите мини-игру
+    <main class="flex-grow w-full overflow-y-auto relative flex flex-col items-center p-3">
+      <!-- 1. Games Directory Selector Lobby grid - compact layout -->
+      <div v-if="!store.activeGameId" class="w-full max-w-4xl py-2 sm:py-4 animate-fade-in">
+        <div class="text-center mb-4 sm:mb-6">
+          <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white m-0 font-heading">
+            Игротека ERP
           </h2>
-          <p class="text-xs text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
-            Отдохните от работы с клиентами и погрузитесь в классические захватывающие аркады, адаптированные под мобильный телефон!
+          <p class="text-[10px] sm:text-xs text-slate-400 max-w-md mx-auto mt-1 leading-snug">
+            Отвлекитесь от работы за кассой и клиентами! Реактивный досуг в единой космической стилистике.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-2">
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 px-1.5">
           <!-- Game 1: Tetris -->
           <div
             @click="selectGame('tetris')"
-            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-indigo-600/30 rounded-3xl p-5 cursor-pointer transition-all duration-300 transform hover:-translate-y-1.5 group flex flex-col justify-between h-[180px] shadow-lg relative overflow-hidden"
+            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-indigo-600/30 rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between h-[115px] sm:h-[130px] shadow-lg relative overflow-hidden"
           >
-            <div class="absolute -right-3 -top-3 w-16 h-16 bg-indigo-600/5 rounded-full filter blur-xl group-hover:bg-indigo-600/10 transition"></div>
+            <div class="absolute -right-3 -top-3 w-10 h-10 bg-indigo-600/5 rounded-full filter blur-md group-hover:bg-indigo-600/10 transition"></div>
             <div>
-              <div class="w-11 h-11 bg-indigo-600/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 text-xl mb-4 group-hover:scale-110 transition">
+              <div class="w-7 h-7 bg-indigo-600/10 border border-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400 text-sm mb-1.5 group-hover:scale-110 transition shrink-0">
                 <i class="bi bi-grid-3x3-gap-fill"></i>
               </div>
-              <h3 class="text-base font-black tracking-tight text-slate-100 group-hover:text-indigo-400 transition m-0">Тетрис</h3>
-              <p class="text-xs text-slate-400 mt-1 lines-2 leading-relaxed font-semibold">Классическая головоломка с падающими фигурами.</p>
+              <h3 class="text-xs font-black tracking-tight text-slate-100 group-hover:text-indigo-400 transition m-0">Тетрис</h3>
+              <p class="text-[9px] text-slate-400 mt-0.5 leading-snug font-semibold line-clamp-2">Падающие фигуры и свайпы</p>
             </div>
-            <div class="flex justify-between items-center text-[10px] uppercase font-black tracking-widest text-slate-500 mt-4">
+            <div class="flex justify-between items-center text-[8px] uppercase font-black tracking-widest text-slate-500 mt-2">
               <span>Соло</span>
-              <span class="group-hover:text-indigo-400 transition flex items-center gap-1">Играть <i class="bi bi-arrow-right leading-none"></i></span>
+              <span class="group-hover:text-indigo-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
             </div>
           </div>
 
           <!-- Game 2: Tic Tac Toe -->
           <div
             @click="selectGame('tictactoe')"
-            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-rose-600/30 rounded-3xl p-5 cursor-pointer transition-all duration-300 transform hover:-translate-y-1.5 group flex flex-col justify-between h-[180px] shadow-lg relative overflow-hidden"
+            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-rose-600/30 rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between h-[115px] sm:h-[130px] shadow-lg relative overflow-hidden"
           >
-            <div class="absolute -right-3 -top-3 w-16 h-16 bg-rose-600/5 rounded-full filter blur-xl group-hover:bg-rose-600/10 transition"></div>
+            <div class="absolute -right-3 -top-3 w-10 h-10 bg-rose-600/5 rounded-full filter blur-md group-hover:bg-rose-600/10 transition"></div>
             <div>
-              <div class="w-11 h-11 bg-rose-600/10 border border-rose-500/20 rounded-xl flex items-center justify-center text-rose-400 text-xl mb-4 group-hover:scale-110 transition">
+              <div class="w-7 h-7 bg-rose-600/10 border border-rose-500/20 rounded-lg flex items-center justify-center text-rose-400 text-sm mb-1.5 group-hover:scale-110 transition shrink-0">
                 <i class="bi bi-grid-3x3"></i>
               </div>
-              <h3 class="text-base font-black tracking-tight text-slate-100 group-hover:text-rose-400 transition m-0">Крестики-Нолики</h3>
-              <p class="text-xs text-slate-400 mt-1 lines-2 leading-relaxed font-semibold">Режимы против компьютера (AI) или против друга.</p>
+              <h3 class="text-xs font-black tracking-tight text-slate-100 group-hover:text-rose-400 transition m-0">Крестики</h3>
+              <p class="text-[9px] text-slate-400 mt-0.5 leading-snug font-semibold line-clamp-2">Против AI или соседа</p>
             </div>
-            <div class="flex justify-between items-center text-[10px] uppercase font-black tracking-widest text-slate-500 mt-4">
-              <span>1 или 2 игрока</span>
-              <span class="group-hover:text-rose-400 transition flex items-center gap-1">Играть <i class="bi bi-arrow-right leading-none"></i></span>
+            <div class="flex justify-between items-center text-[8px] uppercase font-black tracking-widest text-slate-500 mt-2">
+              <span>Дуэль</span>
+              <span class="group-hover:text-rose-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
             </div>
           </div>
 
           <!-- Game 3: Snake -->
           <div
             @click="selectGame('snake')"
-            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-emerald-600/30 rounded-3xl p-5 cursor-pointer transition-all duration-300 transform hover:-translate-y-1.5 group flex flex-col justify-between h-[180px] shadow-lg relative overflow-hidden"
+            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-emerald-600/30 rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between h-[115px] sm:h-[130px] shadow-lg relative overflow-hidden"
           >
-            <div class="absolute -right-3 -top-3 w-16 h-16 bg-emerald-600/5 rounded-full filter blur-xl group-hover:bg-emerald-600/10 transition"></div>
+            <div class="absolute -right-3 -top-3 w-10 h-10 bg-emerald-600/5 rounded-full filter blur-md group-hover:bg-emerald-600/10 transition"></div>
             <div>
-              <div class="w-11 h-11 bg-emerald-600/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 text-xl mb-4 group-hover:scale-110 transition">
+              <div class="w-7 h-7 bg-emerald-600/10 border border-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400 text-sm mb-1.5 group-hover:scale-110 transition shrink-0">
                 <i class="bi bi-activity animate-pulse"></i>
               </div>
-              <h3 class="text-base font-black tracking-tight text-slate-100 group-hover:text-emerald-400 transition m-0">Змейка</h3>
-              <p class="text-xs text-slate-400 mt-1 lines-2 leading-relaxed font-semibold">Управляйте хвостом, съедайте пищу и побивайте рекорды.</p>
+              <h3 class="text-xs font-black tracking-tight text-slate-100 group-hover:text-emerald-400 transition m-0">Змейка</h3>
+              <p class="text-[9px] text-slate-400 mt-0.5 leading-snug font-semibold line-clamp-2">Собирайте детальки</p>
             </div>
-            <div class="flex justify-between items-center text-[10px] uppercase font-black tracking-widest text-slate-500 mt-4">
-              <span>Соло</span>
-              <span class="group-hover:text-emerald-400 transition flex items-center gap-1">Играть <i class="bi bi-arrow-right leading-none"></i></span>
+            <div class="flex justify-between items-center text-[8px] uppercase font-black tracking-widest text-slate-500 mt-2">
+              <span>Аркада</span>
+              <span class="group-hover:text-emerald-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
             </div>
           </div>
 
           <!-- Game 4: Hill Climb Motor -->
           <div
             @click="selectGame('hillclimb')"
-            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-teal-600/30 rounded-3xl p-5 cursor-pointer transition-all duration-300 transform hover:-translate-y-1.5 group flex flex-col justify-between h-[180px] shadow-lg relative overflow-hidden"
+            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-teal-600/30 rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between h-[115px] sm:h-[130px] shadow-lg relative overflow-hidden"
           >
-            <div class="absolute -right-3 -top-3 w-16 h-16 bg-teal-600/5 rounded-full filter blur-xl group-hover:bg-teal-600/10 transition"></div>
+            <div class="absolute -right-3 -top-3 w-10 h-10 bg-teal-600/5 rounded-full filter blur-md group-hover:bg-teal-600/10 transition"></div>
             <div>
-              <div class="w-11 h-11 bg-teal-600/10 border border-teal-500/20 rounded-xl flex items-center justify-center text-teal-400 text-xl mb-4 group-hover:scale-110 transition">
+              <div class="w-7 h-7 bg-teal-600/10 border border-teal-500/20 rounded-lg flex items-center justify-center text-teal-400 text-sm mb-1.5 group-hover:scale-110 transition shrink-0">
                 <i class="bi bi-bicycle"></i>
               </div>
-              <h3 class="text-base font-black tracking-tight text-slate-100 group-hover:text-teal-400 transition m-0">Hill Climb Moto</h3>
-              <p class="text-xs text-slate-400 mt-1 lines-2 leading-relaxed font-semibold">2D Холмы, баланс наклона мотоцикла, сбор монет и баков с бензином.</p>
+              <h3 class="text-xs font-black tracking-tight text-slate-100 group-hover:text-teal-400 transition m-0">Мотоциклист</h3>
+              <p class="text-[9px] text-slate-400 mt-0.5 leading-snug font-semibold line-clamp-2">Реалистичные холмы и баланс</p>
             </div>
-            <div class="flex justify-between items-center text-[10px] uppercase font-black tracking-widest text-slate-500 mt-4">
-              <span>Физика холмов</span>
-              <span class="group-hover:text-teal-400 transition flex items-center gap-1">Играть <i class="bi bi-arrow-right leading-none"></i></span>
+            <div class="flex justify-between items-center text-[8px] uppercase font-black tracking-widest text-slate-500 mt-2">
+              <span>Физика</span>
+              <span class="group-hover:text-teal-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
+            </div>
+          </div>
+
+          <!-- NEW Game 5: 2048 -->
+          <div
+            @click="selectGame('game2048')"
+            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-amber-600/30 rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between h-[115px] sm:h-[130px] shadow-lg relative overflow-hidden grid-col"
+          >
+            <div class="absolute -right-3 -top-3 w-10 h-10 bg-amber-600/5 rounded-full filter blur-md group-hover:bg-amber-600/10 transition"></div>
+            <div>
+              <div class="w-7 h-7 bg-amber-600/10 border border-amber-500/20 rounded-lg flex items-center justify-center text-amber-400 text-sm mb-1.5 group-hover:scale-110 transition shrink-0">
+                <i class="bi bi-plus-square-fill"></i>
+              </div>
+              <h3 class="text-xs font-black tracking-tight text-slate-100 group-hover:text-amber-400 transition m-0">2048</h3>
+              <p class="text-[9px] text-slate-400 mt-0.5 leading-snug font-semibold line-clamp-2">Складывайте числа свайпами</p>
+            </div>
+            <div class="flex justify-between items-center text-[8px] uppercase font-black tracking-widest text-slate-500 mt-2">
+              <span>Числа</span>
+              <span class="group-hover:text-amber-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
             </div>
           </div>
         </div>
@@ -147,6 +163,7 @@
             <TicTacToe v-else-if="store.activeGameId === 'tictactoe'" />
             <Snake v-else-if="store.activeGameId === 'snake'" />
             <HillClimb v-else-if="store.activeGameId === 'hillclimb'" />
+            <Game2048 v-else-if="store.activeGameId === 'game2048'" />
           </div>
         </div>
       </div>
@@ -160,13 +177,15 @@ import Tetris from "./Tetris/Tetris.vue";
 import TicTacToe from "./TicTacToe/TicTacToe.vue";
 import Snake from "./Snake/Snake.vue";
 import HillClimb from "./HillClimb/HillClimb.vue";
+import Game2048 from "./Game2048/Game2048.vue";
 
 export default {
   components: {
     Tetris,
     TicTacToe,
     Snake,
-    HillClimb
+    HillClimb,
+    Game2048
   },
   data() {
     return {
