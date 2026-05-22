@@ -1,0 +1,515 @@
+<template>
+<div>
+            <!-- Sticky Header elements for Records -->
+            <div
+              class="sticky top-0 bg-transparent pt-1.5 pb-2.5 z-10 space-y-2 select-none -mx-3 px-3"
+            >
+              <!-- Advanced Filters - Collapsible sliding container -->
+              <div
+                v-if="isFiltersExpanded"
+                class="bg-white border border-slate-200/50 p-4.5 rounded-2xl flex flex-col gap-3.5 transition-all duration-300 shadow-xl"
+              >
+                <div class="flex items-center justify-between">
+                  <span
+                    class="text-[10px] font-black uppercase text-indigo-700 tracking-wider flex items-center gap-1"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] font-bold"
+                      >tune</span
+                    >
+                    Фильтры поиска
+                  </span>
+                  <button
+                    @click="$emit('clear-filters')"
+                    class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition"
+                  >
+                    Сбросить
+                  </button>
+                </div>
+                <div class="grid grid-cols-2 xs:grid-cols-3 gap-2">
+                  <div class="flex flex-col">
+                    <span
+                      class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1"
+                      >Мастер</span
+                    >
+                    <select
+                      :value="advFilterMaster" @change="$emit('update:advFilterMaster', $event.target.value)"
+                      class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all"
+                    >
+                      <option value="">Все мастера</option>
+                      <option
+                        v-for="m in mastersList"
+                        :key="m.ID"
+                        :value="m.ID"
+                      >
+                        {{ m.Name || m.Username }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col">
+                    <span
+                      class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1"
+                      >Услуга</span
+                    >
+                    <select
+                      :value="advFilterService" @change="$emit('update:advFilterService', $event.target.value)"
+                      class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all"
+                    >
+                      <option value="">Все услуги</option>
+                      <option
+                        v-for="s in sortedServices"
+                        :key="s.ID"
+                        :value="s.ID"
+                      >
+                        {{ s.Name }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col">
+                    <span
+                      class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1"
+                      >Дата</span
+                    >
+                    <input
+                      type="date"
+                      :value="advFilterDate" @input="$emit('update:advFilterDate', $event.target.value)"
+                      class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 transition-all w-full"
+                    />
+                  </div>
+                  <div class="flex flex-col col-span-1">
+                    <span
+                      class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1"
+                      >Марка</span
+                    >
+                    <select
+                      :value="advFilterBrand"
+                      @change="$emit('update:advFilterBrand', $event.target.value); $emit('update:advFilterModel', '')"
+                      class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all"
+                    >
+                      <option value="">Все марки</option>
+                      <option
+                        v-for="b in sortedBrands"
+                        :key="b.ID"
+                        :value="b.ID"
+                      >
+                        {{ b.Name }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col col-span-1">
+                    <span
+                      class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1"
+                      >Модель</span
+                    >
+                    <select
+                      :value="advFilterModel"
+                      @change="$emit('update:advFilterModel', $event.target.value)"
+                      class="h-8.5 py-0 px-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all"
+                    >
+                      <option value="">Все модели</option>
+                      <option
+                        v-for="m in filteredModelsForFilter"
+                        :key="m.ID"
+                        :value="m.ID"
+                      >
+                        {{ m.Name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Status Filter Individual Buttons ("Islands" with shadows) -->
+              <div class="flex gap-2 w-full">
+                <!-- Открыт -->
+                <button
+                  class="flex-1 min-w-[50px] flex h-9.5 items-center justify-center w-full rounded-xl transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
+                  :class="
+                    activeStatuses.length === 1 &&
+                    activeStatuses.includes('Открыт')
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white text-slate-500 hover:text-slate-800'
+                  "
+                  @click="toggleStatus('Открыт')"
+                  title="Открытые"
+                >
+                  <span
+                    class="material-symbols-outlined text-[16px]"
+                    :class="
+                      activeStatuses.length === 1 &&
+                      activeStatuses.includes('Открыт')
+                        ? 'text-white'
+                        : 'text-indigo-500'
+                    "
+                    >build_circle</span
+                  >
+                </button>
+
+                <!-- Выполнен -->
+                <button
+                  class="flex-1 min-w-[50px] flex h-9.5 items-center justify-center w-full rounded-xl transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
+                  :class="
+                    activeStatuses.length === 1 &&
+                    activeStatuses.includes('Выполнен')
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-white text-slate-500 hover:text-slate-800'
+                  "
+                  @click="toggleStatus('Выполнен')"
+                  title="Выполненные"
+                >
+                  <span
+                    class="material-symbols-outlined text-[16px]"
+                    :class="
+                      activeStatuses.length === 1 &&
+                      activeStatuses.includes('Выполнен')
+                        ? 'text-white'
+                        : 'text-emerald-500'
+                    "
+                    >check_circle</span
+                  >
+                </button>
+
+                <!-- Отменён -->
+                <button
+                  class="flex-1 min-w-[50px] flex h-9.5 items-center justify-center w-full rounded-xl transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
+                  :class="
+                    activeStatuses.length === 1 &&
+                    activeStatuses.includes('Отменён')
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-white text-slate-500 hover:text-slate-800'
+                  "
+                  @click="toggleStatus('Отменён')"
+                  title="Отменённые"
+                >
+                  <span
+                    class="material-symbols-outlined text-[16px]"
+                    :class="
+                      activeStatuses.length === 1 &&
+                      activeStatuses.includes('Отменён')
+                        ? 'text-white'
+                        : 'text-rose-500'
+                    "
+                    >cancel</span
+                  >
+                </button>
+
+                <!-- Все -->
+                <button
+                  class="flex-1 min-w-[50px] flex h-9.5 items-center justify-center w-full rounded-xl transition-all cursor-pointer border-none shadow-md hover:shadow-lg focus:outline-none outline-none"
+                  :class="
+                    activeStatuses.length === 3
+                      ? 'bg-slate-800 text-white'
+                      : 'bg-white text-slate-500 hover:text-slate-800'
+                  "
+                  @click="$emit('set-all-statuses')"
+                  title="Все статусы"
+                >
+                  <span
+                    class="material-symbols-outlined text-[16px]"
+                    :class="
+                      activeStatuses.length === 3
+                        ? 'text-white'
+                        : 'text-slate-600'
+                    "
+                    >all_inclusive</span
+                  >
+                </button>
+              </div>
+            </div>
+
+            <!-- List View -->
+            <div class="space-y-3">
+              <article
+                v-for="r in filteredRecords"
+                :key="r.ID"
+                @click="openRecordModal(r)"
+                class="bg-surface rounded-2xl p-3 shadow-soft border border-slate-200/50 active:scale-[0.98] transition-all cursor-pointer hover:shadow-md hover:border-slate-300 flex flex-col gap-2"
+                :class="{
+                  'opacity-90': r.Status === 'Выполнен',
+                  'opacity-75 grayscale-[15%]': r.Status === 'Отменён',
+                }"
+              >
+                <!-- ROW 1: [гос.номер] & [мастер] -->
+                <div class="grid grid-cols-2 gap-2">
+                  <!-- гос.номер -->
+                  <div
+                    class="bg-slate-900 border border-slate-950 text-white rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0 shadow-sm"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] text-amber-400 font-bold leading-none"
+                      >directions_car</span
+                    >
+                    <span
+                      class="font-mono font-black text-xs tracking-wider uppercase truncate leading-none text-slate-100"
+                    >
+                      {{ r.CarNumber }}
+                    </span>
+                  </div>
+                  <!-- мастер -->
+                  <div
+                    class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] text-slate-400 leading-none"
+                      >engineering</span
+                    >
+                    <span
+                      class="text-xs font-bold text-slate-700 truncate leading-none"
+                    >
+                      {{ getMasterName(r.MasterID) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- ROW 2: [начало] & [Марка - Модель] -->
+                <div class="grid grid-cols-2 gap-2">
+                  <!-- начало -->
+                  <div
+                    class="bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] text-indigo-500 font-bold leading-none"
+                      >play_circle</span
+                    >
+                    <span
+                      class="text-xs font-bold text-slate-650 leading-none truncate"
+                    >
+                      {{ formatDate(r.StartTime).date }}
+                      {{ formatDate(r.StartTime).time }}
+                    </span>
+                  </div>
+                  <!-- Марка - Модель -->
+                  <div
+                    class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] text-slate-400 font-bold leading-none"
+                      >minor_crash</span
+                    >
+                    <span
+                      class="text-xs font-bold text-slate-800 truncate leading-none"
+                    >
+                      {{ getBrandName(r.BrandID) }}
+                      {{ getModelName(r.ModelID) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- ROW 3: [конец] & [время выполнения] -->
+                <div class="grid grid-cols-2 gap-2">
+                  <!-- конец -->
+                  <div
+                    class="bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] text-emerald-500 font-bold leading-none"
+                      >stop_circle</span
+                    >
+                    <span
+                      class="text-xs font-bold text-slate-650 leading-none truncate"
+                    >
+                      {{
+                        r.EndTime
+                          ? formatDate(r.EndTime).date +
+                            " " +
+                            formatDate(r.EndTime).time
+                          : "—"
+                      }}
+                    </span>
+                  </div>
+                  <!-- время выполнения -->
+                  <div
+                    class="bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] text-slate-400 font-bold leading-none"
+                      >timer</span
+                    >
+                    <span
+                      class="text-xs font-bold text-slate-650 leading-none truncate"
+                    >
+                      {{
+                        r.Status === "Выполнен" && r.EndTime
+                          ? getDuration(r.StartTime, r.EndTime)
+                          : "В процессе"
+                      }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- ROW 4: [Услуга] & [сумма] -->
+                <div class="grid grid-cols-12 gap-2 items-stretch">
+                  <!-- Услуга -->
+                  <div
+                    class="col-span-8 bg-slate-50 border border-slate-200/50 text-slate-650 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[13px] text-slate-400 font-bold shrink-0 leading-none"
+                      >handyman</span
+                    >
+                    <span
+                      class="text-xs font-bold text-slate-600 truncate leading-none"
+                    >
+                      {{ getRecordServicesString(r) }}
+                    </span>
+                  </div>
+                  <!-- сумма -->
+                  <div
+                    class="col-span-4 bg-slate-50 border border-slate-200/50 rounded-xl h-8 px-2.5 flex items-center justify-center text-center font-bold text-slate-800 min-w-0"
+                  >
+                    <span
+                      class="text-xs font-bold text-slate-900 leading-none font-heading truncate"
+                    >
+                      {{ Number(r.TotalAmount || 0).toLocaleString() }} KGS
+                    </span>
+                  </div>
+                </div>
+
+                <!-- ROW 5: [статус записи - кнопка] & [статус оплаты - кнопка] -->
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                  <!-- статус записи - кнопка -->
+                  <button
+                    @click.stop="toggleStatusDirectly(r)"
+                    class="h-9 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
+                    :class="statusButtonClasses(r.Status)"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[15px] font-black leading-none"
+                      >{{ statusIcon(r.Status) }}</span
+                    >
+                    <span>{{ r.Status }}</span>
+                  </button>
+
+                  <!-- статус оплаты - кнопка -->
+                  <button
+                    @click.stop="quickPaymentToggle(r)"
+                    class="h-9 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border-none outline-none focus:outline-none flex items-center justify-center gap-1.5 cursor-pointer shadow-sm select-none"
+                    :class="
+                      r.IsPaid === true ||
+                      String(r.IsPaid).toUpperCase() === 'TRUE'
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-750'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
+                    "
+                  >
+                    <span
+                      class="material-symbols-outlined text-[15px] font-black leading-none"
+                      >{{
+                        r.IsPaid === true ||
+                        String(r.IsPaid).toUpperCase() === "TRUE"
+                          ? "check_circle"
+                          : "cancel"
+                      }}</span
+                    >
+                    <span>{{
+                      r.IsPaid === true ||
+                      String(r.IsPaid).toUpperCase() === "TRUE"
+                        ? "Оплачен"
+                        : "Не оплачен"
+                    }}</span>
+                  </button>
+                </div>
+              </article>
+
+              <div
+                v-if="filteredRecords.length === 0"
+                class="flex flex-col items-center justify-center py-12 text-center"
+              >
+                <span
+                  class="material-symbols-outlined text-4xl text-border-subtle mb-3"
+                  >inbox</span
+                >
+                <p class="text-muted text-sm border-0">Записи не найдены</p>
+              </div>
+            </div>
+
+            <!-- FAB -->
+            <button
+              @click="openRecordModal()"
+              class="fixed bottom-24 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform z-20 md:bottom-12 md:right-12"
+            >
+              <span
+                class="material-symbols-outlined text-[28px]"
+                style="font-variation-settings: &quot;wght&quot; 600"
+                >add</span
+              >
+            </button>
+</div>
+</template>
+<script>
+export default {
+  name: 'RecordsTab',
+  props: {
+    filteredRecords: Array,
+    isFiltersExpanded: Boolean,
+    activeStatuses: { type: Array, default: () => [] },
+    advFilterMaster: String,
+    advFilterService: String,
+    advFilterDate: String,
+    advFilterBrand: String,
+    advFilterModel: String,
+    mastersList: Array,
+    sortedServices: Array,
+    user: Object,
+    db: Object
+  },
+  methods: {
+    openRecordModal(record = null) {
+      this.$emit("open-record", record);
+    },
+    quickPaymentToggle(record) {
+      this.$emit("quick-payment", record);
+    },
+    toggleStatusDirectly(record) {
+      this.$emit("toggle-status", record);
+    },
+    toggleStatus(status) {
+      this.$emit("toggle-status-filter", status);
+    },
+    getDuration(start, end) {
+      if (!start || !end) return '';
+      let s = new Date(start); let e = new Date(end);
+      let diffMs = e - s; if (diffMs < 0) return '0 мин';
+      let diffMins = Math.floor(diffMs / 60000);
+      let hours = Math.floor(diffMins / 60); let mins = diffMins % 60; let days = Math.floor(hours / 24); hours = hours % 24;
+      let parts = []; if (days > 0) parts.push(days + ' дн'); if (hours > 0) parts.push(hours + ' ч'); if (mins > 0 || parts.length === 0) parts.push(mins + ' мин'); return parts.join(' ');
+    },
+    statusBadgeTw(status) {
+      if (status === 'Выполнен') return 'bg-status-completed-bg text-status-completed-text';
+      if (status === 'Отменён') return 'bg-status-canceled-bg text-status-canceled-text';
+      return 'bg-status-open-bg text-status-open-text';
+    },
+    statusBgTw(status) {
+      if (status === 'Выполнен') return 'bg-status-completed-bg border-status-completed-text/20 text-status-completed-text';
+      if (status === 'Отменён') return 'bg-status-canceled-bg border-status-canceled-text/20 text-status-canceled-text';
+      return 'bg-status-open-bg border-status-open-text/20 text-status-open-text';
+    },
+    formatDate(isoString) {
+      if (!isoString) return { date: '—', time: '' };
+      try { let d = new Date(isoString); return { date: d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }), time: d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) }; } catch (e) { return { date: '—', time: '' }; }
+    },
+    statusButtonClasses(status) {
+      if (status === 'Выполнен') return 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800';
+      if (status === 'Отменён') return 'bg-rose-100 hover:bg-rose-200 text-rose-800';
+      return 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-200';
+    },
+    statusIcon(status) {
+      if (status === 'Выполнен') return 'check_circle';
+      if (status === 'Отменён') return 'cancel';
+      return 'build_circle';
+    },
+    getBrandName(id) { let b = this.db.brands.find((x) => x.ID == id); return b ? b.Name : '—'; },
+    getModelName(id) { let m = this.db.models.find((x) => x.ID == id); return m ? m.Name : ''; },
+    getMasterName(id) { let m = this.db.users.find((x) => x.ID == id); return m ? m.Name || m.Username : 'Не назначен'; },
+    getRecordServicesString(record) {
+      if (!record) return '—';
+      let sids = [];
+      if (record.ServicesJSON) { try { sids = typeof record.ServicesJSON === 'string' ? JSON.parse(record.ServicesJSON || '[]') : record.ServicesJSON; } catch (e) { sids = []; } }
+      if (!sids || sids.length === 0) return 'Без услуг';
+      return sids.map((item) => {
+        if (typeof item === 'object') return item.name;
+        let found = this.db.services.find((s) => s.ID === item); return found ? found.Name : '';
+      }).filter(Boolean).join(', ');
+    }
+  }
+};
+</script>
