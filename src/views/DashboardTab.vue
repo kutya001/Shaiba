@@ -703,31 +703,71 @@
                 <div
                   v-for="(stat, brand, idx) in dashBrandStats"
                   :key="brand"
-                  class="flex justify-between items-center p-2 rounded-xl border border-slate-100 transition-all hover:bg-slate-50/50 bg-white"
-                  :class="
-                    idx === 0 ? 'bg-indigo-50/20 border-indigo-100/50' : ''
-                  "
+                  class="border border-slate-100 rounded-xl overflow-hidden transition-all bg-white"
+                  :class="idx === 0 ? 'bg-indigo-50/5 border-indigo-100/50' : ''"
                 >
-                  <div class="flex items-center gap-2 max-w-[65%]">
-                    <div
-                      class="w-6.5 h-6.5 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0"
-                    >
-                      <span class="material-symbols-outlined text-[13px]"
-                        >directions_car</span
+                  <!-- Brand main row (clickable to toggle) -->
+                  <div
+                    @click="toggleBrandExpanded(brand)"
+                    class="flex justify-between items-center p-2 cursor-pointer hover:bg-slate-50/80 transition-all select-none"
+                  >
+                    <div class="flex items-center gap-2 max-w-[65%]">
+                      <div
+                        class="w-6.5 h-6.5 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 shrink-0"
+                      >
+                        <span class="material-symbols-outlined text-[13px]"
+                          >directions_car</span
+                        >
+                      </div>
+                      <span class="font-bold text-xs text-slate-700 truncate mr-1">{{
+                        brand
+                      }}</span>
+                      <!-- Expand arrow -->
+                      <span
+                        class="material-symbols-outlined text-slate-400 text-[14px] transition-transform duration-200"
+                        :style="{ transform: isBrandExpanded(brand) ? 'rotate(180deg)' : 'rotate(0)' }"
+                      >
+                        expand_more
+                      </span>
+                    </div>
+                    <div class="flex flex-col items-end shrink-0">
+                      <span class="font-extrabold text-xs text-slate-800"
+                        >{{ stat.sum.toLocaleString() }} KGS</span
+                      >
+                      <span
+                        class="text-[9px] font-bold text-slate-400 uppercase tracking-wide"
+                        >{{ stat.count }} авто</span
                       >
                     </div>
-                    <span class="font-bold text-xs text-slate-700 truncate">{{
-                      brand
-                    }}</span>
                   </div>
-                  <div class="flex flex-col items-end shrink-0">
-                    <span class="font-extrabold text-xs text-slate-800"
-                      >{{ stat.sum.toLocaleString() }} KGS</span
-                    >
-                    <span
-                      class="text-[9px] font-bold text-slate-400 uppercase tracking-wide"
-                      >{{ stat.count }} авто</span
-                    >
+
+                  <!-- Expanded details of models -->
+                  <div
+                    v-if="isBrandExpanded(brand)"
+                    class="bg-slate-50 border-t border-slate-100 p-2 space-y-1.5 transition-all text-left"
+                  >
+                    <div class="text-[9px] font-extrabold text-indigo-500 uppercase tracking-wider px-1 pb-0.5">
+                      Детализация моделей
+                    </div>
+                    <div class="space-y-1">
+                      <div
+                        v-for="(mStat, mName) in stat.models"
+                        :key="mName"
+                        class="flex justify-between items-center px-1 text-[11px]"
+                      >
+                        <div class="flex items-center gap-1.5 max-w-[65%]">
+                          <span class="w-1 h-1 rounded-full bg-indigo-400 shrink-0"></span>
+                          <span class="font-medium text-slate-600 truncate" :title="mName">{{ mName }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 shrink-0">
+                          <span class="text-slate-400 text-[9px] font-bold uppercase tracking-wider">{{ mStat.count }} авто</span>
+                          <span class="font-bold text-slate-700 text-right">{{ mStat.sum.toLocaleString() }} KGS</span>
+                        </div>
+                      </div>
+                      <div v-if="Object.keys(stat.models).length === 0" class="text-center py-2 text-[10px] text-slate-400 font-medium">
+                        Нет авто для этой модели
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -756,6 +796,7 @@ export default {
       isDashFiltersExpanded: false,
       chartInterval: "day",
       hoveredBarIndex: null,
+      expandedBrands: [],
     };
   },
   computed: {
@@ -857,25 +898,85 @@ export default {
       let map = {};
       this.filteredDashRecords.forEach((r) => {
         let b = this.getBrandName(r.BrandID) || "Неизвестно";
-        if (!map[b]) map[b] = { count: 0, sum: 0 };
+        let m = this.getModelName(r.ModelID) || "Другая модель / Не указана";
+        
+        if (!map[b]) {
+          map[b] = { count: 0, sum: 0, models: {} };
+        }
         map[b].count++;
         map[b].sum += Number(r.TotalAmount) || 0;
+
+        if (!map[b].models[m]) {
+          map[b].models[m] = { count: 0, sum: 0 };
+        }
+        map[b].models[m].count++;
+        map[b].models[m].sum += Number(r.TotalAmount) || 0;
       });
+
+      // Sort models descending for each brand
       let sorted = Object.entries(map)
         .sort((a, b) => b[1].count - a[1].count)
         .slice(0, 5);
-      return Object.fromEntries(sorted);
+
+      let result = {};
+      sorted.forEach(([bName, bData]) => {
+        let sortedModels = Object.entries(bData.models)
+          .sort((x, y) => y[1].count - x[1].count);
+        result[bName] = {
+          count: bData.count,
+          sum: bData.sum,
+          models: Object.fromEntries(sortedModels)
+        };
+      });
+      return result;
     },
     dashServiceStats() {
       let map = {};
       this.filteredDashRecords.forEach((r) => {
         if (r.ServicesJSON) {
-          r.ServicesJSON.forEach((sid) => {
-            let sname = this.getServiceName(sid) || "Услуга удалена";
-            let sprice = this.getServicePrice(sid) || 0;
-            if (!map[sname]) map[sname] = { count: 0, sum: 0 };
-            map[sname].count++;
-            map[sname].sum += Number(sprice);
+          let sids = [];
+          try {
+            sids = typeof r.ServicesJSON === "string"
+              ? JSON.parse(r.ServicesJSON || "[]")
+              : r.ServicesJSON || [];
+          } catch (e) {
+            sids = [];
+          }
+
+          sids.forEach((item) => {
+            let sname = "";
+            let sprice = 0;
+            let isCustom = false;
+
+            if (item && typeof item === "object") {
+              const sid = item.id;
+              let foundInDb = this.db.services.find((s) => s.ID == sid);
+              
+              if (item.isCustom || String(sid).startsWith("custom_") || !foundInDb) {
+                isCustom = true;
+                sname = "Прочая услуга";
+                sprice = Number(item.price) || 0;
+              } else {
+                sname = foundInDb.Name || item.name;
+                sprice = Number(item.price) || Number(foundInDb.Price) || 0;
+              }
+            } else if (item) {
+              let foundInDb = this.db.services.find((s) => s.ID == item);
+              if (foundInDb) {
+                sname = foundInDb.Name;
+                sprice = Number(foundInDb.Price) || 0;
+              } else {
+                isCustom = true;
+                sname = "Прочая услуга";
+                sprice = 0;
+              }
+            }
+
+            if (sname) {
+              if (!map[sname]) map[sname] = { count: 0, sum: 0 };
+              map[sname].count++;
+              map[sname].sum += Number(sprice);
+            }
           });
         }
       });
@@ -1006,6 +1107,22 @@ export default {
       this.dashFilterDate = "";
       this.dashboardPeriod = "all";
       this.dashboardCustomDate = "";
+    },
+    toggleBrandExpanded(brand) {
+      const index = this.expandedBrands.indexOf(brand);
+      if (index > -1) {
+        this.expandedBrands.splice(index, 1);
+      } else {
+        this.expandedBrands.push(brand);
+      }
+    },
+    isBrandExpanded(brand) {
+      return this.expandedBrands.includes(brand);
+    },
+    getModelName(id) {
+      if (!this.db || !this.db.models) return '';
+      let m = this.db.models.find((x) => x.ID == id);
+      return m ? m.Name : '';
     },
   }
 };

@@ -22,7 +22,7 @@
           <i v-else :class="store.appIcon || 'bi-car-front-fill'" class="text-white text-xl"></i>
         </div>
         <h2 class="text-2xl font-bold text-slate-800 tracking-tight font-heading">
-          AutoService ERP
+          Auto Service Managment - ASM ERP
         </h2>
       </div>
 

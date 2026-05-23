@@ -222,7 +222,7 @@
             class="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mb-4 inline-flex items-center gap-1 bg-indigo-50/70 border border-indigo-100/50 px-2.5 py-1 rounded-full select-none"
           >
             <i class="bi bi-check-circle-fill text-indigo-500 text-[11px]"></i>
-            ERP-система учета автосервиса
+            Auto Service Management - ASM ERP
           </p>
 
           <!-- Divider banner image -->
@@ -257,7 +257,7 @@
             v2.6.0-Release
           </span>
           <span class="text-slate-350">•</span>
-          <span class="text-slate-500 uppercase tracking-wider">Prod-Core ERP</span>
+          <span class="text-slate-500 uppercase tracking-wider">ASM ERP Core</span>
           <template v-if="user">
             <span class="text-slate-350">•</span>
             <span class="text-indigo-600 uppercase tracking-wider font-extrabold">
@@ -338,7 +338,7 @@ export default {
     welcomeText() {
       const screen = this.store.db.welcomescreens?.find((s) => s.ID === "welcome_main") || this.store.db.welcomescreens?.[0];
       if (screen && screen.Text) return screen.Text;
-      return localStorage.getItem("welcome_screen_text") || "ERP система для учета процессов автосервиса и автодиагностики.";
+      return localStorage.getItem("welcome_screen_text") || "ASM ERP — система для учета и автоматизации процессов автосервиса и автодиагностики.";
     },
     bannerSrc() {
       if (this.store.welcomeBannerUrl) {

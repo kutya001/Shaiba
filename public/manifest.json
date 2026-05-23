@@ -1,6 +1,6 @@
 {
-  "name": "AutoService CRM PRO",
-  "short_name": "CRM PRO",
+  "name": "Auto Service Managment - ASM ERP",
+  "short_name": "ASM ERP",
   "description": "Управление автосервисом",
   "start_url": "./",
   "display": "standalone",

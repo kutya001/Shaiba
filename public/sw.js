@@ -1,4 +1,4 @@
-const CACHE_NAME = 'autoservice-crm-v1';
+const CACHE_NAME = 'autoservice-asm-erp-v1';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();

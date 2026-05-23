@@ -11,7 +11,7 @@
         <i v-else :class="store.appIcon || 'bi-car-front-fill'" class="text-white text-base"></i>
       </div>
       <span class="font-bold text-lg tracking-tight font-heading"
-        >AutoService ERP</span
+        >ASM ERP</span
       >
     </div>
     <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">

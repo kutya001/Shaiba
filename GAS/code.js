@@ -6,7 +6,7 @@ function doGet(e) {
     return handleRequest(e.parameter.action, e.parameter);
   }
   return HtmlService.createHtmlOutputFromFile(DO_GET_OUTPUT)
-    .setTitle('Автосервис CRM PRO')
+    .setTitle('Auto Service Managment - ASM ERP')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -232,8 +232,14 @@ function addRowBase(sheetName, obj) {
   var row = [];
   for(var i = 0; i < headers.length; i++) {
     var h = headers[i];
-    if (h === 'StartTime' && sheetName === 'Records') row.push(new Date().toISOString());
-    else if (h === 'EndTime') row.push('');
+    if (h === 'StartTime' && sheetName === 'Records') row.push(obj.StartTime || new Date().toISOString());
+    else if (h === 'EndTime' && sheetName === 'Records') {
+      if (obj.Status === 'Выполнен') {
+        row.push(obj.EndTime || new Date().toISOString());
+      } else {
+        row.push('');
+      }
+    }
     else if (h === 'ServicesJSON') row.push(typeof obj[h] === 'string' ? obj[h] : JSON.stringify(obj[h] || []));
     else if (h === 'Phone' && obj[h] && typeof obj[h] === 'string' && obj[h].startsWith('+')) row.push("'" + obj[h]);
     else row.push(obj[h] !== undefined ? obj[h] : '');
@@ -249,13 +255,14 @@ function updateRecord(obj) {
   var headers = data[0];
   
   for(var i = 1; i < data.length; i++) {
-    if (data[i][0] === obj.ID) { // ID is col A
+    if (String(data[i][0]) === String(obj.ID)) { // ID is col A, robust matching
       var row = [];
       var oldStatus = data[i][headers.indexOf('Status')];
+      var oldEndTime = data[i][headers.indexOf('EndTime')];
       for(var j = 0; j < headers.length; j++) {
          var h = headers[j];
-         if (h === 'EndTime' && obj.Status === 'Выполнен' && oldStatus !== 'Выполнен') {
-             row.push(new Date().toISOString());
+         if (h === 'EndTime' && obj.Status === 'Выполнен') {
+             row.push(obj.EndTime || oldEndTime || new Date().toISOString());
          } else if (h === 'EndTime' && obj.Status !== 'Выполнен') {
              row.push('');
          } else if (h === 'ServicesJSON') {
