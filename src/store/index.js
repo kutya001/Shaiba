@@ -106,7 +106,7 @@ export const useMainStore = defineStore("main", {
     }
     return {
       user: savedUser,
-      db: { records: [], services: [], brands: [], models: [], users: [], applications: [], welcomescreens: [] },
+      db: { records: [], services: [], brands: [], models: [], users: [], applications: [], welcomescreens: [], gamerecords: [] },
       syncQueue: [],
       isSyncing: false,
       toasts: [],
@@ -121,6 +121,10 @@ export const useMainStore = defineStore("main", {
       appIcon: localStorage.getItem("app_icon_class") || "bi-car-front-fill",
       showGamesLobby: false,
       activeGameId: null,
+      currentGameSessionId: null,
+      activeGameSeconds: 0,
+      activeGameScore: 0,
+      gameTimerInterval: null,
     };
   },
   getters: {
@@ -191,11 +195,92 @@ export const useMainStore = defineStore("main", {
     toggleGamesLobby(show) {
       this.showGamesLobby = show;
       if (!show) {
-        this.activeGameId = null;
+        this.setActiveGameId(null);
       }
     },
     setActiveGameId(id) {
+      if (this.activeGameId && this.activeGameId !== id) {
+        this.stopGameSession();
+      }
       this.activeGameId = id;
+      if (id) {
+        this.startGameSession(id);
+      }
+    },
+    startGameSession(gameId) {
+      if (!this.user) return;
+      if (this.gameTimerInterval) {
+        clearInterval(this.gameTimerInterval);
+        this.gameTimerInterval = null;
+      }
+      const id = "gr_" + Math.random().toString(36).substr(2, 9) + "_" + Date.now();
+      const newRecord = {
+        ID: id,
+        UserID: this.user.ID,
+        Username: this.user.Username,
+        GameID: gameId,
+        StartTime: new Date().toISOString(),
+        PlayTime: 0,
+        Score: 0
+      };
+      if (!this.db.gamerecords) {
+        this.db.gamerecords = [];
+      }
+      this.db.gamerecords.push(newRecord);
+      this.dispatchSync("addRow", newRecord, "GameRecords");
+      this.currentGameSessionId = id;
+      this.activeGameSeconds = 0;
+      this.activeGameScore = 0;
+      this.gameTimerInterval = setInterval(() => {
+        this.activeGameSeconds++;
+        const idx = this.db.gamerecords.findIndex(r => r.ID === id);
+        if (idx !== -1) {
+          this.db.gamerecords[idx].PlayTime = this.activeGameSeconds;
+        }
+        if (this.activeGameSeconds % 10 === 0) {
+          this.saveSessionToServer();
+        }
+      }, 1000);
+    },
+    stopGameSession() {
+      if (this.gameTimerInterval) {
+        clearInterval(this.gameTimerInterval);
+        this.gameTimerInterval = null;
+      }
+      if (this.currentGameSessionId) {
+        this.saveSessionToServer();
+        this.currentGameSessionId = null;
+      }
+    },
+    updateSessionScore(score) {
+      const numericScore = Number(score) || 0;
+      if (numericScore > this.activeGameScore) {
+        this.activeGameScore = numericScore;
+        if (this.currentGameSessionId) {
+          const idx = this.db.gamerecords.findIndex(r => r.ID === this.currentGameSessionId);
+          if (idx !== -1) {
+            this.db.gamerecords[idx].Score = Math.max(Number(this.db.gamerecords[idx].Score) || 0, numericScore);
+          }
+        }
+      }
+    },
+    async saveSessionToServer() {
+      if (!this.currentGameSessionId) return;
+      const id = this.currentGameSessionId;
+      const idx = this.db.gamerecords.findIndex(r => r.ID === id);
+      if (idx !== -1) {
+        const record = this.db.gamerecords[idx];
+        const updated = {
+          ID: record.ID,
+          UserID: record.UserID,
+          Username: record.Username,
+          GameID: record.GameID,
+          StartTime: record.StartTime,
+          PlayTime: this.activeGameSeconds,
+          Score: this.activeGameScore
+        };
+        this.dispatchSync("updateRow", updated, "GameRecords");
+      }
     },
     async loadWelcomeScreenInfo() {
       try {
@@ -524,6 +609,7 @@ export const useMainStore = defineStore("main", {
               if (k === "users") sheetName = "Users";
               if (k === "applications") sheetName = "Заявки на Запись";
               if (k === "welcomescreens") sheetName = "WelcomeScreens";
+              if (k === "gamerecords") sheetName = "GameRecords";
 
               if (sheetName) {
                 let newData = await runGS("getTable", sheetName); // Wait, look: runGS("getTable", {sheetName}) was a typo in the pre-existing code of the file or not? Let's check!
@@ -572,6 +658,8 @@ export const useMainStore = defineStore("main", {
                     this.db.applications = newData;
                   } else if (k === "welcomescreens") {
                     this.db.welcomescreens = newData;
+                  } else if (k === "gamerecords") {
+                    this.db.gamerecords = newData;
                   }
                 }
               }

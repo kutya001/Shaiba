@@ -201,6 +201,7 @@
 
 <script>
 import { playSound } from "../../utils/audioHelper";
+import { useMainStore } from "../../store";
 
 export default {
   data() {
@@ -300,6 +301,11 @@ export default {
     activeTheme(newTheme) {
       localStorage.setItem("game_2048_theme", newTheme);
       this.saveStateToLocalStorage();
+    }
+  },
+  computed: {
+    store() {
+      return useMainStore();
     }
   },
   mounted() {
@@ -431,6 +437,7 @@ export default {
     restartGame() {
       this.tiles = [];
       this.score = 0;
+      this.store.updateSessionScore(0);
       this.gameOver = false;
       this.hasWon = false;
       this.continuePlaying = false;
@@ -910,6 +917,7 @@ export default {
       if (this.score > this.highscore) {
         this.highscore = this.score;
       }
+      this.store.updateSessionScore(this.score);
       localStorage.setItem("game_2048_highscore", this.highscore);
       localStorage.setItem("game_2048_theme", this.activeTheme);
       localStorage.setItem("game_2048_state", JSON.stringify({
@@ -932,6 +940,7 @@ export default {
           const state = JSON.parse(backup);
           this.tiles = state.tiles;
           this.score = state.score;
+          this.store.updateSessionScore(this.score);
           this.gameOver = state.gameOver;
           this.hasWon = state.hasWon;
           this.continuePlaying = state.continuePlaying;

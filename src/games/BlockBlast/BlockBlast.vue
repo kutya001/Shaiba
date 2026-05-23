@@ -308,6 +308,7 @@
 
 <script>
 import { playSound } from "../../utils/audioHelper";
+import { useMainStore } from "../../store";
 
 // 21 Pre-rotated shapes representing classic and balanced block combinations
 const SHAPES_POOL = [
@@ -392,6 +393,9 @@ export default {
     };
   },
   computed: {
+    store() {
+      return useMainStore();
+    },
     activeDraggedBlock() {
       if (this.draggedSlotIndex !== null) {
         return this.blockTray[this.draggedSlotIndex];
@@ -570,6 +574,7 @@ export default {
       this.hasStarted = true;
       this.gameOver = false;
       this.score = 0;
+      this.store.updateSessionScore(0);
       this.streak = 0;
       this.grid = Array.from({ length: 8 }, () => Array(8).fill(0));
       this.selectedBlockIndex = null;
@@ -788,6 +793,7 @@ export default {
 
       // Add base points immediately matching the number of cells placed
       this.score += cellsPlaced;
+      this.store.updateSessionScore(this.score);
       this.selectedBlockIndex = null;
       this.blockTray[trayIndex] = null; // Clear from tray
 
@@ -887,6 +893,7 @@ export default {
           const pointsEarned = Math.round(linesClearedCoreValue * multiplier);
 
           this.score += pointsEarned;
+          this.store.updateSessionScore(this.score);
           this.clearingCells = []; // Reset visual overlay
 
           this.checkTrayProgress();

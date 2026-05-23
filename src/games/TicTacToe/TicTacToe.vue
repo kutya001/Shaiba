@@ -156,6 +156,7 @@
 
 <script>
 import { playSound } from "../../utils/audioHelper";
+import { useMainStore } from "../../store";
 
 export default {
   data() {
@@ -177,6 +178,11 @@ export default {
         [0, 4, 8], [2, 4, 6]             // Diagonals
       ]
     };
+  },
+  computed: {
+    store() {
+      return useMainStore();
+    }
   },
   methods: {
     selectMode(mode) {
@@ -296,6 +302,7 @@ export default {
     persistScores() {
       localStorage.setItem("game_tictactoe_scores_x", this.scores.X);
       localStorage.setItem("game_tictactoe_scores_o", this.scores.O);
+      this.store.updateSessionScore(this.scores.X);
     }
   }
 };

@@ -192,6 +192,7 @@
 
 <script>
 import { playSound } from "../../utils/audioHelper";
+import { useMainStore } from "../../store";
 
 export default {
   data() {
@@ -258,6 +259,11 @@ export default {
       isSwipeAction: false,
       preventSoftDrop: false
     };
+  },
+  computed: {
+    store() {
+      return useMainStore();
+    }
   },
   mounted() {
     window.addEventListener("keydown", this.handleKeyDown);
@@ -414,6 +420,7 @@ export default {
       this.gameOver = false;
       this.isPaused = false;
       this.score = 0;
+      this.store.updateSessionScore(0);
       this.linesCleared = 0;
       this.level = 1;
       this.holdPieceData = null;
@@ -670,6 +677,7 @@ export default {
             this.linesCleared += lines;
             const scoringRatio = [0, 100, 300, 500, 800];
             this.score += scoringRatio[lines] * this.level;
+            this.store.updateSessionScore(this.score);
 
             this.level = Math.floor(this.linesCleared / 10) + 1;
             this.spawnPiece();

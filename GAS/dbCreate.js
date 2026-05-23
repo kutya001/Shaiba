@@ -7,6 +7,7 @@ function createDatabase() {
     'Brands': ['ID', 'Name'],
     'Models': ['ID', 'BrandID', 'Name'],
     'WelcomeScreens': ['ID', 'Title', 'Text'],
+    'GameRecords': ['ID', 'UserID', 'Username', 'GameID', 'StartTime', 'PlayTime', 'Score'],
     'Заявки на Запись': [
       'Отметка времени', 'Ваше Имя', 'Контактный номер телефона', 'Государственный номер машины (госномер)', 
       'Марка автомобиля', 'Модель автомобиля', 'Год выпуска автомобиля', 

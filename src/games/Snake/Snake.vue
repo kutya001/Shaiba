@@ -146,6 +146,7 @@
 
 <script>
 import { playSound } from "../../utils/audioHelper";
+import { useMainStore } from "../../store";
 
 export default {
   data() {
@@ -189,6 +190,11 @@ export default {
       isSwiping: false,
       resizeObserver: null
     };
+  },
+  computed: {
+    store() {
+      return useMainStore();
+    }
   },
   mounted() {
     window.addEventListener("keydown", this.handleKeyDown);
@@ -245,6 +251,7 @@ export default {
       this.hasStarted = true;
       this.gameOver = false;
       this.score = 0;
+      this.store.updateSessionScore(0);
       this.direction = "RIGHT";
       this.lastExecutedDirection = "RIGHT";
       this.directionQueue = [];
@@ -391,6 +398,7 @@ export default {
         }
         
         this.score += pointsEarned;
+        this.store.updateSessionScore(this.score);
         if (this.score > this.highscore) {
           this.highscore = this.score;
           localStorage.setItem("game_snake_highscore", this.highscore);

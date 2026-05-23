@@ -177,7 +177,8 @@ function getInitData(role, userId) {
     brands: getTable('Brands'),
     models: getTable('Models'),
     applications: getTable('Заявки на Запись'),
-    welcomescreens: getTable('WelcomeScreens')
+    welcomescreens: getTable('WelcomeScreens'),
+    gamerecords: getTable('GameRecords')
   };
   return data;
 }
@@ -513,7 +514,8 @@ function getDbVersions() {
       brands: props.brands_version || '1',
       models: props.models_version || '1',
       applications: props.applications_version || '1',
-      welcomescreens: props.welcomescreens_version || '1'
+      welcomescreens: props.welcomescreens_version || '1',
+      gamerecords: props.gamerecords_version || '1'
     };
   } catch (e) {
     return {
@@ -523,7 +525,8 @@ function getDbVersions() {
       brands: '1',
       models: '1',
       applications: '1',
-      welcomescreens: '1'
+      welcomescreens: '1',
+      gamerecords: '1'
     };
   }
 }

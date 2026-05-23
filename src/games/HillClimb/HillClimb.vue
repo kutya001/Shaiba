@@ -126,6 +126,7 @@
 
 <script>
 import { playSound } from "../../utils/audioHelper";
+import { useMainStore } from "../../store";
 
 export default {
   data() {
@@ -160,6 +161,11 @@ export default {
       animationFrameId: null,
       engineSoundCounter: 0
     };
+  },
+  computed: {
+    store() {
+      return useMainStore();
+    }
   },
   mounted() {
     window.addEventListener("keydown", this.handleKeyDown);
@@ -209,6 +215,7 @@ export default {
       this.hasStarted = true;
       this.gameOver = false;
       this.distance = 0;
+      this.store.updateSessionScore(0);
       this.coins = 0;
       this.fuel = 100;
       this.crashReason = "";
@@ -357,6 +364,7 @@ export default {
       const currentRun = this.bike.x / 10;
       if (currentRun > this.distance) {
         this.distance = currentRun;
+        this.store.updateSessionScore(Math.floor(this.distance));
         if (this.distance > this.highscore) {
           this.highscore = Math.floor(this.distance);
           localStorage.setItem("game_hillclimb_highscore", this.highscore);
