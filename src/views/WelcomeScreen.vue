@@ -228,7 +228,8 @@
           <!-- Divider banner image -->
           <div class="w-full relative rounded-2xl overflow-hidden mb-5 border border-slate-200/80 shadow-md aspect-video h-40 bg-slate-150 select-none">
             <img 
-              :src="store.welcomeBannerUrl || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=640&q=80'" 
+              :src="bannerSrc" 
+              @error="handleBannerImageError"
               class="w-full h-full object-cover rounded-2xl" 
               referrerpolicy="no-referrer"
               alt="Welcome Banner"
@@ -299,6 +300,7 @@ export default {
   data() {
     return {
       isEditing: false,
+      bannerImageErrorCount: 0,
       editedTitle: "",
       editedText: "",
       editedLogoUrl: "",
@@ -338,6 +340,16 @@ export default {
       if (screen && screen.Text) return screen.Text;
       return localStorage.getItem("welcome_screen_text") || "ERP система для учета процессов автосервиса и автодиагностики.";
     },
+    bannerSrc() {
+      if (this.store.welcomeBannerUrl) {
+        return this.store.welcomeBannerUrl;
+      }
+      if (this.bannerImageErrorCount > 0) {
+        // Fallback Unsplash image if local asset fails to load
+        return "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1280&q=80";
+      }
+      return "/welcome_banner.jpg";
+    }
   },
   watch: {
     show: {
@@ -366,6 +378,9 @@ export default {
     },
   },
   methods: {
+    handleBannerImageError() {
+      this.bannerImageErrorCount++;
+    },
     dismiss() {
       this.$emit("close");
     },
