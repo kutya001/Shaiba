@@ -1,11 +1,11 @@
 <template>
   <div
-    class="flex flex-col items-center justify-between h-full bg-slate-950 text-white p-4 select-none relative overflow-hidden"
+    class="flex flex-col items-center justify-between h-full text-white p-4 select-none relative overflow-hidden transition-colors duration-300"
+    :class="getContainerClass()"
     @touchstart="onTouchStart"
     @touchmove="onTouchMove"
     @touchend="onTouchEnd"
   >
-    <!-- Glassmorphic Top Score HUD Tracker -->
     <div class="w-full flex justify-between items-center bg-slate-900/50 backdrop-blur-md border border-slate-800/80 rounded-2xl px-4 py-3 shadow-lg z-10">
       <div class="flex items-center gap-1.5 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-800/60 shadow-inner">
         <div>
@@ -14,9 +14,11 @@
         </div>
       </div>
 
-      <div class="text-center">
+      <div class="text-center cursor-pointer active:scale-95 transition-transform" @click="cycleTheme">
         <span class="block text-[9px] font-black text-indigo-400 uppercase tracking-widest leading-none animate-pulse-glow mb-0.5">Супер-2048</span>
-        <span class="text-[9px] font-bold text-slate-500 font-sans leading-none block">БЕЗКНОПОЧНЫЙ</span>
+        <span class="text-[8px] font-bold text-emerald-400 font-sans leading-none block border border-emerald-500/30 rounded px-1.5 py-0.5 mt-0.5 uppercase bg-emerald-950/20">
+          {{ themeNames[currentTheme] }}
+        </span>
       </div>
 
       <div class="flex items-center gap-1.5 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-800/60 shadow-inner text-right">
@@ -27,11 +29,8 @@
       </div>
     </div>
 
-    <!-- Active 4x4 Sliding Arena -->
     <div ref="gridContainer" class="flex-grow w-full max-w-[340px] flex items-center justify-center relative my-1 z-10 shrink-0">
-      <!-- Outer Glass Board frame -->
       <div class="relative w-full aspect-square bg-slate-950/80 border border-slate-800 rounded-3xl p-3 shadow-2xl overflow-hidden">
-        <!-- Render 4x4 Grid slots backing -->
         <div class="grid grid-cols-4 grid-rows-4 gap-2.5 h-full w-full">
           <div
             v-for="n in 16"
@@ -40,40 +39,40 @@
           ></div>
         </div>
 
-        <!-- Render active sliding tiles layer -->
         <div class="absolute inset-0 p-3 pointer-events-none">
-          <div class="relative w-full h-full">
+          <div class="relative w-full h-full overflow-hidden">
             <div
               v-for="tile in activeRenderTiles"
               :key="tile.id"
-              class="absolute rounded-xl font-black flex flex-col items-center justify-center overflow-hidden transition-all duration-150 select-none shadow-md"
-              :class="[
-                getTileClass(tile.val),
-                tile.pop ? 'animate-tile-pop' : '',
-                tile.isNew ? 'animate-tile-spawn' : ''
-              ]"
+              class="absolute transition-transform duration-150 ease-out will-change-transform"
               :style="{
                 width: 'calc(25% - 7.5px)',
                 height: 'calc(25% - 7.5px)',
-                left: 'calc(' + tile.c * 25 + '% + 3.75px)',
-                top: 'calc(' + tile.r * 25 + '% + 3.75px)',
-                transform: 'translate3d(0,0,0)'
+                transform: `translate3d(calc(${tile.c * 100}% + ${tile.c * 2.5}px), calc(${tile.r * 100}% + ${tile.r * 2.5}px), 0)`
               }"
             >
-              <span class="text-xl md:text-2xl leading-none font-bold tracking-tight font-sans block text-center"
-                :class="tile.val >= 1024 ? 'scale-90' : ''"
+              <div
+                class="w-full h-full rounded-xl font-black flex flex-col items-center justify-center shadow-md select-none transition-colors duration-200"
+                :class="[
+                  getTileClass(tile.val),
+                  tile.pop ? 'animate-tile-pop' : '',
+                  tile.isNew ? 'animate-tile-spawn' : ''
+                ]"
               >
-                {{ tile.val }}
-              </span>
+                <span 
+                  class="text-xl md:text-2xl leading-none font-bold tracking-tight font-sans block text-center transition-transform duration-70ms"
+                  :class="tile.val >= 1024 ? 'scale-90' : ''"
+                >
+                  {{ tile.val }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Float Merge Particles overlay canvas -->
         <canvas ref="particleCanvas" class="absolute inset-0 pointer-events-none z-15"></canvas>
       </div>
 
-      <!-- Glassmorphic Won Overlay -->
       <div
         v-if="hasWon && !continuePlaying"
         class="absolute inset-0 bg-indigo-950/80 backdrop-blur-lg rounded-3xl flex flex-col items-center justify-center p-6 text-center z-25 animate-fade-in"
@@ -104,7 +103,6 @@
         </div>
       </div>
 
-      <!-- Glassmorphic Game Over Overlay -->
       <div
         v-if="gameOver"
         class="absolute inset-0 bg-slate-950/85 backdrop-blur-lg rounded-3xl flex flex-col items-center justify-center p-6 text-center z-25 animate-fade-in"
@@ -128,7 +126,6 @@
       </div>
     </div>
 
-    <!-- Long-Press Radial Reset circular indicator overlay -->
     <div
       v-if="pressProgress > 0"
       class="absolute inset-0 bg-slate-950/45 backdrop-blur-sm z-30 flex items-center justify-center pointer-events-none"
@@ -152,7 +149,6 @@
       </div>
     </div>
 
-    <!-- Minimalist Gesture Legend info panel -->
     <div class="w-full max-w-[320px] py-3 px-4 bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl text-center text-slate-400 text-[10px] font-bold leading-normal shrink-0 mt-2 space-y-1 z-10">
       <div class="flex items-center justify-center gap-1.5">
         <i class="bi bi-hand-index-thumb text-cyan-400"></i>
@@ -184,12 +180,21 @@ export default {
       hasWon: false,
       continuePlaying: false,
       
+      // Theme Config Engine
+      currentTheme: localStorage.getItem("game_2048_theme") || "cyberpunk",
+      themeNames: {
+        cyberpunk: "Киберпанк",
+        emerald: "Изумруд",
+        sunset: "Закат",
+        monochrome: "Монохром"
+      },
+      
       // Control Engine Mechanics
-      tileIdCounter: 1, // incremental tile ID generator
-      isMovingPhase: false, // input throttle during 150ms dynamic transition
+      tileIdCounter: 1, 
+      isMovingPhase: false, 
       
       // Undo Stack
-      history: [], // serialised historical states copy (max limit 12)
+      history: [], // serialized historical states copy (max limit 12)
       
       // Swipe Tracking state
       touchStart: { x: 0, y: 0 },
@@ -210,7 +215,6 @@ export default {
     };
   },
   computed: {
-    // Only render live tiles to match standard 2D view
     activeRenderTiles() {
       return this.tiles;
     }
@@ -224,9 +228,12 @@ export default {
     // Setup graphic high-dpi overlays canvas loop
     this.setupHighDPICanvas();
     this.startDrawLoop();
+    
+    window.addEventListener("resize", this.setupHighDPICanvas);
   },
   beforeUnmount() {
     window.removeEventListener("keydown", this.handleKeyDown);
+    window.removeEventListener("resize", this.setupHighDPICanvas);
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
@@ -235,7 +242,6 @@ export default {
     }
   },
   methods: {
-    // Haptics with sandbox protection
     vibrate(ms) {
       if (navigator.vibrate) {
         try {
@@ -243,18 +249,30 @@ export default {
         } catch (_) {}
       }
     },
+    cycleTheme() {
+      const themes = ["cyberpunk", "emerald", "sunset", "monochrome"];
+      const currentIdx = themes.indexOf(this.currentTheme);
+      this.currentTheme = themes[(currentIdx + 1) % themes.length];
+      localStorage.setItem("game_2048_theme", this.currentTheme);
+      this.vibrate(15);
+    },
+    getContainerClass() {
+      switch (this.currentTheme) {
+        case "emerald": return "bg-zinc-950 text-white";
+        case "sunset": return "bg-neutral-950 text-white";
+        case "monochrome": return "bg-stone-950 text-stone-100";
+        default: return "bg-slate-950 text-white";
+      }
+    },
     setupHighDPICanvas() {
       const canvas = this.$refs.particleCanvas;
       if (!canvas) return;
       const dpr = window.devicePixelRatio || 1;
-      const setDimensions = () => {
-        const parent = canvas.parentElement;
-        if (!parent) return;
-        const rect = parent.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-      };
-      setDimensions();
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
     },
     startDrawLoop() {
       const loop = () => {
@@ -264,37 +282,49 @@ export default {
       this.animationFrameId = requestAnimationFrame(loop);
     },
     triggerFusionSplash(r, c, mergedValue) {
-      // Fusion Merge Color matching
       let color = "#ffffff";
-      if (mergedValue <= 16) color = "#06b6d4"; // Cyan
-      else if (mergedValue <= 64) color = "#fb923c"; // Orange
-      else if (mergedValue <= 512) color = "#a855f7"; // Purple
-      else color = "#fbbf24"; // Amber gold
+      
+      if (this.currentTheme === "monochrome") {
+        color = mergedValue >= 64 ? "#ffffff" : "#a3a3a3";
+      } else if (this.currentTheme === "emerald") {
+        if (mergedValue <= 16) color = "#10b981";
+        else if (mergedValue <= 64) color = "#14b8a6";
+        else if (mergedValue <= 512) color = "#06b6d4";
+        else color = "#34d399";
+      } else if (this.currentTheme === "sunset") {
+        if (mergedValue <= 16) color = "#f43f5e";
+        else if (mergedValue <= 64) color = "#f97316";
+        else if (mergedValue <= 512) color = "#ef4444";
+        else color = "#facc15";
+      } else {
+        if (mergedValue <= 16) color = "#06b6d4";
+        else if (mergedValue <= 64) color = "#fb923c";
+        else if (mergedValue <= 512) color = "#a855f7";
+        else color = "#fbbf24";
+      }
       
       const canvas = this.$refs.particleCanvas;
       if (!canvas) return;
       
-      // Calculate origin coordinates relative to cell
       const wCell = canvas.width / 4;
       const hCell = canvas.height / 4;
       const ox = c * wCell + wCell / 2;
       const oy = r * hCell + hCell / 2;
       
-      // Explode 9-11 particles
-      const count = 10;
+      const count = 12;
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 1.5 + Math.random() * 3.5;
+        const speed = 1.5 + Math.random() * 4.0;
         this.particles.push({
           x: ox,
           y: oy,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           color: color,
-          size: 1.5 + Math.random() * 3.0,
+          size: 1.5 + Math.random() * 2.5,
           opacity: 1.0,
-          life: 15 + Math.floor(Math.random() * 10),
-          maxLife: 25
+          life: 18 + Math.floor(Math.random() * 10),
+          maxLife: 28
         });
       }
     },
@@ -313,14 +343,13 @@ export default {
         ctx.save();
         ctx.globalAlpha = p.opacity;
         ctx.fillStyle = p.color;
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 5;
         ctx.shadowColor = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       });
-      // purge faint particles
       this.particles = this.particles.filter(p => p.life > 0);
     },
     restartGame() {
@@ -372,20 +401,67 @@ export default {
     getTileClass(val) {
       if (!val) return "bg-transparent";
       
-      // High Contrast Glowing Styles mapped matching spec limits
-      switch (val) {
-        case 2: return "bg-slate-900 border border-cyan-500/30 text-cyan-400 shadow-cyan-500/5";
-        case 4: return "bg-slate-900 border border-teal-500/30 text-teal-400 shadow-teal-500/5";
-        case 8: return "bg-indigo-950/80 border border-indigo-400/40 text-indigo-300 shadow-indigo-500/10";
-        case 16: return "bg-amber-950/80 border border-amber-500/40 text-amber-400 shadow-amber-500/10";
-        case 32: return "bg-orange-950/80 border border-orange-500/55 text-orange-400 shadow-orange-500/15 font-bold";
-        case 64: return "bg-pink-950/80 border border-pink-500/55 text-pink-400 shadow-pink-500/15 font-bold";
-        case 128: return "bg-violet-950 border border-violet-400/60 text-violet-300 shadow-[0_0_12px_rgba(168,85,247,0.25)] font-bold";
-        case 256: return "bg-violet-900 border border-fuchsia-400/70 text-fuchsia-300 shadow-[0_0_15px_rgba(217,70,239,0.3)] font-bold hover:brightness-110";
-        case 512: return "bg-fuchsia-950 border border-pink-500 text-pink-300 shadow-[0_0_18px_rgba(236,72,153,0.35)] font-extrabold";
-        case 1024: return "bg-gradient-to-br from-yellow-600/90 to-amber-700/90 border border-yellow-400 text-yellow-300 shadow-[0_0_22px_rgba(234,179,8,0.4)] font-extrabold";
-        case 2048: return "bg-gradient-to-br from-yellow-500 to-amber-600 border-2 border-white text-slate-950 shadow-[0_0_28px_rgba(234,179,8,0.65)] font-black animate-pulse-glow";
-        default: return "bg-gradient-to-br from-red-650 to-pink-700 border-2 border-white text-white shadow-2xl font-black";
+      switch (this.currentTheme) {
+        case "emerald":
+          switch (val) {
+            case 2: return "bg-zinc-900 border border-emerald-500/30 text-emerald-400 shadow-emerald-500/5";
+            case 4: return "bg-zinc-900 border border-teal-500/30 text-teal-400 shadow-teal-500/5";
+            case 8: return "bg-teal-950/80 border border-teal-400/40 text-teal-300 shadow-teal-500/10";
+            case 16: return "bg-lime-950/80 border border-lime-500/40 text-lime-400 shadow-lime-500/10";
+            case 32: return "bg-emerald-950/80 border border-emerald-500/55 text-emerald-300 shadow-emerald-500/15";
+            case 64: return "bg-green-950/80 border border-green-500/55 text-green-300 shadow-green-500/15";
+            case 128: return "bg-cyan-950 border border-cyan-400/60 text-cyan-300 shadow-inner";
+            case 256: return "bg-sky-900 border border-sky-400/70 text-sky-200 shadow-md";
+            case 512: return "bg-teal-900 border border-emerald-400 text-teal-100 font-bold";
+            case 1024: return "bg-gradient-to-br from-teal-600 to-emerald-700 border border-teal-300 text-white font-extrabold";
+            case 2048: return "bg-gradient-to-br from-emerald-400 to-teal-500 border-2 border-white text-zinc-950 font-black animate-pulse-glow";
+            default: return "bg-gradient-to-br from-green-600 to-emerald-900 border-2 border-emerald-300 text-white font-black";
+          }
+        case "sunset":
+          switch (val) {
+            case 2: return "bg-neutral-900 border border-rose-500/30 text-rose-400";
+            case 4: return "bg-neutral-900 border border-pink-500/30 text-pink-400";
+            case 8: return "bg-red-950/80 border border-red-400/40 text-red-300";
+            case 16: return "bg-orange-950/80 border border-orange-500/40 text-orange-400";
+            case 32: return "bg-amber-950/80 border border-amber-500/55 text-amber-400 font-bold";
+            case 64: return "bg-yellow-950/80 border border-yellow-500/55 text-yellow-400 font-bold";
+            case 128: return "bg-rose-900 border border-rose-400 text-rose-100 shadow-inner";
+            case 256: return "bg-pink-900 border border-pink-400 text-pink-100 shadow-md";
+            case 512: return "bg-orange-900 border border-orange-400 text-orange-100 font-extrabold";
+            case 1024: return "bg-gradient-to-br from-red-600 to-orange-600 border border-yellow-400 text-white font-extrabold";
+            case 2048: return "bg-gradient-to-br from-amber-400 to-rose-500 border-2 border-white text-neutral-950 font-black animate-pulse-glow";
+            default: return "bg-gradient-to-br from-red-700 to-pink-900 border-2 border-white text-white font-black";
+          }
+        case "monochrome":
+          switch (val) {
+            case 2: return "bg-stone-900 border border-stone-700 text-stone-400";
+            case 4: return "bg-stone-800 border border-stone-600 text-stone-300";
+            case 8: return "bg-stone-700 border border-stone-500 text-stone-200";
+            case 16: return "bg-stone-600 border border-stone-400 text-stone-100";
+            case 32: return "bg-stone-500 border border-stone-300 text-white";
+            case 64: return "bg-stone-400 border border-stone-200 text-stone-950";
+            case 128: return "bg-stone-300 border border-stone-100 text-stone-950";
+            case 256: return "bg-stone-200 border border-stone-400 text-stone-950 shadow-sm";
+            case 512: return "bg-stone-100 border border-stone-500 text-stone-950 font-bold";
+            case 1024: return "bg-white border border-stone-600 text-stone-950 font-extrabold";
+            case 2048: return "bg-gradient-to-br from-white to-stone-300 border-2 border-stone-950 text-stone-950 font-black";
+            default: return "bg-stone-950 border-2 border-white text-white font-black";
+          }
+        default: // cyberpunk
+          switch (val) {
+            case 2: return "bg-slate-900 border border-cyan-500/30 text-cyan-400 shadow-cyan-500/5";
+            case 4: return "bg-slate-900 border border-teal-500/30 text-teal-400 shadow-teal-500/5";
+            case 8: return "bg-indigo-950/80 border border-indigo-400/40 text-indigo-300 shadow-indigo-500/10";
+            case 16: return "bg-amber-950/80 border border-amber-500/40 text-amber-400 shadow-amber-500/10";
+            case 32: return "bg-orange-950/80 border border-orange-500/55 text-orange-400 shadow-orange-500/15 font-bold";
+            case 64: return "bg-pink-950/80 border border-pink-500/55 text-pink-400 shadow-pink-500/15 font-bold";
+            case 128: return "bg-violet-950 border border-violet-400/60 text-violet-300 shadow-[0_0_12px_rgba(168,85,247,0.25)] font-bold";
+            case 256: return "bg-violet-900 border border-fuchsia-400/70 text-fuchsia-300 shadow-[0_0_15px_rgba(217,70,239,0.3)] font-bold hover:brightness-110";
+            case 512: return "bg-fuchsia-950 border border-pink-500 text-pink-300 shadow-[0_0_18px_rgba(236,72,153,0.35)] font-extrabold";
+            case 1024: return "bg-gradient-to-br from-yellow-600/90 to-amber-700/90 border border-yellow-400 text-yellow-300 shadow-[0_0_22px_rgba(234,179,8,0.4)] font-extrabold";
+            case 2048: return "bg-gradient-to-br from-yellow-500 to-amber-600 border-2 border-white text-slate-950 shadow-[0_0_28px_rgba(234,179,8,0.65)] font-black animate-pulse-glow";
+            default: return "bg-gradient-to-br from-red-650 to-pink-700 border-2 border-white text-white shadow-2xl font-black";
+          }
       }
     },
     handleKeyDown(e) {
@@ -410,7 +486,6 @@ export default {
       if (this.gameOver) return;
       if (!e || !e.touches) return;
       
-      // Check 2-finger Undo mode
       if (e.touches.length === 2) {
         const t1 = e.touches[0];
         const t2 = e.touches[1];
@@ -420,23 +495,17 @@ export default {
         return;
       }
       
-      // Standard click, long-press, or swipe
       if (e.touches.length === 1) {
         const touch = e.touches[0];
         this.touchStart = { x: touch.clientX, y: touch.clientY };
         this.isSwipeTrackActive = true;
-        
-        // Start radial countdown timer
         this.startHoldingCountdown();
       }
     },
     onTouchMove(e) {
       if (!e) return;
-      
-      // Intercept system scroll dragging
       if (e.cancelable) e.preventDefault();
       
-      // Check 2-finger Undo sliding actions
       if (this.isTwoFingersActive && e.touches.length === 2) {
         const t1 = e.touches[0];
         const t2 = e.touches[1];
@@ -444,16 +513,15 @@ export default {
         
         if (this.twoFingerSwipeStart !== null) {
           const deltaX = avgX - this.twoFingerSwipeStart;
-          if (deltaX < -50) { // registered leftward swipe of both fingers!
+          if (deltaX < -50) { 
             this.triggerUndo();
-            this.twoFingerSwipeStart = null; // consume
+            this.twoFingerSwipeStart = null; 
             this.isTwoFingersActive = false;
           }
         }
         return;
       }
       
-      // Drag/motion checks cancel longpress countdowns to prevent false restarts
       if (this.isHoldingPress && e.touches.length === 1) {
         const touch = e.touches[0];
         const dist = Math.hypot(touch.clientX - this.touchStart.x, touch.clientY - this.touchStart.y);
@@ -479,18 +547,17 @@ export default {
       const absX = Math.abs(dx);
       const absY = Math.abs(dy);
       
-      const distanceThreshold = 30; // 30px minimal vector threshold
+      const distanceThreshold = 30; 
       if (Math.max(absX, absY) > distanceThreshold) {
-        // Vector deflection angle filter: 25 degrees (tangent of 25deg which is 0.466)
         if (absX > absY) {
           const deflection = absY / absX;
-          if (deflection > 0.466) return; // ignore due to excessive diagonal deflection
+          if (deflection > 0.466) return; 
           
           if (dx > 0) this.move("RIGHT");
           else this.move("LEFT");
         } else {
           const deflection = absX / absY;
-          if (deflection > 0.466) return; // ignore due to excessive diagonal deflection
+          if (deflection > 0.466) return; 
           
           if (dy > 0) this.move("DOWN");
           else this.move("UP");
@@ -512,8 +579,6 @@ export default {
           this.pressInterval = null;
           this.pressProgress = 0;
           this.isHoldingPress = false;
-          
-          // Trigger Reset
           this.restartGame();
         }
       }, 35);
@@ -528,7 +593,7 @@ export default {
     },
     triggerUndo() {
       if (this.history.length === 0) {
-        this.vibrate(30); // light buzzer
+        this.vibrate(30); 
         return;
       }
       
@@ -539,7 +604,6 @@ export default {
       this.hasWon = prev.hasWon;
       this.continuePlaying = prev.continuePlaying ?? false;
       
-      // Light rewind twin vibrato
       this.vibrate([10, 30, 10]);
       playSound.tick();
       this.saveStateToLocalStorage();
@@ -547,10 +611,8 @@ export default {
     move(dir) {
       if (this.isMovingPhase || this.gameOver) return false;
       
-      // Build 4x4 matrix referencing flat tile list
       const gridRef = Array(4).fill(null).map(() => Array(4).fill(null));
       
-      // Merge cleaning & Pop reset
       this.tiles = this.tiles.filter(t => !t.merged);
       this.tiles.forEach(t => {
         gridRef[t.r][t.c] = t;
@@ -619,7 +681,6 @@ export default {
           });
         }
       } else {
-        // UP or DOWN line processing
         for (let c = 0; c < 4; c++) {
           let line = [];
           for (let r = 0; r < 4; r++) {
@@ -671,14 +732,11 @@ export default {
       }
       
       if (changed) {
-        // Throttle gesture registers during moving slide phase
         this.isMovingPhase = true;
         
-        // Push former snap into history stack
         this.history.push(saveSnapshotBeforeMove);
         if (this.history.length > 12) this.history.shift();
         
-        // Slide coordinate translations
         this.tiles.forEach(t => {
           if (t.targetR !== undefined) t.r = t.targetR;
           if (t.targetC !== undefined) t.c = t.targetC;
@@ -688,7 +746,6 @@ export default {
         
         playSound.tick();
         
-        // Finalize merge transactions after 150ms transform cubic interpolation
         setTimeout(() => {
           this.tiles = this.tiles.filter(t => !t.merged);
           this.tiles.forEach(t => {
@@ -696,7 +753,7 @@ export default {
               t.val = t.targetVal;
               delete t.targetVal;
               
-              if (t.val === 2048) {
+              if (t.val === 2048 && !this.continuePlaying) {
                 this.hasWon = true;
                 playSound.levelUp();
               }
@@ -707,11 +764,10 @@ export default {
           this.checkGameOver();
           this.isMovingPhase = false;
           
-          // Trigger tactility feedback matching merged intensity
           if (maxMergedVal > 0) {
             this.playMergeHaptic(maxMergedVal);
           } else {
-            this.vibrate(6); // minor dry sliding feedback
+            this.vibrate(6); 
           }
           
           this.saveStateToLocalStorage();
@@ -723,13 +779,12 @@ export default {
     },
     playMergeHaptic(val) {
       if (val <= 16) {
-        this.vibrate(8); // short click
+        this.vibrate(8); 
       } else if (val <= 128) {
-        this.vibrate(15); // solid click
+        this.vibrate(15); 
       } else if (val <= 512) {
-        this.vibrate([20, 10, 15]); // double click punch
+        this.vibrate([20, 10, 15]); 
       } else {
-        // 1024 or 2048 winning waves
         this.vibrate([100, 30, 120, 30, 150]);
       }
     },
@@ -743,9 +798,9 @@ export default {
       
       for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 4; c++) {
-          if (gridState[r][c] === 0) return; // space remaining
-          if (r < 3 && gridState[r][c] === gridState[r + 1][c]) return; // match vertical merge
-          if (c < 3 && gridState[r][c] === gridState[r][c + 1]) return; // match horizontal merge
+          if (gridState[r][c] === 0) return; 
+          if (r < 3 && gridState[r][c] === gridState[r + 1][c]) return; 
+          if (c < 3 && gridState[r][c] === gridState[r][c + 1]) return; 
         }
       }
       this.gameOver = true;
@@ -754,6 +809,7 @@ export default {
     },
     saveStateToLocalStorage() {
       localStorage.setItem("game_2048_highscore", this.highscore);
+      localStorage.setItem("game_2048_theme", this.currentTheme);
       localStorage.setItem("game_2048_state", JSON.stringify({
         tiles: this.tiles.map(t => ({ ...t, pop: false, isNew: false })),
         score: this.score,
@@ -791,13 +847,13 @@ export default {
 }
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(234, 179, 8, 0.47);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.45);
     filter: brightness(1);
     opacity: 0.95;
   }
   50% {
-    box-shadow: 0 0 25px rgba(234, 179, 8, 0.77);
-    filter: brightness(1.22);
+    box-shadow: 0 0 22px rgba(234, 179, 8, 0.75);
+    filter: brightness(1.2);
     opacity: 1;
   }
 }
@@ -806,15 +862,15 @@ export default {
   animation: tilePop 150ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 @keyframes tilePop {
-  0% { transform: scale(1.18); }
+  0% { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
 
 .animate-tile-spawn {
-  animation: tileSpawn 140ms cubic-bezier(0.21, 1.02, 0.52, 1.02) forwards;
+  animation: tileSpawn 140ms cubic-bezier(0.2, 1, 0.5, 1) forwards;
 }
 @keyframes tileSpawn {
-  0% { transform: scale(0.6); opacity: 0.2; }
+  0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -822,7 +878,7 @@ export default {
   animation: fadeIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 @keyframes fadeIn {
-  from { opacity: 0; backdrop-filter: blur(0px); transform: scale(0.96); }
+  from { opacity: 0; backdrop-filter: blur(0px); transform: scale(0.97); }
   to { opacity: 1; backdrop-filter: blur(12px); transform: scale(1); }
 }
 </style>
