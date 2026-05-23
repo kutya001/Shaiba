@@ -77,8 +77,8 @@
       <!-- Main Canvas representation -->
       <canvas
         ref="tetrisCanvas"
-        class="border-2 border-slate-850 rounded-2xl bg-slate-900/30 shadow-2xl w-full"
-        style="max-height: 52vh; aspect-ratio: 10/20;"
+        class="border-2 border-slate-850 rounded-2xl bg-slate-900/30 shadow-2xl mx-auto"
+        style="height: 52vh; max-height: 520px; aspect-ratio: 10/20; max-width: 100%; display: block;"
       ></canvas>
 
       <!-- Game Over Modal Overlay -->

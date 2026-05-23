@@ -151,6 +151,25 @@
               <span class="group-hover:text-amber-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
             </div>
           </div>
+
+          <!-- NEW Game 6: Block Blast -->
+          <div
+            @click="selectGame('blockblast')"
+            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-orange-600/30 rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between h-[115px] sm:h-[130px] shadow-lg relative overflow-hidden"
+          >
+            <div class="absolute -right-3 -top-3 w-10 h-10 bg-orange-600/5 rounded-full filter blur-md group-hover:bg-orange-600/10 transition"></div>
+            <div>
+              <div class="w-7 h-7 bg-orange-600/10 border border-orange-500/20 rounded-lg flex items-center justify-center text-orange-450 text-sm mb-1.5 group-hover:scale-110 transition shrink-0">
+                <span class="material-symbols-outlined text-[16px] text-orange-400 leading-none">local_fire_department</span>
+              </div>
+              <h3 class="text-xs font-black tracking-tight text-slate-100 group-hover:text-orange-400 transition m-0">Block Blast</h3>
+              <p class="text-[9px] text-slate-400 mt-0.5 leading-snug font-semibold line-clamp-2">Размещайте блоки и копите серии</p>
+            </div>
+            <div class="flex justify-between items-center text-[8px] uppercase font-black tracking-widest text-slate-500 mt-2">
+              <span>Интеллект</span>
+              <span class="group-hover:text-orange-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -164,6 +183,7 @@
             <Snake v-else-if="store.activeGameId === 'snake'" />
             <HillClimb v-else-if="store.activeGameId === 'hillclimb'" />
             <Game2048 v-else-if="store.activeGameId === 'game2048'" />
+            <BlockBlast v-else-if="store.activeGameId === 'blockblast'" />
           </div>
         </div>
       </div>
@@ -178,6 +198,7 @@ import TicTacToe from "./TicTacToe/TicTacToe.vue";
 import Snake from "./Snake/Snake.vue";
 import HillClimb from "./HillClimb/HillClimb.vue";
 import Game2048 from "./Game2048/Game2048.vue";
+import BlockBlast from "./BlockBlast/BlockBlast.vue";
 
 export default {
   components: {
@@ -185,7 +206,8 @@ export default {
     TicTacToe,
     Snake,
     HillClimb,
-    Game2048
+    Game2048,
+    BlockBlast
   },
   data() {
     return {
