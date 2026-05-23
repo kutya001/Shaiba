@@ -69,7 +69,7 @@
     <!-- Active Area: Main viewport board -->
     <div
       ref="boardWrapper"
-      class="flex-grow w-full max-w-[340px] flex flex-col justify-center items-center relative my-1"
+      class="flex-grow w-full max-w-[420px] flex flex-col justify-center items-center relative my-1"
     >
       <!-- Flame Aura border around the board if high streak -->
       <div
@@ -79,15 +79,14 @@
         <!-- 8x8 Grid Canvas & Interactivity matrix -->
         <div
           ref="gridElement"
-          class="grid grid-cols-8 gap-1 p-1 bg-slate-950/70 rounded-2xl relative overflow-hidden"
-          style="width: 288px; height: 288px;"
+          class="grid grid-cols-8 gap-1.5 p-1.5 bg-slate-950/70 rounded-2xl relative overflow-hidden w-[360px] h-[360px] max-w-full aspect-square"
         >
           <!-- Loop through cells dynamically -->
           <div
             v-for="idx in 64"
             :key="idx"
             :id="'grid-cell-' + idx"
-            class="w-8 h-8 rounded-[6px] relative transition-all duration-200 cursor-pointer flex items-center justify-center border select-none"
+            class="w-full h-full aspect-square rounded-[3px] relative transition-all duration-200 cursor-pointer flex items-center justify-center border select-none"
             :class="getCellClass(getRow(idx), getCol(idx))"
             :style="getCellStyle(getRow(idx), getCol(idx))"
             @mouseenter="onCellMouseEnter(getRow(idx), getCol(idx))"
@@ -95,12 +94,12 @@
             @click="onCellClick(getRow(idx), getCol(idx))"
           >
             <!-- Cell internal shadow effect -->
-            <div class="absolute inset-[1.5px] rounded-[4px] bg-black/10 mix-blend-overlay"></div>
+            <div class="absolute inset-[1.5px] rounded-[2px] bg-black/10 mix-blend-overlay"></div>
 
             <!-- Clear fire blast light effect -->
             <div
               v-if="isClearingCell(getRow(idx), getCol(idx))"
-              class="absolute inset-0 rounded-[6px] bg-white animate-flash-gold flex items-center justify-center z-10"
+              class="absolute inset-0 rounded-[3px] bg-white animate-flash-gold flex items-center justify-center z-10"
             >
               <div class="w-full h-full bg-orange-400/95 rounded-md animate-scale-out"></div>
             </div>
@@ -131,14 +130,14 @@
     <!-- Active Tray with 3 blocks to place -->
     <div
       v-if="hasStarted && !gameOver"
-      class="w-full max-w-[340px] flex flex-col items-center gap-2 mb-1 z-10 shrink-0"
+      class="w-full max-w-[420px] flex flex-col items-center gap-2 mb-1 z-10 shrink-0"
     >
       <!-- Tray blocks panel -->
-      <div class="w-full bg-slate-900/60 border border-slate-800/60 rounded-2xl py-3 px-2 flex justify-around items-center h-[120px] shadow-lg relative">
+      <div class="w-full bg-slate-900/60 border border-slate-800/60 rounded-2xl py-3 px-2 flex justify-around items-center h-[135px] shadow-lg relative">
         <div
           v-for="(trayItem, index) in blockTray"
           :key="index"
-          class="relative w-[85px] h-[85px] bg-slate-950/40 rounded-xl border flex items-center justify-center transition-all duration-300"
+          class="relative w-[96px] h-[96px] bg-slate-950/40 rounded-2xl border flex items-center justify-center transition-all duration-300"
           :class="[
             trayItem ? 'border-slate-800 hover:bg-slate-900/50 cursor-grab active:cursor-grabbing' : 'border-dashed border-slate-900 opacity-20',
             selectedBlockIndex === index ? 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.25)] scale-105' : '',
@@ -161,12 +160,12 @@
             <div
               v-for="cellVal in flattenShape(trayItem.shape)"
               :key="cellVal.id"
-              class="w-3.5 h-3.5 rounded-[2px] border"
+              class="w-4 h-4 rounded-[1.5px] border"
               :style="{
                 backgroundColor: cellVal.active ? trayItem.color : 'transparent',
-                borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25)' : 'transparent',
-                borderWidth: cellVal.active ? '1px' : '0px',
-                boxShadow: cellVal.active ? `inset 0.5px 0.5px 1px rgba(255,255,255,0.4)` : 'none',
+                borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) rgba(255, 255, 255, 0.45)' : 'transparent',
+                borderWidth: cellVal.active ? '1.5px' : '0px',
+                boxShadow: cellVal.active ? 'inset 1px 1px 0px rgba(255, 255, 255, 0.25), inset -1px -1px 0px rgba(0, 0, 0, 0.3)' : 'none',
                 opacity: cellVal.active ? 1 : 0
               }"
             ></div>
@@ -217,12 +216,12 @@
         <div
           v-for="cellVal in flattenShape(activeDraggedBlock.shape)"
           :key="'drag-' + cellVal.id"
-          class="w-7 h-7 rounded-[4px] border"
+          class="w-8 h-8 rounded-[2px] border"
           :style="{
             backgroundColor: cellVal.active ? activeDraggedBlock.color : 'transparent',
-            borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25)' : 'transparent',
-            borderWidth: cellVal.active ? '1.5px' : '0px',
-            boxShadow: cellVal.active ? `inset 1.5px 1.5px 2px rgba(255,255,255,0.4), inset -1.5px -1.5px 2px rgba(0,0,0,0.4), 0 3px 6px ${activeDraggedBlock.color}4d` : 'none',
+            borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) rgba(255, 255, 255, 0.45)' : 'transparent',
+            borderWidth: cellVal.active ? '2px' : '0px',
+            boxShadow: cellVal.active ? 'inset 2px 2px 0px rgba(255, 255, 255, 0.25), inset -2px -2px 0px rgba(0, 0, 0, 0.35), 0 3px 6px rgba(0, 0, 0, 0.3)' : 'none',
             opacity: cellVal.active ? 1 : 0
           }"
         ></div>
@@ -380,7 +379,7 @@ export default {
       draggedSlotIndex: null,
       dragX: 0,
       dragY: 0,
-      dragTouchOffsetY: 40, // Offset dragged piece higher so finger doesn't obscure it
+      dragTouchOffsetY: 80, // Offset dragged piece higher so finger doesn't obscure it at all
 
       // Active Hover visual highlighting
       hoveredRow: -1,
@@ -468,30 +467,31 @@ export default {
         const color = this.grid[r][c];
         return {
           backgroundColor: color,
-          borderWidth: "1.5px",
-          borderColor: "rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25)",
-          boxShadow: `inset 1.5px 1.5px 3px rgba(255,255,255,0.4), inset -1.5px -1.5px 3px rgba(0,0,0,0.4), 0 3px 6px ${color}4d`,
-          borderRadius: "4px"
+          borderWidth: "2.5px",
+          borderStyle: "solid",
+          borderColor: "rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) rgba(255, 255, 255, 0.45)",
+          boxShadow: `inset 2px 2px 0px rgba(255, 255, 255, 0.25), inset -2px -2px 0px rgba(0, 0, 0, 0.35), 0 3px 6px ${color}4d`,
+          borderRadius: "2px"
         };
       } else if (isGhost && this.activeClickedBlock) {
         const color = this.activeClickedBlock.color;
         return {
-          backgroundColor: `${color}1f`, // Subtle 12% opacity tint of shape color
+          backgroundColor: `${color}2b`, // Clearer 17% opacity shape color
           borderColor: color, // Highlight border
-          borderWidth: "2.0px",
-          boxShadow: `0 0 10px ${color}80, inset 0 0 6px ${color}40`,
-          borderRadius: "4px",
-          backgroundImage: `linear-gradient(135deg, transparent 45%, ${color}66 45%, ${color}66 55%, transparent 55%)`
+          borderWidth: "2px",
+          borderStyle: "dashed",
+          boxShadow: `0 0 10px ${color}a0, inset 0 0 6px ${color}40`,
+          borderRadius: "2px"
         };
       } else if (isGhost && this.activeDraggedBlock) {
         const color = this.activeDraggedBlock.color;
         return {
-          backgroundColor: `${color}1f`, // Subtle 12% opacity tint of shape color
-          borderColor: color, // Highlight border
-          borderWidth: "2.0px",
-          boxShadow: `0 0 10px ${color}80, inset 0 0 6px ${color}40`,
-          borderRadius: "4px",
-          backgroundImage: `linear-gradient(135deg, transparent 45%, ${color}66 45%, ${color}66 55%, transparent 55%)`
+          backgroundColor: `${color}38`, // Solid 22% opacity highlight
+          borderColor: "#ffffff", // Pure white bold outline so it is extremely distinct!
+          borderWidth: "2.5px",
+          borderStyle: "dashed",
+          boxShadow: `0 0 12px ${color}, inset 0 0 8px ${color}`,
+          borderRadius: "2px"
         };
       }
       return {};
