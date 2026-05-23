@@ -257,7 +257,8 @@ export default {
       dragStartX: 0,
       dragStartY: 0,
       isSwipeAction: false,
-      preventSoftDrop: false
+      preventSoftDrop: false,
+      keyboardSoftDropLock: false
     };
   },
   computed: {
@@ -267,6 +268,7 @@ export default {
   },
   mounted() {
     window.addEventListener("keydown", this.handleKeyDown);
+    window.addEventListener("keyup", this.handleKeyUp);
 
     // Setup non-passive, preventDefault compatible touch gesture hooks strictly on the container element
     const container = this.$refs.gameContainer;
@@ -296,6 +298,7 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener("keydown", this.handleKeyDown);
+    window.removeEventListener("keyup", this.handleKeyUp);
     window.removeEventListener("resize", this.resizeCanvas);
 
     // Clean up direct listeners
@@ -425,6 +428,7 @@ export default {
       this.level = 1;
       this.holdPieceData = null;
       this.hasHeldThisTurn = false;
+      this.keyboardSoftDropLock = false;
       
       this.grid = Array.from({ length: this.rows }, () => Array(this.cols).fill(0));
       this.clearingLines = [];
@@ -545,7 +549,7 @@ export default {
     },
 
     moveLeft() {
-      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused || !this.currentPiece) return;
       if (!this.checkCollision(this.currentX - 1, this.currentY, this.currentPiece)) {
         this.currentX--;
         this.playGameSound("tick");
@@ -554,7 +558,7 @@ export default {
     },
 
     moveRight() {
-      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused || !this.currentPiece) return;
       if (!this.checkCollision(this.currentX + 1, this.currentY, this.currentPiece)) {
         this.currentX++;
         this.playGameSound("tick");
@@ -594,7 +598,7 @@ export default {
     },
 
     moveDown(isAuto = false) {
-      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused || !this.currentPiece) return;
 
       if (!this.checkCollision(this.currentX, this.currentY + 1, this.currentPiece)) {
         this.currentY++;
@@ -608,7 +612,7 @@ export default {
     },
 
     hardDrop() {
-      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused || !this.currentPiece) return;
 
       let cells = 0;
       while (!this.checkCollision(this.currentX, this.currentY + 1, this.currentPiece)) {
@@ -638,6 +642,8 @@ export default {
 
       this.vibrate(25);
       this.preventSoftDrop = true;
+      this.keyboardSoftDropLock = true;
+      this.currentPiece = null; // Clear to prevent overlapping render/ghost artifacts during clear animation
       this.clearLines();
     },
 
@@ -735,31 +741,34 @@ export default {
           ghostY++;
         }
 
-        // Draw Ghost Shape indicators with 2px thick outer trace and micro glow
-        for (let r = 0; r < this.currentPiece.length; r++) {
-          if (!this.currentPiece[r]) continue;
-          for (let c = 0; c < this.currentPiece[r].length; c++) {
-            if (this.currentPiece[r][c] !== 0) {
-              const x = (this.currentX + c) * this.blockSize;
-              const y = (ghostY + r) * this.blockSize;
-              const size = this.blockSize;
+        // Standard Tetris: only draw Ghost indicator if there is clear vertical separation below
+        if (ghostY > this.currentY) {
+          // Draw Ghost Shape indicators with 2px thick outer trace and micro glow
+          for (let r = 0; r < this.currentPiece.length; r++) {
+            if (!this.currentPiece[r]) continue;
+            for (let c = 0; c < this.currentPiece[r].length; c++) {
+              if (this.currentPiece[r][c] !== 0) {
+                const x = (this.currentX + c) * this.blockSize;
+                const y = (ghostY + r) * this.blockSize;
+                const size = this.blockSize;
 
-              ctx.save();
-              ctx.fillStyle = "rgba(99, 102, 241, 0.12)";
-              ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
+                ctx.save();
+                ctx.fillStyle = "rgba(99, 102, 241, 0.12)";
+                ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
 
-              ctx.strokeStyle = "rgba(99, 102, 241, 0.6)";
-              ctx.lineWidth = 2.0;
-              ctx.strokeRect(x + 1, y + 1, size - 2, size - 2);
+                ctx.strokeStyle = "rgba(99, 102, 241, 0.6)";
+                ctx.lineWidth = 2.0;
+                ctx.strokeRect(x + 1, y + 1, size - 2, size - 2);
 
-              // Fine diagonal stripe
-              ctx.strokeStyle = "rgba(99, 102, 241, 0.2)";
-              ctx.lineWidth = 1.0;
-              ctx.beginPath();
-              ctx.moveTo(x + 3, y + 3);
-              ctx.lineTo(x + size - 3, y + size - 3);
-              ctx.stroke();
-              ctx.restore();
+                // Fine diagonal stripe
+                ctx.strokeStyle = "rgba(99, 102, 241, 0.2)";
+                ctx.lineWidth = 1.0;
+                ctx.beginPath();
+                ctx.moveTo(x + 3, y + 3);
+                ctx.lineTo(x + size - 3, y + size - 3);
+                ctx.stroke();
+                ctx.restore();
+              }
             }
           }
         }
@@ -914,7 +923,10 @@ export default {
         this.rotate();
         event.preventDefault();
       } else if (event.code === "ArrowDown" || event.code === "KeyS") {
-        this.moveDown();
+        // Prevent immediate repeat soft drop into the spawned piece until key is released
+        if (!this.keyboardSoftDropLock) {
+          this.moveDown();
+        }
         event.preventDefault();
       } else if (event.code === "Space") {
         this.hardDrop();
@@ -922,6 +934,12 @@ export default {
       } else if (event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyC") {
         this.holdPiece();
         event.preventDefault();
+      }
+    },
+
+    handleKeyUp(event) {
+      if (event.code === "ArrowDown" || event.code === "KeyS") {
+        this.keyboardSoftDropLock = false;
       }
     },
 
