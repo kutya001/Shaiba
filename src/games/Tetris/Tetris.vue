@@ -256,7 +256,8 @@ export default {
       touchStart: { x: 0, y: 0, time: 0 },
       dragStartX: 0,
       dragStartY: 0,
-      isSwipeAction: false
+      isSwipeAction: false,
+      preventSoftDrop: false
     };
   },
   mounted() {
@@ -606,6 +607,7 @@ export default {
       }
 
       this.vibrate(25);
+      this.preventSoftDrop = true;
       this.clearLines();
     },
 
@@ -898,6 +900,8 @@ export default {
       if (!e || !e.touches || e.touches.length === 0) return;
       if (e.cancelable) e.preventDefault();
 
+      this.preventSoftDrop = false;
+
       const touch = e.touches[0];
       if (!touch) return;
       this.touchStart = {
@@ -937,15 +941,18 @@ export default {
       }
 
       // Vertical track soft drop acceleration
-      const dy = touch.clientY - this.dragStartY;
-      if (dy > 0) {
-        const stepsY = Math.trunc(dy / (this.blockSize * 0.5));
-        if (stepsY !== 0) {
-          this.isSwipeAction = true;
-          for (let i = 0; i < stepsY; i++) {
-            this.moveDown(false);
+      if (!this.preventSoftDrop) {
+        const dy = touch.clientY - this.dragStartY;
+        if (dy > 0) {
+          const stepsY = Math.trunc(dy / (this.blockSize * 0.5));
+          if (stepsY !== 0) {
+            this.isSwipeAction = true;
+            for (let i = 0; i < stepsY; i++) {
+              if (this.preventSoftDrop) break;
+              this.moveDown(false);
+            }
+            this.dragStartY += stepsY * (this.blockSize * 0.5);
           }
-          this.dragStartY += stepsY * (this.blockSize * 0.5);
         }
       }
     },
@@ -954,6 +961,8 @@ export default {
       if (!this.hasStarted || this.gameOver || this.isPaused) return;
       if (!e || !e.changedTouches || e.changedTouches.length === 0) return;
       if (e.cancelable) e.preventDefault();
+
+      this.preventSoftDrop = false;
 
       const touch = e.changedTouches[0];
       if (!touch) return;

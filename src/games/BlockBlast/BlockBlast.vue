@@ -161,10 +161,12 @@
             <div
               v-for="cellVal in flattenShape(trayItem.shape)"
               :key="cellVal.id"
-              class="w-3.5 h-3.5 rounded-[3px] border border-black/20"
+              class="w-3.5 h-3.5 rounded-[2px] border"
               :style="{
                 backgroundColor: cellVal.active ? trayItem.color : 'transparent',
-                borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25)' : 'transparent',
+                borderWidth: cellVal.active ? '1px' : '0px',
+                boxShadow: cellVal.active ? `inset 0.5px 0.5px 1px rgba(255,255,255,0.4)` : 'none',
                 opacity: cellVal.active ? 1 : 0
               }"
             ></div>
@@ -215,11 +217,12 @@
         <div
           v-for="cellVal in flattenShape(activeDraggedBlock.shape)"
           :key="'drag-' + cellVal.id"
-          class="w-7 h-7 rounded-[5px] border"
+          class="w-7 h-7 rounded-[4px] border"
           :style="{
             backgroundColor: cellVal.active ? activeDraggedBlock.color : 'transparent',
-            borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
-            boxShadow: cellVal.active ? `0 0 10px ${activeDraggedBlock.color}80` : 'none',
+            borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25)' : 'transparent',
+            borderWidth: cellVal.active ? '1.5px' : '0px',
+            boxShadow: cellVal.active ? `inset 1.5px 1.5px 2px rgba(255,255,255,0.4), inset -1.5px -1.5px 2px rgba(0,0,0,0.4), 0 3px 6px ${activeDraggedBlock.color}4d` : 'none',
             opacity: cellVal.active ? 1 : 0
           }"
         ></div>
@@ -451,8 +454,8 @@ export default {
       const isGhost = this.isGhostCell(r, c);
 
       return {
-        "border-slate-800/40 bg-slate-900/30": !isFilled && !isGhost,
-        "scale-[0.96] animate-pulse z-10": isGhost && !isFilled,
+        "border-slate-800/10 bg-slate-900/10": !isFilled && !isGhost,
+        "scale-100 z-10": isGhost && !isFilled,
         "border-white/10 scale-100": isFilled
       };
     },
@@ -465,24 +468,30 @@ export default {
         const color = this.grid[r][c];
         return {
           backgroundColor: color,
-          boxShadow: `inset 1.5px 1.5px 0 rgba(255,255,255,0.2), inset -1.5px -1.5px 0 rgba(0,0,0,0.2), 0 3px 6px ${color}33`,
-          borderColor: "rgba(255, 255, 255, 0.12)"
+          borderWidth: "1.5px",
+          borderColor: "rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25)",
+          boxShadow: `inset 1.5px 1.5px 3px rgba(255,255,255,0.4), inset -1.5px -1.5px 3px rgba(0,0,0,0.4), 0 3px 6px ${color}4d`,
+          borderRadius: "4px"
         };
       } else if (isGhost && this.activeClickedBlock) {
         const color = this.activeClickedBlock.color;
         return {
-          backgroundColor: `${color}66`, // Highly visible 40% opacity background
-          borderColor: "#ffffff", // Pure white sharp border for peak placement guidance
-          borderWidth: "2px",
-          boxShadow: `0 0 15px ${color}, inset 0 0 10px ${color}`
+          backgroundColor: `${color}1f`, // Subtle 12% opacity tint of shape color
+          borderColor: color, // Highlight border
+          borderWidth: "2.0px",
+          boxShadow: `0 0 10px ${color}80, inset 0 0 6px ${color}40`,
+          borderRadius: "4px",
+          backgroundImage: `linear-gradient(135deg, transparent 45%, ${color}66 45%, ${color}66 55%, transparent 55%)`
         };
       } else if (isGhost && this.activeDraggedBlock) {
         const color = this.activeDraggedBlock.color;
         return {
-          backgroundColor: `${color}8c`, // Rich 55% opacity background for physical direct drag-dropping clarity
-          borderColor: "#ffffff", // Sharp pure white border outline
-          borderWidth: "2px",
-          boxShadow: `0 0 20px ${color}, inset 0 0 12px ${color}`
+          backgroundColor: `${color}1f`, // Subtle 12% opacity tint of shape color
+          borderColor: color, // Highlight border
+          borderWidth: "2.0px",
+          boxShadow: `0 0 10px ${color}80, inset 0 0 6px ${color}40`,
+          borderRadius: "4px",
+          backgroundImage: `linear-gradient(135deg, transparent 45%, ${color}66 45%, ${color}66 55%, transparent 55%)`
         };
       }
       return {};
@@ -710,7 +719,7 @@ export default {
 
       // Convert from relative container coordinates to absolute screen pixels
       const screenX = x + cRect.left;
-      const screenY = y + cRect.top + this.dragTouchOffsetY; // Recover real pointer coordinate
+      const screenY = y + cRect.top; // Center coordinates of the floating shape silhouette itself
 
       const relX = screenX - gRect.left;
       const relY = screenY - gRect.top;
