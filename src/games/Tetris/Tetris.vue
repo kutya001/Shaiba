@@ -1,88 +1,191 @@
 <template>
   <div
-    class="flex flex-col items-center justify-between h-full bg-slate-950 text-white p-4 select-none relative"
-    @touchstart="onTouchStart"
-    @touchmove="onTouchMove"
-    @touchend="onTouchEnd"
+    class="flex flex-col items-center justify-between h-full bg-slate-950 text-white p-4 select-none relative overflow-hidden"
+    ref="gameContainer"
   >
-    <!-- Game Header: Score, Lines, Level -->
-    <div class="w-full grid grid-cols-3 gap-2 bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow-inner mb-2 text-center">
-      <div>
-        <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Линии</span>
-        <span class="text-base font-extrabold font-mono text-cyan-400">{{ linesCleared }}</span>
+    <!-- Floating Glass HUD for score metrics and sound/pause options -->
+    <div
+      v-if="hasStarted && !gameOver"
+      class="absolute top-4 left-4 right-4 bg-slate-950/75 backdrop-blur-md border border-slate-800/80 rounded-2xl py-2 px-4 flex items-center justify-between z-10 shadow-lg select-none"
+    >
+      <!-- Lines panel -->
+      <div class="flex flex-col items-start">
+        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Линии</span>
+        <span class="text-xs font-black font-mono text-cyan-400 leading-none">{{ linesCleared }}</span>
       </div>
-      <div>
-        <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Счёт</span>
-        <span class="text-base font-extrabold font-mono text-emerald-400">{{ score }}</span>
+
+      <!-- Cohesive Score indicator in center (Tap to Mute/Unmute toggle) -->
+      <div
+        class="flex flex-col items-center cursor-pointer select-none px-3"
+        @click="toggleMute"
+        title="Нажмите, чтобы включить/выключить звук"
+      >
+        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Счёт</span>
+        <span class="text-sm font-black font-mono text-emerald-400 leading-none flex items-center gap-1">
+          {{ score }}
+          <span class="material-symbols-outlined text-[12.5px] opacity-75">
+            {{ isMuted ? 'volume_off' : 'volume_up' }}
+          </span>
+        </span>
       </div>
-      <div>
-        <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Уровень</span>
-        <span class="text-base font-extrabold font-mono text-indigo-400">{{ level }}</span>
+
+      <!-- Level / Pause Button on the right -->
+      <div class="flex flex-col items-end cursor-pointer" @click="togglePause">
+        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Уровень</span>
+        <span class="text-xs font-black font-mono text-indigo-400 leading-none flex items-center gap-1">
+          {{ level }}
+          <span class="material-symbols-outlined text-[13px] text-indigo-300">
+            {{ isPaused ? 'play_arrow' : 'pause' }}
+          </span>
+        </span>
       </div>
     </div>
 
     <!-- Active Area: Main Tetris Viewport Expanded -->
-    <div class="flex-grow w-full max-w-[320px] flex items-center justify-center relative my-1">
+    <div
+      ref="canvasContainer"
+      class="flex-grow w-full max-w-[340px] flex items-center justify-center relative my-1 select-none"
+    >
+      <!-- HOLD Side-Panel overlay (Left) -->
+      <div
+        v-if="hasStarted && !gameOver"
+        class="absolute -left-1 opacity-90 scale-90 top-[70px] bg-slate-900/40 backdrop-blur-lg border border-slate-800/80 rounded-2xl p-2 flex flex-col items-center z-10 transition-all select-none"
+      >
+        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 select-none">HOLD</span>
+        <canvas
+          ref="holdCanvas"
+          width="56"
+          height="56"
+          class="w-14 h-14 bg-slate-950/40 rounded-xl"
+        ></canvas>
+      </div>
+
+      <!-- NEXT Side-Panel overlay (Right) -->
+      <div
+        v-if="hasStarted && !gameOver"
+        class="absolute -right-1 opacity-90 scale-90 top-[70px] bg-slate-900/40 backdrop-blur-lg border border-slate-800/80 rounded-2xl p-2 flex flex-col items-center z-10 transition-all select-none"
+      >
+        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 select-none font-sans">NEXT</span>
+        <canvas
+          ref="nextCanvas"
+          width="56"
+          height="180"
+          class="w-14 h-[180px] bg-slate-950/40 rounded-xl"
+        ></canvas>
+      </div>
+
+      <!-- Main Canvas representation -->
       <canvas
         ref="tetrisCanvas"
-        class="border-2 border-slate-850 rounded-2xl bg-slate-900/40 shadow-2xl w-full"
-        width="280"
-        height="560"
+        class="border-2 border-slate-850 rounded-2xl bg-slate-900/30 shadow-2xl w-full"
         style="max-height: 52vh; aspect-ratio: 10/20;"
       ></canvas>
 
-      <!-- Game Over Modal overlay -->
+      <!-- Game Over Modal Overlay -->
       <div
         v-if="gameOver"
         class="absolute inset-0 bg-slate-950/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center animate-fade-in z-20"
       >
-        <div class="w-14 h-14 bg-red-500/10 border border-red-500/25 rounded-full flex items-center justify-center text-red-500 mb-4">
-          <i class="bi bi-exclamation-triangle-fill text-2xl"></i>
+        <div class="w-16 h-16 bg-red-500/10 border border-red-500/25 rounded-full flex items-center justify-center text-red-500 mb-4 shadow-lg">
+          <i class="bi bi-exclamation-triangle-fill text-3xl"></i>
         </div>
-        <h2 class="text-xl font-black text-white mb-1 tracking-tight font-heading uppercase">
+        <h2 class="text-xl font-black text-white mb-2 tracking-tight uppercase">
           Игра окончена
         </h2>
-        <p class="text-xs font-semibold text-slate-400 mb-4">
-          Счёт: <span class="text-emerald-400 font-bold font-mono">{{ score }}</span> | Линии: <span class="text-indigo-400 font-bold font-mono">{{ linesCleared }}</span>
+        <p class="text-xs font-semibold text-slate-400 mb-5 leading-normal">
+          Счёт: <span class="text-emerald-400 font-bold font-mono">{{ score }}</span> <br />
+          Уровень: <span class="text-indigo-400 font-bold font-mono">{{ level }}</span> | Линии: <span class="text-cyan-400 font-bold font-mono">{{ linesCleared }}</span>
         </p>
         <button
           @click="restartGame"
-          class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition border-none shadow-md cursor-pointer active:scale-95 animate-pulse"
+          class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs tracking-wider transition border-none shadow-md cursor-pointer active:scale-95 animate-pulse"
         >
-          Начать заново
+          НАЧАТЬ ЗАНОВО
         </button>
       </div>
 
-      <!-- Play / Pause Overlay -->
+      <!-- Pause Game Modal Overlay -->
+      <div
+        v-if="isPaused && !gameOver && hasStarted"
+        class="absolute inset-0 bg-slate-950/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center z-20"
+      >
+        <div class="w-16 h-16 bg-indigo-500/10 border border-indigo-500/25 rounded-full flex items-center justify-center text-indigo-400 mb-4 shadow-lg">
+          <i class="bi bi-pause-fill text-4xl"></i>
+        </div>
+        <h2 class="text-lg font-black text-white mb-1 uppercase tracking-wider">
+          Пауза
+        </h2>
+        <p class="text-[10px] font-semibold text-slate-400 mb-5 leading-relaxed max-w-[180px]">
+          Игра приостановлена. Нажмите на экран для продолжения.
+        </p>
+        <button
+          @click="togglePause"
+          class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs tracking-wider transition border-none shadow-md cursor-pointer active:scale-95"
+        >
+          ПРОДОЛЖИТЬ
+        </button>
+      </div>
+
+      <!-- Play / Start Overlay of game session -->
       <div
         v-if="!hasStarted && !gameOver"
         class="absolute inset-0 bg-slate-950/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center z-20"
       >
-        <div class="w-14 h-14 bg-indigo-500/10 border border-indigo-500/25 rounded-full flex items-center justify-center text-indigo-400 mb-4">
-          <i class="bi bi-grid-3x3-gap-fill text-2xl animate-spin" style="animation-duration: 6s"></i>
+        <div class="w-16 h-16 bg-indigo-500/10 border border-indigo-500/25 rounded-full flex items-center justify-center text-indigo-400 mb-4 shadow-xl">
+          <i class="bi bi-grid-3x3-gap-fill text-3xl animate-spin" style="animation-duration: 6s"></i>
         </div>
-        <h2 class="text-base font-black text-white mb-1 font-heading uppercase tracking-wide">
-          Тетрис Про
+        <h2 class="text-lg font-black text-white mb-1.5 uppercase tracking-wide">
+          ASM Тетрис Про
         </h2>
-        <p class="text-[10px] font-semibold text-slate-400 max-w-[200px] mb-5 leading-relaxed">
-          Бескнопочное управление жестами! <br />
-          <span class="text-indigo-400">Касание</span> — Повернуть фигуру <br />
-          <span class="text-indigo-400">Свайп влево/вправо</span> — Движение <br />
-          <span class="text-indigo-400">Ведение вниз медленно</span> — Быстрый спуск <br />
-          <span class="text-indigo-400">Резкий свайп вниз</span> — Бросить (Drop)
-        </p>
+        <div class="text-[10px] font-semibold text-slate-400 max-w-[240px] mb-5 leading-relaxed bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 text-left space-y-1">
+          <p class="text-center font-bold text-[11px] text-slate-200 border-b border-slate-800/80 pb-1 mb-1 select-none">ЖЕСТОВОЕ УПРАВЛЕНИЕ:</p>
+          <div class="flex justify-between">
+            <span class="text-indigo-400 font-bold">Одиночный Тап:</span>
+            <span>Повернуть</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-indigo-400 font-bold">Свайп влево/вправо:</span>
+            <span>Переместить</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-indigo-400 font-bold">Свайп вертикально вниз:</span>
+            <span>Мягкий спуск</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-indigo-400 font-bold">Резкий жест вниз (flick):</span>
+            <span>Бросить мгновенно</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-indigo-400 font-bold">Резкий жест вверх:</span>
+            <span>Отложить (Hold Area)</span>
+          </div>
+        </div>
         <button
           @click="startGame"
-          class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition border-none shadow-md cursor-pointer active:scale-95"
+          class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs tracking-widest transition border-none shadow-md cursor-pointer active:scale-95"
         >
-          ПОЕХАЛИ!
+          ИГРАТЬ
         </button>
       </div>
+
+      <!-- Dynamic volume temporary indicator toast -->
+      <transition name="toast-fade">
+        <div
+          v-if="showSoundIndicator"
+          class="absolute bottom-6 bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-full py-1.5 px-3.5 flex items-center gap-1.5 text-[9px] font-black text-slate-300 z-30 shadow-xl cursor-pointer select-none"
+          @click="toggleMute"
+        >
+          <span class="material-symbols-outlined text-[13px] text-indigo-400">
+            {{ isMuted ? 'volume_off' : 'volume_up' }}
+          </span>
+          <span>ЗВУК: {{ isMuted ? 'ВЫКЛЮЧЕН' : 'ВКЛЮЧЕН' }}</span>
+        </div>
+      </transition>
     </div>
 
-    <!-- Instructions banner info -->
-    <div class="w-full max-w-[320px] py-2 px-3 bg-slate-900 border border-slate-800/60 rounded-2xl text-center text-slate-400 text-[10px] font-semibold leading-normal shrink-0">
-      <i class="bi bi-hand-index-thumb text-indigo-400 mr-1 text-xs"></i> 
+    <!-- Minimal HUD instructions for bottom of screen -->
+    <div class="w-full max-w-[340px] py-2 px-3 bg-slate-900 border border-slate-800/60 rounded-2xl text-center text-slate-400 text-[9px] font-bold tracking-wide leading-normal shrink-0 select-none">
+      <i class="bi bi-hand-index-thumb text-indigo-400 mr-0.5 text-xs"></i> 
       Управляйте <span class="text-slate-200">Свайпами по экрану</span> или стрелками клавиатуры. ТАП — поворот.
     </div>
   </div>
@@ -99,26 +202,28 @@ export default {
       level: 1,
       gameOver: false,
       hasStarted: false,
+      isPaused: false,
       grid: [],
       rows: 20,
       cols: 10,
-      blockSize: 28, // Matches 280 width / 10 cols
+      blockSize: 28, // Scaled dynamically in resizeCanvas
       currentPiece: null,
+      currentPieceType: 0,
       currentX: 0,
       currentY: 0,
       gameInterval: null,
       colors: [
         null,
         "#6366f1", // Jackson Indigo
-        "#ef4444", // Rose
+        "#f43f5e", // Rose
         "#10b981", // Emerald
         "#f59e0b", // Amber
         "#06b6d4", // Cyan
-        "#ec4899", // Pink
-        "#a855f7"  // Purple
+        "#d946ef", // Fuchsia
+        "#8b5cf6"  // Violet
       ],
       shapes: [
-        [],
+        [[0]],
         [[1, 1, 1, 1]], // I-shape
         [[2, 0, 0], [2, 2, 2]], // J-shape
         [[0, 0, 3], [3, 3, 3]], // L-shape
@@ -128,297 +233,644 @@ export default {
         [[7, 7, 0], [0, 7, 7]]  // Z-shape
       ],
 
-      // Interaction State
+      // Advanced game queueing
+      nextPiecesQueue: [],
+      holdPieceData: null,
+      hasHeldThisTurn: false,
+
+      // Volume Settings
+      isMuted: localStorage.getItem("tetris_muted") === "true",
+      showSoundIndicator: false,
+      soundHideTimer: null,
+
+      // Line clearing visual feedback
+      clearingLines: [],
+      clearProgress: 1.0,
+
+      // Animation & Loop Trackers
+      animationFrameId: null,
+      clearAnimationId: null,
+      resizeObserver: null,
+
+      // Continuous Vector Gestures
       touchStart: { x: 0, y: 0, time: 0 },
-      touchLast: { x: 0, y: 0 },
+      dragStartX: 0,
+      dragStartY: 0,
       isSwipeAction: false
     };
   },
   mounted() {
     window.addEventListener("keydown", this.handleKeyDown);
-    this.drawInitialGrid();
+
+    // Setup non-passive, preventDefault compatible touch gesture hooks strictly on the container element
+    const container = this.$refs.gameContainer;
+    if (container) {
+      container.addEventListener("touchstart", this.onTouchStart, { passive: false });
+      container.addEventListener("touchmove", this.onTouchMove, { passive: false });
+      container.addEventListener("touchend", this.onTouchEnd, { passive: false });
+    }
+
+    // Attach high-DPI Dynamic ResizeObserver with scale coordinates calculations
+    const canvasCont = this.$refs.canvasContainer;
+    if (canvasCont && typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.resizeCanvas();
+      });
+      this.resizeObserver.observe(canvasCont);
+    } else {
+      window.addEventListener("resize", this.resizeCanvas);
+    }
+
+    // Initial grid render
+    this.resizeCanvas();
   },
   beforeUnmount() {
     window.removeEventListener("keydown", this.handleKeyDown);
+    window.removeEventListener("resize", this.resizeCanvas);
+
+    // Clean up direct listeners
+    const container = this.$refs.gameContainer;
+    if (container) {
+      container.removeEventListener("touchstart", this.onTouchStart);
+      container.removeEventListener("touchmove", this.onTouchMove);
+      container.removeEventListener("touchend", this.onTouchEnd);
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
     if (this.gameInterval) clearInterval(this.gameInterval);
+    if (this.soundHideTimer) clearTimeout(this.soundHideTimer);
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+    if (this.clearAnimationId) cancelAnimationFrame(this.clearAnimationId);
   },
   methods: {
-    drawInitialGrid() {
-      const canvas = this.$refs.tetrisCanvas;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#0a0f1d";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw grid lines
-      ctx.strokeStyle = "rgba(71, 85, 105, 0.15)";
-      ctx.lineWidth = 0.5;
-      for (let r = 0; r <= this.rows; r++) {
-        ctx.beginPath();
-        ctx.moveTo(0, r * this.blockSize);
-        ctx.lineTo(canvas.width, r * this.blockSize);
-        ctx.stroke();
-      }
-      for (let c = 0; c <= this.cols; c++) {
-        ctx.beginPath();
-        ctx.moveTo(c * this.blockSize, 0);
-        ctx.lineTo(c * this.blockSize, canvas.height);
-        ctx.stroke();
+    // Tactile vibration haptics
+    vibrate(pattern) {
+      if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+        try {
+          window.navigator.vibrate(pattern);
+        } catch (e) {
+          console.debug("Haptics blocked:", e);
+        }
       }
     },
+
+    // Audio wrapper adhering to mute/unmute limits
+    playGameSound(soundName, ...args) {
+      if (this.isMuted) return;
+      if (playSound && playSound[soundName]) {
+        playSound[soundName](...args);
+      }
+    },
+
+    toggleMute() {
+      this.isMuted = !this.isMuted;
+      localStorage.setItem("tetris_muted", this.isMuted ? "true" : "false");
+      this.vibrate(10);
+
+      this.showSoundIndicator = true;
+      if (this.soundHideTimer) clearTimeout(this.soundHideTimer);
+      this.soundHideTimer = setTimeout(() => {
+        this.showSoundIndicator = false;
+      }, 3000);
+    },
+
+    togglePause() {
+      if (!this.hasStarted || this.gameOver) return;
+      this.isPaused = !this.isPaused;
+      this.vibrate(10);
+      this.playGameSound("tick");
+
+      if (this.isPaused) {
+        if (this.gameInterval) {
+          clearInterval(this.gameInterval);
+          this.gameInterval = null;
+        }
+        if (this.animationFrameId) {
+          cancelAnimationFrame(this.animationFrameId);
+          this.animationFrameId = null;
+        }
+      } else {
+        this.startLoop();
+        this.animationLoop();
+      }
+    },
+
+    // Modern High-DPI physical canvas resizing implementation
+    resizeCanvas() {
+      const canvas = this.$refs.tetrisCanvas;
+      if (!canvas) return;
+
+      const parentWidth = canvas.clientWidth || 280;
+      const parentHeight = parentWidth * 2; // Fixed aspect ratio 10:20
+
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = parentWidth * dpr;
+      canvas.height = parentHeight * dpr;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+
+      this.blockSize = parentWidth / this.cols;
+
+      this.draw();
+      this.drawHold();
+      this.drawNext();
+    },
+
+    drawInitialGrid() {
+      // Stub to fill workspace grid lines
+      this.draw();
+    },
+
     startGame() {
       this.hasStarted = true;
       this.gameOver = false;
+      this.isPaused = false;
       this.score = 0;
       this.linesCleared = 0;
       this.level = 1;
+      this.holdPieceData = null;
+      this.hasHeldThisTurn = false;
       
-      // Clear matrix layout grid
       this.grid = Array.from({ length: this.rows }, () => Array(this.cols).fill(0));
-      
+      this.clearingLines = [];
+
+      this.nextPiecesQueue = [
+        Math.floor(Math.random() * 7) + 1,
+        Math.floor(Math.random() * 7) + 1,
+        Math.floor(Math.random() * 7) + 1
+      ];
+
       this.spawnPiece();
       this.startLoop();
-      playSound.levelUp();
+      this.playGameSound("levelUp");
+
+      // Spawn temporary sound indicator
+      this.showSoundIndicator = true;
+      if (this.soundHideTimer) clearTimeout(this.soundHideTimer);
+      this.soundHideTimer = setTimeout(() => {
+        this.showSoundIndicator = false;
+      }, 3000);
+
+      // Launch requestAnimationFrame loop
+      if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+      this.animationLoop();
     },
+
     restartGame() {
       this.startGame();
     },
+
     startLoop() {
       if (this.gameInterval) clearInterval(this.gameInterval);
-      const speed = Math.max(100, 800 - (this.level - 1) * 80);
+      const speed = Math.max(80, 810 - (this.level - 1) * 90);
       this.gameInterval = setInterval(() => {
-        this.moveDown(true); // game step auto descend
+        this.moveDown(true);
       }, speed);
     },
+
+    animationLoop() {
+      if (!this.hasStarted || this.gameOver || this.isPaused) {
+        this.animationFrameId = null;
+        return;
+      }
+      this.draw();
+      this.animationFrameId = requestAnimationFrame(this.animationLoop);
+    },
+
     spawnPiece() {
-      const type = Math.floor(Math.random() * 7) + 1;
-      this.currentPiece = this.shapes[type];
+      this.hasHeldThisTurn = false;
       
-      // Start near the middle-top coordinates
-      this.currentX = Math.floor((this.cols - this.currentPiece[0].length) / 2);
+      const type = this.nextPiecesQueue.shift();
+      this.nextPiecesQueue.push(Math.floor(Math.random() * 7) + 1);
+
+      this.currentPieceType = type || Math.floor(Math.random() * 7) + 1;
+      this.currentPiece = this.shapes[this.currentPieceType] || [[1, 1, 1, 1]];
+
+      this.drawHold();
+      this.drawNext();
+
+      if (this.currentPiece && this.currentPiece[0]) {
+        this.currentX = Math.floor((this.cols - this.currentPiece[0].length) / 2);
+      } else {
+        this.currentX = Math.floor((this.cols - 4) / 2);
+      }
       this.currentY = 0;
-      
-      if (this.checkCollision(this.currentX, this.currentY, this.currentPiece)) {
+
+      if (this.currentPiece && this.checkCollision(this.currentX, this.currentY, this.currentPiece)) {
         this.endGame();
       }
     },
+
+    // Swap / Hold piece mechanism
+    holdPiece() {
+      if (!this.hasStarted || this.gameOver || this.isPaused || this.hasHeldThisTurn) return;
+
+      this.vibrate(12);
+      this.playGameSound("tick");
+
+      if (this.holdPieceData === null) {
+        this.holdPieceData = this.currentPieceType || 1;
+        this.spawnPiece();
+      } else {
+        const tempType = this.currentPieceType || 1;
+        this.currentPieceType = this.holdPieceData;
+        this.currentPiece = this.shapes[this.currentPieceType] || [[1, 1, 1, 1]];
+        this.holdPieceData = tempType;
+
+        if (this.currentPiece && this.currentPiece[0]) {
+          this.currentX = Math.floor((this.cols - this.currentPiece[0].length) / 2);
+        } else {
+          this.currentX = Math.floor((this.cols - 4) / 2);
+        }
+        this.currentY = 0;
+      }
+
+      this.hasHeldThisTurn = true;
+      this.drawHold();
+      this.drawNext();
+      this.draw();
+    },
+
     checkCollision(x, y, piece) {
+      if (!piece) return true;
       for (let r = 0; r < piece.length; r++) {
+        if (!piece[r]) continue;
         for (let c = 0; c < piece[r].length; c++) {
           if (piece[r][c] !== 0) {
             const nextX = x + c;
             const nextY = y + r;
-            
-            // Beyond left/right bounds
+
             if (nextX < 0 || nextX >= this.cols) return true;
-            // Floor bound
             if (nextY >= this.rows) return true;
-            // Intersect filled blocks
-            if (nextY >= 0 && this.grid[nextY][nextX] !== 0) return true;
+            if (nextY >= 0 && this.grid[nextY] && this.grid[nextY][nextX] !== 0) return true;
           }
         }
       }
       return false;
     },
+
     moveLeft() {
-      if (!this.hasStarted || this.gameOver) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
       if (!this.checkCollision(this.currentX - 1, this.currentY, this.currentPiece)) {
         this.currentX--;
-        this.draw();
-        playSound.tick();
+        this.playGameSound("tick");
+        this.vibrate(10);
       }
     },
+
     moveRight() {
-      if (!this.hasStarted || this.gameOver) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
       if (!this.checkCollision(this.currentX + 1, this.currentY, this.currentPiece)) {
         this.currentX++;
-        this.draw();
-        playSound.tick();
+        this.playGameSound("tick");
+        this.vibrate(10);
       }
     },
+
     rotate() {
-      if (!this.hasStarted || this.gameOver) return;
-      
-      // Transpose & Reverse to rotate matrix
+      if (!this.hasStarted || this.gameOver || this.isPaused || !this.currentPiece || !this.currentPiece[0]) return;
+
       const rotated = Array.from({ length: this.currentPiece[0].length }, () => Array(this.currentPiece.length).fill(0));
       for (let r = 0; r < this.currentPiece.length; r++) {
+        if (!this.currentPiece[r]) continue;
         for (let c = 0; c < this.currentPiece[r].length; c++) {
           rotated[c][this.currentPiece.length - 1 - r] = this.currentPiece[r][c];
         }
       }
-      
-      // Wall kick logic: shift x-position slightly if block collides with walls when rotating
+
       if (this.checkCollision(this.currentX, this.currentY, rotated)) {
-        // Try shifting left/right by 1 cell
+        // Multi-stage wall kick offset tests
         if (!this.checkCollision(this.currentX - 1, this.currentY, rotated)) {
           this.currentX--;
         } else if (!this.checkCollision(this.currentX + 1, this.currentY, rotated)) {
           this.currentX++;
+        } else if (!this.checkCollision(this.currentX - 2, this.currentY, rotated)) {
+          this.currentX -= 2;
+        } else if (!this.checkCollision(this.currentX + 2, this.currentY, rotated)) {
+          this.currentX += 2;
         } else {
-          return; // Skip rotation
+          return;
         }
       }
-      
+
       this.currentPiece = rotated;
-      this.draw();
-      playSound.rotate();
+      this.playGameSound("rotate");
+      this.vibrate(12);
     },
+
     moveDown(isAuto = false) {
-      if (!this.hasStarted || this.gameOver) return;
-      
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+
       if (!this.checkCollision(this.currentX, this.currentY + 1, this.currentPiece)) {
         this.currentY++;
-        this.draw();
-        if (!isAuto) playSound.tick();
+        if (!isAuto) {
+          this.playGameSound("tick");
+          this.vibrate(8);
+        }
       } else {
         this.lockPiece();
       }
     },
+
     hardDrop() {
-      if (!this.hasStarted || this.gameOver) return;
-      
-      let cellsDropped = 0;
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+
+      let cells = 0;
       while (!this.checkCollision(this.currentX, this.currentY + 1, this.currentPiece)) {
         this.currentY++;
-        cellsDropped++;
+        cells++;
       }
+      this.playGameSound("score");
+      this.vibrate(35);
       this.lockPiece();
-      playSound.score(); // crisp landing sound
     },
+
     lockPiece() {
+      if (!this.currentPiece) return;
       for (let r = 0; r < this.currentPiece.length; r++) {
+        if (!this.currentPiece[r]) continue;
         for (let c = 0; c < this.currentPiece[r].length; c++) {
           if (this.currentPiece[r][c] !== 0) {
-            this.grid[this.currentY + r][this.currentX + c] = this.currentPiece[r][c];
+            // Guard against horizontal or vertical array out of bounds
+            const finalY = this.currentY + r;
+            const finalX = this.currentX + c;
+            if (this.grid[finalY] !== undefined && this.grid[finalY][finalX] !== undefined) {
+              this.grid[finalY][finalX] = this.currentPiece[r][c];
+            }
           }
         }
       }
-      
+
+      this.vibrate(25);
       this.clearLines();
-      this.spawnPiece();
-      this.draw();
     },
+
+    // Animate and clear full lines with white sweep fade
     clearLines() {
-      let lines = 0;
-      
-      for (let r = this.rows - 1; r >= 0; r--) {
+      const fullRows = [];
+      for (let r = 0; r < this.rows; r++) {
         if (this.grid[r].every(val => val !== 0)) {
-          // Remove row, inject empty at top
-          this.grid.splice(r, 1);
-          this.grid.unshift(Array(this.cols).fill(0));
-          lines++;
-          r++; // Check same row index again because array changed sizes
+          fullRows.push(r);
         }
       }
-      
-      if (lines > 0) {
-        this.linesCleared += lines;
-        // Scoring calculation rules: 1 line = 100, 2 lines = 300, 3 lines = 500, 4 lines (Tetris!) = 800
-        const scoresTable = [0, 100, 300, 500, 800];
-        this.score += scoresTable[lines] * this.level;
-        
-        // Level up for each 10 lines
-        this.level = Math.floor(this.linesCleared / 10) + 1;
-        this.startLoop();
 
-        // Level clearing rewarding chime
-        playSound.levelUp();
+      if (fullRows.length > 0) {
+        this.clearingLines = fullRows;
+        this.clearProgress = 1.0;
+
+        // Freeze game ticker during line reduction animation
+        if (this.gameInterval) {
+          clearInterval(this.gameInterval);
+          this.gameInterval = null;
+        }
+
+        this.vibrate([50, 45, 50, 45]); // double tactile chime
+        this.playGameSound("levelUp");
+
+        const clearSweep = () => {
+          this.clearProgress -= 0.12; // Complete within 160ms (roughly 8 requestAnimationFrame steps)
+          if (this.clearProgress <= 0) {
+            this.clearingLines = [];
+
+            fullRows.forEach(r => {
+              this.grid.splice(r, 1);
+              this.grid.unshift(Array(this.cols).fill(0));
+            });
+
+            const lines = fullRows.length;
+            this.linesCleared += lines;
+            const scoringRatio = [0, 100, 300, 500, 800];
+            this.score += scoringRatio[lines] * this.level;
+
+            this.level = Math.floor(this.linesCleared / 10) + 1;
+            this.spawnPiece();
+            this.startLoop();
+          } else {
+            this.clearAnimationId = requestAnimationFrame(clearSweep);
+          }
+        };
+        clearSweep();
+      } else {
+        this.spawnPiece();
       }
     },
+
+    // Main Draw context router
     draw() {
       const canvas = this.$refs.tetrisCanvas;
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
-      
-      // Clean background
-      ctx.fillStyle = "#0c1020";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Redraw subtle background grid lines
-      ctx.strokeStyle = "rgba(99, 102, 241, 0.08)";
+
+      // Deep celestial backplane fill
+      ctx.fillStyle = "#090d19";
+      ctx.fillRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+
+      // Fine neon layout mesh lines
+      ctx.strokeStyle = "rgba(99, 102, 241, 0.05)";
       ctx.lineWidth = 0.5;
       for (let r = 0; r <= this.rows; r++) {
         ctx.beginPath();
         ctx.moveTo(0, r * this.blockSize);
-        ctx.lineTo(canvas.width, r * this.blockSize);
+        ctx.lineTo(this.cols * this.blockSize, r * this.blockSize);
         ctx.stroke();
       }
       for (let c = 0; c <= this.cols; c++) {
         ctx.beginPath();
         ctx.moveTo(c * this.blockSize, 0);
-        ctx.lineTo(c * this.blockSize, canvas.height);
+        ctx.lineTo(c * this.blockSize, this.rows * this.blockSize);
         ctx.stroke();
       }
-      
-      // Draw grid locked blocks (No gaps to look completely cohesive/solid!)
+
+      // Render cells of stationary board
       for (let r = 0; r < this.rows; r++) {
         for (let c = 0; c < this.cols; c++) {
           if (this.grid[r][c] !== 0) {
-            this.drawBlock(ctx, c, r, this.grid[r][c]);
+            const isClearing = this.clearingLines.includes(r);
+            this.drawBlock(ctx, c, r, this.grid[r][c], isClearing);
           }
         }
       }
-      
-      // Draw falling piece
-      if (this.currentPiece) {
-        // Draw ghost / helper indicator of where the block will fall
+
+      // Render active pieces & Ghost indicator
+      if (this.hasStarted && !this.gameOver && !this.isPaused && this.currentPiece && this.currentPiece[0]) {
         let ghostY = this.currentY;
         while (!this.checkCollision(this.currentX, ghostY + 1, this.currentPiece)) {
           ghostY++;
         }
-        
-        // Draw Ghost Shape indicators
+
+        // Draw Ghost Shape indicators with 2px thick outer trace and micro glow
         for (let r = 0; r < this.currentPiece.length; r++) {
+          if (!this.currentPiece[r]) continue;
           for (let c = 0; c < this.currentPiece[r].length; c++) {
             if (this.currentPiece[r][c] !== 0) {
               const x = (this.currentX + c) * this.blockSize;
               const y = (ghostY + r) * this.blockSize;
-              ctx.strokeStyle = "rgba(99, 102, 241, 0.22)";
-              ctx.lineWidth = 1;
-              ctx.strokeRect(x, y, this.blockSize, this.blockSize);
+              const size = this.blockSize;
+
+              ctx.save();
+              ctx.fillStyle = "rgba(99, 102, 241, 0.12)";
+              ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
+
+              ctx.strokeStyle = "rgba(99, 102, 241, 0.6)";
+              ctx.lineWidth = 2.0;
+              ctx.strokeRect(x + 1, y + 1, size - 2, size - 2);
+
+              // Fine diagonal stripe
+              ctx.strokeStyle = "rgba(99, 102, 241, 0.2)";
+              ctx.lineWidth = 1.0;
+              ctx.beginPath();
+              ctx.moveTo(x + 3, y + 3);
+              ctx.lineTo(x + size - 3, y + size - 3);
+              ctx.stroke();
+              ctx.restore();
             }
           }
         }
-        
-        // Draw active piece
+
+        // Render active free-falling shape
         for (let r = 0; r < this.currentPiece.length; r++) {
+          if (!this.currentPiece[r]) continue;
           for (let c = 0; c < this.currentPiece[r].length; c++) {
             if (this.currentPiece[r][c] !== 0) {
-              this.drawBlock(ctx, this.currentX + c, this.currentY + r, this.currentPiece[r][c]);
+              this.drawBlock(ctx, this.currentX + c, this.currentY + r, this.currentPiece[r][c], false);
             }
           }
         }
       }
     },
-    drawBlock(ctx, x, y, colorIdx) {
+
+    drawBlock(ctx, x, y, colorIdx, isClearing = false) {
       const bx = x * this.blockSize;
       const by = y * this.blockSize;
       const size = this.blockSize;
-      
-      // Block base body - perfectly fitted and solid!
+
+      ctx.save();
+      if (isClearing) {
+        ctx.globalAlpha = this.clearProgress;
+      }
+
+      // Render block body
       ctx.fillStyle = this.colors[colorIdx];
       ctx.fillRect(bx, by, size, size);
-      
-      // Sleek sleek inner neon glow highlights
-      ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
+
+      // Neon interior highlights and shadows
+      ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
       ctx.fillRect(bx, by, size, 2);
       ctx.fillRect(bx, by, 2, size);
-      
-      ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
       ctx.fillRect(bx + size - 2, by, 2, size);
       ctx.fillRect(bx, by + size - 2, size, 2);
+
+      if (isClearing) {
+        // Bright flare wipe sweep
+        ctx.fillStyle = `rgba(255, 255, 255, ${1.0 - this.clearProgress})`;
+        ctx.fillRect(bx, by, size, size);
+      }
+      ctx.restore();
     },
+
+    // Companion canvas renderer for HOLD storage
+    drawHold() {
+      const canvas = this.$refs.holdCanvas;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0c1020";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (this.holdPieceData) {
+        const piece = this.shapes[this.holdPieceData];
+        if (!piece || !piece[0]) return;
+        const size = 11;
+        const width = piece[0].length * size;
+        const height = piece.length * size;
+
+        const startX = (canvas.width - width) / 2;
+        const startY = (canvas.height - height) / 2;
+
+        ctx.fillStyle = this.colors[this.holdPieceData];
+        for (let r = 0; r < piece.length; r++) {
+          if (!piece[r]) continue;
+          for (let c = 0; c < piece[r].length; c++) {
+            if (piece[r][c] !== 0) {
+              const bx = startX + c * size;
+              const by = startY + r * size;
+              ctx.fillRect(bx, by, size - 1, size - 1);
+              
+              ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+              ctx.fillRect(bx, by, size - 1, 1);
+              ctx.fillRect(bx, by, 1, size - 1);
+              ctx.fillStyle = this.colors[this.holdPieceData];
+            }
+          }
+        }
+      }
+    },
+
+    // Companion canvas renderer for upcoming queue
+    drawNext() {
+      const canvas = this.$refs.nextCanvas;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0c1020";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < 3; i++) {
+        const type = this.nextPiecesQueue[i];
+        if (!type) continue;
+        const piece = this.shapes[type];
+        if (!piece || !piece[0]) continue;
+
+        const size = 9;
+        const width = piece[0].length * size;
+        const height = piece.length * size;
+
+        const slotCenterY = i * 60 + 30;
+        const startX = (canvas.width - width) / 2;
+        const startY = slotCenterY - height / 2;
+
+        ctx.fillStyle = this.colors[type];
+        for (let r = 0; r < piece.length; r++) {
+          if (!piece[r]) continue;
+          for (let c = 0; c < piece[r].length; c++) {
+            if (piece[r][c] !== 0) {
+              const bx = startX + c * size;
+              const by = startY + r * size;
+              ctx.fillRect(bx, by, size - 1, size - 1);
+
+              ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+              ctx.fillRect(bx, by, size - 1, 1);
+              ctx.fillRect(bx, by, 1, size - 1);
+              ctx.fillStyle = this.colors[type];
+            }
+          }
+        }
+      }
+    },
+
     endGame() {
       this.gameOver = true;
       if (this.gameInterval) {
         clearInterval(this.gameInterval);
         this.gameInterval = null;
       }
-      playSound.gameOver();
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+      this.playGameSound("gameOver");
+      this.vibrate([100, 100, 150]);
     },
+
     handleKeyDown(event) {
-      if (!this.hasStarted || this.gameOver) return;
-      
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+
       if (event.code === "ArrowLeft" || event.code === "KeyA") {
         this.moveLeft();
         event.preventDefault();
@@ -434,71 +886,98 @@ export default {
       } else if (event.code === "Space") {
         this.hardDrop();
         event.preventDefault();
+      } else if (event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyC") {
+        this.holdPiece();
+        event.preventDefault();
       }
     },
 
-    // Vue touch gesture controls mapping
+    // Swipe Vectors gesture trackers
     onTouchStart(e) {
-      if (!this.hasStarted || this.gameOver) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+      if (!e || !e.touches || e.touches.length === 0) return;
+      if (e.cancelable) e.preventDefault();
+
       const touch = e.touches[0];
+      if (!touch) return;
       this.touchStart = {
         x: touch.clientX,
         y: touch.clientY,
         time: Date.now()
       };
-      this.touchLast = {
-        x: touch.clientX,
-        y: touch.clientY
-      };
+
+      this.dragStartX = touch.clientX;
+      this.dragStartY = touch.clientY;
       this.isSwipeAction = false;
     },
+
     onTouchMove(e) {
-      if (!this.hasStarted || this.gameOver) return;
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+      if (!e || !e.touches || e.touches.length === 0) return;
       if (e.cancelable) e.preventDefault();
-      
+
       const touch = e.touches[0];
-      const totalDx = touch.clientX - this.touchStart.x;
-      const totalDy = touch.clientY - this.touchStart.y;
-      
-      // Columns shift controls left/right
-      if (Math.abs(totalDx) > 30) {
+      if (!touch) return;
+
+      // Horizontal tracking movement
+      const dx = touch.clientX - this.dragStartX;
+      const stepsX = Math.trunc(dx / this.blockSize);
+      if (stepsX !== 0) {
         this.isSwipeAction = true;
-        if (totalDx > 0) {
-          this.moveRight();
+        if (stepsX > 0) {
+          for (let i = 0; i < stepsX; i++) {
+            this.moveRight();
+          }
         } else {
-          this.moveLeft();
+          for (let i = 0; i < Math.abs(stepsX); i++) {
+            this.moveLeft();
+          }
         }
-        // Advance starting pointer so subsequent slide moves it again
-        this.touchStart.x = touch.clientX;
+        this.dragStartX += stepsX * this.blockSize;
       }
-      
-      // Move down slowly
-      if (totalDy > 25) {
-        this.isSwipeAction = true;
-        this.moveDown();
-        this.touchStart.y = touch.clientY;
+
+      // Vertical track soft drop acceleration
+      const dy = touch.clientY - this.dragStartY;
+      if (dy > 0) {
+        const stepsY = Math.trunc(dy / (this.blockSize * 0.5));
+        if (stepsY !== 0) {
+          this.isSwipeAction = true;
+          for (let i = 0; i < stepsY; i++) {
+            this.moveDown(false);
+          }
+          this.dragStartY += stepsY * (this.blockSize * 0.5);
+        }
       }
-      
-      this.touchLast.x = touch.clientX;
-      this.touchLast.y = touch.clientY;
     },
+
     onTouchEnd(e) {
-      if (!this.hasStarted || this.gameOver) return;
-      
+      if (!this.hasStarted || this.gameOver || this.isPaused) return;
+      if (!e || !e.changedTouches || e.changedTouches.length === 0) return;
+      if (e.cancelable) e.preventDefault();
+
       const touch = e.changedTouches[0];
+      if (!touch) return;
       const deltaX = touch.clientX - this.touchStart.x;
       const deltaY = touch.clientY - this.touchStart.y;
       const deltaTime = Date.now() - this.touchStart.time;
-      
-      // Quick swipe down = HARD DROP
-      if (deltaY > 60 && deltaTime < 200) {
+
+      const isVertical = Math.abs(deltaY) > 0 && Math.abs(deltaX) < Math.abs(deltaY) * 0.35;
+
+      // Flick short swipe down = Hard Drop [flick speed limit < 150ms]
+      if (deltaY > 60 && isVertical && deltaTime < 150) {
         this.hardDrop();
         return;
       }
-      
-      // TAP = ROTATE
+
+      // Quick vertical swipe up = Hold area rotation trigger
+      if (deltaY < -60 && isVertical && deltaTime < 250) {
+        this.holdPiece();
+        return;
+      }
+
+      // Tap filter = Rotation action
       const totalDist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      if (totalDist < 12 && deltaTime < 220 && !this.isSwipeAction) {
+      if (totalDist < 10 && deltaTime < 180 && !this.isSwipeAction) {
         this.rotate();
       }
     }
@@ -507,12 +986,29 @@ export default {
 </script>
 
 <style scoped>
-/* Key animations for Tetris */
 .animate-fade-in {
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Slick toast fade animations definitions */
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

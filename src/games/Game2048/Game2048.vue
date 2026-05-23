@@ -202,19 +202,25 @@ export default {
     },
     onTouchStart(e) {
       if (this.gameOver) return;
+      if (!e || !e.touches || e.touches.length === 0) return;
+      const touch = e.touches[0];
+      if (!touch) return;
       this.touchStart = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
+        x: touch.clientX,
+        y: touch.clientY,
       };
     },
     onTouchMove(e) {
       // Prevent screen bouncing on touch swipe
-      if (e.cancelable) e.preventDefault();
+      if (e && e.cancelable) e.preventDefault();
     },
     onTouchEnd(e) {
       if (this.gameOver) return;
-      const dx = e.changedTouches[0].clientX - this.touchStart.x;
-      const dy = e.changedTouches[0].clientY - this.touchStart.y;
+      if (!e || !e.changedTouches || e.changedTouches.length === 0) return;
+      const touch = e.changedTouches[0];
+      if (!touch) return;
+      const dx = touch.clientX - this.touchStart.x;
+      const dy = touch.clientY - this.touchStart.y;
       const absX = Math.abs(dx);
       const absY = Math.abs(dy);
 

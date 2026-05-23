@@ -319,7 +319,9 @@ export default {
     },
     onTouchStart(e) {
       if (!this.hasStarted || this.gameOver) return;
+      if (!e || !e.touches || e.touches.length === 0) return;
       const touch = e.touches[0];
+      if (!touch) return;
       this.touchStart = {
         x: touch.clientX,
         y: touch.clientY
@@ -327,7 +329,9 @@ export default {
     },
     onTouchEnd(e) {
       if (!this.hasStarted || this.gameOver) return;
+      if (!e || !e.changedTouches || e.changedTouches.length === 0) return;
       const touch = e.changedTouches[0];
+      if (!touch) return;
       const dx = touch.clientX - this.touchStart.x;
       const dy = touch.clientY - this.touchStart.y;
       
