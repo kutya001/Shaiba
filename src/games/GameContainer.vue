@@ -415,7 +415,7 @@ export default {
   },
   data() {
     return {
-      playtimeSeconds: Number(localStorage.getItem("game_playtime_seconds")) || 0,
+      playtimeSeconds: 0,
       timerInterval: null,
       activeTab: "games", // "games" or "leaderboards"
       selectedLeaderboardTab: "points", // "points", "playtime" or "game"
@@ -567,6 +567,7 @@ export default {
       }
     },
     startSessionTimer() {
+      this.playtimeSeconds = 0;
       this.stopSessionTimer();
       this.timerInterval = setInterval(() => {
         this.playtimeSeconds++;

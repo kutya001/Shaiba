@@ -295,17 +295,15 @@ export default {
         case "CANDY": return "bg-indigo-900/10 border border-white/5";
         default: return "bg-slate-900/30 border-slate-800/30";
       }
+    },
+    store() {
+      return useMainStore();
     }
   },
   watch: {
     activeTheme(newTheme) {
       localStorage.setItem("game_2048_theme", newTheme);
       this.saveStateToLocalStorage();
-    }
-  },
-  computed: {
-    store() {
-      return useMainStore();
     }
   },
   mounted() {
