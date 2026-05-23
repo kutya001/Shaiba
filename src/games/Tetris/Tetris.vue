@@ -44,32 +44,32 @@
     <!-- Active Area: Main Tetris Viewport Expanded -->
     <div
       ref="canvasContainer"
-      class="flex-grow w-full max-w-lg flex items-center justify-center relative my-1 select-none"
+      class="flex-grow w-full max-w-xl flex flex-row items-center justify-center gap-3 sm:gap-5 my-1 select-none relative"
     >
       <!-- Side panel containing both HOLD and NEXT on the left -->
       <div
         v-if="hasStarted && !gameOver"
-        class="absolute left-1 xs:left-2 top-[20px] sm:top-[30px] flex flex-col gap-2.5 z-10 select-none scale-90 sm:scale-100 origin-left"
+        class="flex flex-col gap-3 z-10 select-none w-14 sm:w-20 shrink-0"
       >
         <!-- HOLD -->
-        <div class="bg-slate-900/70 backdrop-blur-md border border-slate-800/80 rounded-xl p-1.5 flex flex-col items-center shadow-lg">
-          <span class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 select-none">HOLD</span>
+        <div class="bg-slate-900/70 backdrop-blur-md border border-slate-800/80 rounded-xl p-1.5 flex flex-col items-center shadow-lg w-full">
+          <span class="text-[7.5px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 select-none">HOLD</span>
           <canvas
             ref="holdCanvas"
             width="56"
             height="56"
-            class="w-12 h-12 bg-slate-950/40 rounded-lg border border-slate-800/50"
+            class="w-full aspect-square bg-slate-950/40 rounded-lg border border-slate-800/50"
           ></canvas>
         </div>
 
         <!-- NEXT -->
-        <div class="bg-slate-900/70 backdrop-blur-md border border-slate-800/80 rounded-xl p-1.5 flex flex-col items-center shadow-lg">
-          <span class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 select-none font-sans">NEXT</span>
+        <div class="bg-slate-900/70 backdrop-blur-md border border-slate-800/80 rounded-xl p-1.5 flex flex-col items-center shadow-lg w-full">
+          <span class="text-[7.5px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 select-none font-sans">NEXT</span>
           <canvas
             ref="nextCanvas"
             width="56"
             height="180"
-            class="w-12 h-[155px] bg-slate-950/40 rounded-lg border border-slate-800/50"
+            class="w-full h-[150px] sm:h-[180px] bg-slate-950/40 rounded-lg border border-slate-800/50"
           ></canvas>
         </div>
       </div>
@@ -77,8 +77,8 @@
       <!-- Main Canvas representation -->
       <canvas
         ref="tetrisCanvas"
-        class="border-2 border-slate-850 rounded-2xl bg-slate-900/30 shadow-2xl mx-auto"
-        style="height: 64vh; max-height: 580px; aspect-ratio: 10/20; max-width: 100%; display: block;"
+        class="border-2 border-slate-850 rounded-2xl bg-slate-900/30 shadow-2xl block flex-grow max-w-[calc(100%-4rem)]"
+        style="height: 74vh; max-height: calc(100vh - 180px); aspect-ratio: 10/20;"
       ></canvas>
 
       <!-- Game Over Modal Overlay -->
