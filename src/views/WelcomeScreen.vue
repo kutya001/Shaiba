@@ -348,7 +348,7 @@ export default {
         // Fallback Unsplash image if local asset fails to load
         return "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1280&q=80";
       }
-      return "/welcome_banner.jpg";
+      return "./welcome_banner.jpg";
     }
   },
   watch: {
