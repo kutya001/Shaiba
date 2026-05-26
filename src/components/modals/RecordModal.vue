@@ -518,7 +518,7 @@
                       </div>
                     </div>
 
-                    <div class="flex flex-col relative">
+                    <div class="flex flex-col relative" v-click-outside="hideBrandDropdown">
                       <label
                         class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider"
                         >Марка <span class="text-red-500">*</span></label
@@ -528,7 +528,6 @@
                           type="text"
                           v-model="brandSearchInput"
                           @focus="showBrandDropdown = true"
-                          @blur="hideBrandDropdown"
                           class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                           placeholder="Выберите марку..."
                         />
@@ -540,6 +539,7 @@
                             v-for="b in filteredBrandsList"
                             :key="b.ID"
                             @mousedown.prevent="selectBrand(b)"
+                            @touchstart.prevent="selectBrand(b)"
                             class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                           >
                             {{ b.Name }}
@@ -554,7 +554,7 @@
                       </div>
                     </div>
 
-                    <div class="flex flex-col relative">
+                    <div class="flex flex-col relative" v-click-outside="hideModelDropdown">
                       <label
                         class="text-slate-500 text-[10px] font-bold mb-1 ml-1 uppercase tracking-wider"
                         >Модель <span class="text-red-500">*</span></label
@@ -564,7 +564,6 @@
                           type="text"
                           v-model="modelSearchInput"
                           @focus="showModelDropdown = true"
-                          @blur="hideModelDropdown"
                           :disabled="!recordForm.BrandID"
                           class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50"
                           placeholder="Выберите модель..."
@@ -577,6 +576,7 @@
                             v-for="m in filteredModelsList"
                             :key="m.ID"
                             @mousedown.prevent="selectModel(m)"
+                            @touchstart.prevent="selectModel(m)"
                             class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                           >
                             {{ m.Name }}
@@ -699,6 +699,7 @@
                         :key="srv.ID"
                         type="button"
                         @mousedown.prevent="toggleService(srv.ID)"
+                        @touchstart.prevent="toggleService(srv.ID)"
                         class="w-full px-3 py-2.5 text-xs font-semibold hover:bg-slate-50 cursor-pointer flex justify-between items-start gap-3 transition-colors border-b border-slate-50 last:border-0"
                         :class="
                           isServiceSelected(srv.ID) ? 'text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50' : 'text-slate-700'
@@ -715,6 +716,7 @@
                       <button
                         type="button"
                         @mousedown.prevent="addCustomServiceFromName"
+                        @touchstart.prevent="addCustomServiceFromName"
                         v-if="serviceSearch.trim().length > 0 && !filteredServices.some(s => String(s.Name || '').toLowerCase() === serviceSearch.trim().toLowerCase())"
                         class="w-full px-3 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 cursor-pointer border-t border-slate-100 flex items-center gap-2 bg-indigo-600 transition"
                       >
@@ -964,13 +966,13 @@ export default {
     filteredBrandsList() {
       let b = this.sortedBrands;
       if (!this.brandSearchInput) return b;
-      let q = this.brandSearchInput.toLowerCase();
+      let q = String(this.brandSearchInput || "").toLowerCase();
       return b.filter((x) => String(x.Name || "").toLowerCase().includes(q));
     },
     filteredModelsList() {
       let m = this.availableModels;
       if (!this.modelSearchInput) return m;
-      let q = this.modelSearchInput.toLowerCase();
+      let q = String(this.modelSearchInput || "").toLowerCase();
       return m.filter((x) => String(x.Name || "").toLowerCase().includes(q));
     },
     filteredServices() {
@@ -983,7 +985,7 @@ export default {
       if (!this.serviceSearch) {
         return [customItem, ...s];
       }
-      let q = this.serviceSearch.toLowerCase();
+      let q = String(this.serviceSearch || "").toLowerCase();
       let filtered = s.filter((x) => x && String(x.Name || "").toLowerCase().includes(q));
       return [customItem, ...filtered];
     },
