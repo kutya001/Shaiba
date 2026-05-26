@@ -94,6 +94,24 @@
               </a>
               <span v-else class="text-slate-300">нет телефона</span>
             </div>
+
+            <!-- Password display for administrator with toggle -->
+            <div v-if="isAdmin" class="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1.5 text-[10.5px]">
+              <span class="text-slate-400 font-bold">Пароль:</span>
+              <span class="font-mono font-bold text-slate-705 bg-slate-50 border border-slate-150 rounded px-1.5 py-0.5 leading-none">
+                {{ visiblePasswords[u.ID] ? (u.Password || '—') : '••••••••' }}
+              </span>
+              <button
+                type="button"
+                @click="togglePassword(u.ID)"
+                class="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition border-none bg-transparent cursor-pointer flex items-center justify-center"
+                title="Показать / скрыть пароль"
+              >
+                <span class="material-symbols-outlined text-[15px]">
+                  {{ visiblePasswords[u.ID] ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -142,6 +160,8 @@
 </template>
 
 <script>
+import { useMainStore } from "../store";
+
 export default {
   name: 'UsersTab',
   props: {
@@ -162,6 +182,7 @@ export default {
     return {
       selectedRole: "all",
       selectedStatus: "all",
+      visiblePasswords: {},
       roles: [
         { val: "all", lbl: "Все роли" },
         { val: "Superadmin", lbl: "Админ" },
@@ -176,6 +197,10 @@ export default {
     };
   },
   computed: {
+    isAdmin() {
+      const store = useMainStore();
+      return store.user && store.user.Role === 'Superadmin';
+    },
     filteredUsers() {
       let list = this.db.users || [];
 
@@ -202,6 +227,11 @@ export default {
       }
 
       return list;
+    }
+  },
+  methods: {
+    togglePassword(id) {
+      this.visiblePasswords[id] = !this.visiblePasswords[id];
     }
   }
 }

@@ -93,6 +93,8 @@
               @toggle-status="toggleStatusDirectly"
               @quick-payment="quickPaymentToggle"
               @set-all-statuses="setAllStatuses"
+              @del-row="delRow"
+              @mass-update="handleMassUpdate"
             />
           </div>
 
@@ -464,6 +466,59 @@ export default {
         nextStatus = "Открыт";
       }
       await this.quickStatusChange(record, nextStatus);
+    },
+
+    async handleMassUpdate({ ids, status, isPaid, masterId, brandId, modelId }) {
+      if (!this.user || this.user.Role !== "Superadmin") {
+        this.showToast("Доступно только администратору", "error");
+        return;
+      }
+      try {
+        let count = 0;
+        for (const id of ids) {
+          let idx = this.db.records.findIndex((x) => x.ID === id);
+          if (idx > -1) {
+            let record = this.db.records[idx];
+            let payload = Object.assign({}, record);
+            let hasChanged = false;
+
+            if (status) {
+              payload.Status = status;
+              if (status === "Выполнен" && record.Status !== "Выполнен") {
+                payload.EndTime = new Date().toISOString();
+              } else if (status !== "Выполнен") {
+                payload.EndTime = "";
+              }
+              hasChanged = true;
+            }
+
+            if (isPaid !== "") {
+              payload.IsPaid = isPaid === "true" || isPaid === true;
+              hasChanged = true;
+            }
+
+            if (masterId !== "") {
+              payload.MasterID = masterId === "REMOVE" ? "" : masterId;
+              hasChanged = true;
+            }
+
+            if (brandId !== "") {
+              payload.BrandID = brandId;
+              payload.ModelID = modelId || "";
+              hasChanged = true;
+            }
+
+            if (hasChanged) {
+              this.db.records[idx] = payload;
+              this.dispatchSync("updateRecord", payload);
+              count++;
+            }
+          }
+        }
+        this.showToast(`Массовое обновление заверчено. Изменено записей: ${count}`);
+      } catch (e) {
+        this.showToast(e.message, "error");
+      }
     },
 
     openProfileModal() {

@@ -215,6 +215,132 @@
                   >
                 </button>
               </div>
+
+              <!-- Панель массовых действий для Суперадмина -->
+              <div
+                v-if="user && user.Role === 'Superadmin' && selectedRecordIDs.length > 0"
+                class="bg-slate-900 border border-slate-950 text-white rounded-2xl p-3.5 shadow-xl flex flex-col gap-2.5 mt-2 animate-slide-down"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-black tracking-wider uppercase flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm text-indigo-400">auto_fix_high</span>
+                    Массовые действия (Выбрано: {{ selectedRecordIDs.length }})
+                  </span>
+                  <div class="flex gap-2 text-[10px]">
+                    <button
+                      type="button"
+                      @click="selectAllFiltered"
+                      class="font-bold text-indigo-300 hover:text-white transition cursor-pointer bg-transparent border-none"
+                    >
+                      Выбрать все
+                    </button>
+                    <span class="text-slate-600">|</span>
+                    <button
+                      type="button"
+                      @click="selectedRecordIDs = []"
+                      class="font-bold text-indigo-300 hover:text-white transition cursor-pointer bg-transparent border-none"
+                    >
+                      Сбросить
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-slate-805 text-left">
+                  <!-- Изменить Статус -->
+                  <div class="flex flex-col">
+                    <span class="text-[8px] font-semibold text-slate-400 uppercase tracking-widest mb-1 ml-0.5 text-left">Статус Записи</span>
+                    <select
+                      v-model="massNewStatus"
+                      class="h-8 py-0 px-2 rounded-xl bg-white border-none text-xs font-bold text-slate-850 outline-none cursor-pointer w-full"
+                    >
+                      <option value="">Не менять</option>
+                      <option value="Открыт">Открыт</option>
+                      <option value="Выполнен">Выполнен</option>
+                      <option value="Отменён">Отменён</option>
+                    </select>
+                  </div>
+
+                  <!-- Изменить Оплату -->
+                  <div class="flex flex-col">
+                    <span class="text-[8px] font-semibold text-slate-400 uppercase tracking-widest mb-1 ml-0.5 text-left">Статус Оплаты</span>
+                    <select
+                      v-model="massNewPaymentStatus"
+                      class="h-8 py-0 px-2 rounded-xl bg-white border-none text-xs font-bold text-slate-850 outline-none cursor-pointer w-full"
+                    >
+                      <option value="">Не менять</option>
+                      <option value="true">Оплачен</option>
+                      <option value="false">Не оплачен</option>
+                    </select>
+                  </div>
+
+                  <!-- Изменить Мастера -->
+                  <div class="flex flex-col">
+                    <span class="text-[8px] font-semibold text-slate-400 uppercase tracking-widest mb-1 ml-0.5 text-left">Назначить Мастера</span>
+                    <select
+                      v-model="massNewMasterID"
+                      class="h-8 py-0 px-2 rounded-xl bg-white border-none text-xs font-bold text-slate-855 outline-none cursor-pointer w-full"
+                    >
+                      <option value="">Не менять</option>
+                      <option value="REMOVE">Без мастера</option>
+                      <option
+                        v-for="m in mastersList"
+                        :key="m.ID"
+                        :value="m.ID"
+                      >
+                        {{ m.Name || m.Username }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Изменить Марку -->
+                  <div class="flex flex-col">
+                    <span class="text-[8px] font-semibold text-slate-400 uppercase tracking-widest mb-1 ml-0.5 text-left">Марка</span>
+                    <select
+                      v-model="massNewBrandID"
+                      @change="massNewModelID = ''"
+                      class="h-8 py-0 px-2 rounded-xl bg-white border-none text-xs font-bold text-slate-855 outline-none cursor-pointer w-full"
+                    >
+                      <option value="">Не менять</option>
+                      <option
+                        v-for="b in sortedBrands"
+                        :key="b.ID"
+                        :value="b.ID"
+                      >
+                        {{ b.Name }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Изменить Модель (если выбрана Марка) -->
+                  <div class="flex flex-col col-span-2" v-if="massNewBrandID">
+                    <span class="text-[8px] font-semibold text-slate-400 uppercase tracking-widest mb-1 ml-0.5 text-left">Модель</span>
+                    <select
+                      v-model="massNewModelID"
+                      class="h-8 py-0 px-2.5 rounded-xl bg-white border-none text-xs font-bold text-slate-855 outline-none cursor-pointer w-full"
+                    >
+                      <option value="">Выберите новую модель...</option>
+                      <option
+                        v-for="m in db.models.filter(x => String(x.BrandID) === String(massNewBrandID))"
+                        :key="m.ID"
+                        :value="m.ID"
+                      >
+                        {{ m.Name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-0.5">
+                  <button
+                    type="button"
+                    @click="applyMassChanges"
+                    class="h-8 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer flex items-center justify-center gap-1 border-none"
+                  >
+                    <span class="material-symbols-outlined text-xs">done_all</span>
+                    Применить к {{ selectedRecordIDs.length }} зап.
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- List View -->
@@ -229,11 +355,25 @@
                   'opacity-75 grayscale-[15%]': r.Status === 'Отменён',
                 }"
               >
-                <!-- ROW 1: [гос.номер] & [мастер] -->
-                <div class="grid grid-cols-2 gap-2">
+                <!-- ROW 1: [выбрать] & [гос.номер] & [мастер] & [удалить] -->
+                <div class="grid gap-2 items-center" :class="user && user.Role === 'Superadmin' ? 'grid-cols-[28px_90px_1fr_28px]' : 'grid-cols-2'">
+                  <!-- Чекбокс для массового выбора (только для Суперадмина) -->
+                  <div
+                    v-if="user && user.Role === 'Superadmin'"
+                    @click.stop
+                    class="flex items-center justify-center shrink-0"
+                  >
+                    <input
+                      type="checkbox"
+                      :value="r.ID"
+                      v-model="selectedRecordIDs"
+                      class="w-4 h-4 text-indigo-650 bg-white rounded border-slate-300 focus:ring-indigo-500 cursor-pointer transition"
+                    />
+                  </div>
+
                   <!-- гос.номер -->
                   <div
-                    class="bg-slate-900 border border-slate-950 text-white rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0 shadow-sm"
+                    class="bg-slate-900 border border-slate-950 text-white rounded-xl h-8 px-2 flex items-center gap-1 min-w-0 shadow-sm justify-center"
                   >
                     <span
                       class="material-symbols-outlined text-[13px] text-amber-400 font-bold leading-none"
@@ -245,6 +385,7 @@
                       {{ r.CarNumber }}
                     </span>
                   </div>
+
                   <!-- мастер -->
                   <div
                     class="bg-slate-50 border border-slate-200/50 text-slate-700 rounded-xl h-8 px-2.5 flex items-center gap-1.5 min-w-0"
@@ -259,6 +400,17 @@
                       {{ getMasterName(r.MasterID) }}
                     </span>
                   </div>
+
+                  <!-- Кнопка удаления для Суперадмина -->
+                  <button
+                    v-if="user && user.Role === 'Superadmin'"
+                    type="button"
+                    @click.stop="$emit('del-row', 'Records', r.ID, 'records')"
+                    class="h-8 w-8 rounded-xl bg-rose-50 border border-rose-100 hover:bg-rose-105 hover:border-rose-200 text-rose-600 flex items-center justify-center cursor-pointer transition shadow-xs shrink-0"
+                    title="Удалить запись"
+                  >
+                    <span class="material-symbols-outlined text-[15px] font-semibold">delete</span>
+                  </button>
                 </div>
 
                 <!-- ROW 2: [начало] & [Марка - Модель] -->
@@ -485,8 +637,26 @@ export default {
   data() {
     return {
       touchStartX: 0,
-      touchStartY: 0
+      touchStartY: 0,
+      selectedRecordIDs: [],
+      // Mass edit properties
+      massNewStatus: "",
+      massNewPaymentStatus: "",
+      massNewMasterID: "",
+      massNewBrandID: "",
+      massNewModelID: ""
     };
+  },
+  computed: {
+    sortedBrands() {
+      if (!this.db || !this.db.brands) return [];
+      return [...this.db.brands].sort((a, b) => String(a.Name || "").localeCompare(String(b.Name || "")));
+    },
+    filteredModelsForFilter() {
+      if (!this.db || !this.db.models) return [];
+      if (!this.advFilterBrand) return this.db.models;
+      return this.db.models.filter(m => String(m.BrandID) === String(this.advFilterBrand));
+    }
   },
   methods: {
     handleTouchStart(event) {
@@ -527,6 +697,38 @@ export default {
           }
         }
       }
+    },
+    selectAllFiltered() {
+      // Choose only those that are visible in filtered list
+      this.selectedRecordIDs = this.filteredRecords.map(r => r.ID);
+    },
+    applyMassChanges() {
+      if (!this.selectedRecordIDs || this.selectedRecordIDs.length === 0) {
+        return;
+      }
+      if (
+        !this.massNewStatus &&
+        !this.massNewPaymentStatus &&
+        !this.massNewMasterID &&
+        !this.massNewBrandID
+      ) {
+        return;
+      }
+      this.$emit("mass-update", {
+        ids: [...this.selectedRecordIDs],
+        status: this.massNewStatus,
+        isPaid: this.massNewPaymentStatus,
+        masterId: this.massNewMasterID,
+        brandId: this.massNewBrandID,
+        modelId: this.massNewModelID
+      });
+      // Reset mass update states
+      this.selectedRecordIDs = [];
+      this.massNewStatus = "";
+      this.massNewPaymentStatus = "";
+      this.massNewMasterID = "";
+      this.massNewBrandID = "";
+      this.massNewModelID = "";
     },
     openRecordModal(record = null) {
       this.$emit("open-record", record);
