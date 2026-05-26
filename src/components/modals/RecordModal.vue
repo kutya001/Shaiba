@@ -715,7 +715,7 @@
                       <button
                         type="button"
                         @mousedown.prevent="addCustomServiceFromName"
-                        v-if="serviceSearch.trim().length > 0 && !filteredServices.some(s => s.Name.toLowerCase() === serviceSearch.trim().toLowerCase())"
+                        v-if="serviceSearch.trim().length > 0 && !filteredServices.some(s => String(s.Name || '').toLowerCase() === serviceSearch.trim().toLowerCase())"
                         class="w-full px-3 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 cursor-pointer border-t border-slate-100 flex items-center gap-2 bg-indigo-600 transition"
                       >
                         <i class="bi bi-plus-lg"></i> Добавить "{{ serviceSearch.trim() }}"
@@ -956,22 +956,22 @@ export default {
       if (!bId) return [];
       let models = this.store.db.models.filter((m) => m && m.BrandID === bId);
       return [...models].sort((x, y) =>
-        (x.Name || "")
+        String(x.Name || "")
           .toLowerCase()
-          .localeCompare((y.Name || "").toLowerCase()),
+          .localeCompare(String(y.Name || "").toLowerCase()),
       );
     },
     filteredBrandsList() {
       let b = this.sortedBrands;
       if (!this.brandSearchInput) return b;
       let q = this.brandSearchInput.toLowerCase();
-      return b.filter((x) => (x.Name || "").toLowerCase().includes(q));
+      return b.filter((x) => String(x.Name || "").toLowerCase().includes(q));
     },
     filteredModelsList() {
       let m = this.availableModels;
       if (!this.modelSearchInput) return m;
       let q = this.modelSearchInput.toLowerCase();
-      return m.filter((x) => (x.Name || "").toLowerCase().includes(q));
+      return m.filter((x) => String(x.Name || "").toLowerCase().includes(q));
     },
     filteredServices() {
       let s = [...this.store.sortedServices];
@@ -984,7 +984,7 @@ export default {
         return [customItem, ...s];
       }
       let q = this.serviceSearch.toLowerCase();
-      let filtered = s.filter((x) => x && (x.Name || "").toLowerCase().includes(q));
+      let filtered = s.filter((x) => x && String(x.Name || "").toLowerCase().includes(q));
       return [customItem, ...filtered];
     },
   },

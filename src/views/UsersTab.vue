@@ -193,10 +193,10 @@ export default {
       if (this.searchQuery) {
         const q = this.searchQuery.toLowerCase().trim();
         list = list.filter(u => {
-          const name = (u.Name || '').toLowerCase();
-          const username = (u.Username || '').toLowerCase();
-          const phone = (u.Phone || '').toLowerCase();
-          const role = (u.Role || '').toLowerCase();
+          const name = String(u.Name || '').toLowerCase();
+          const username = String(u.Username || '').toLowerCase();
+          const phone = String(u.Phone || '').toLowerCase();
+          const role = String(u.Role || '').toLowerCase();
           return name.includes(q) || username.includes(q) || phone.includes(q) || role.includes(q);
         });
       }
