@@ -1,6 +1,7 @@
 <template>
   <div
-    class="flex flex-col items-center justify-between h-full bg-slate-950 text-white p-3 select-none relative overflow-hidden"
+    class="flex flex-col items-center justify-between h-full p-2 sm:p-3 select-none relative overflow-hidden transition-all duration-300"
+    :class="isLightTheme ? 'bg-slate-55 text-slate-900' : 'bg-slate-950 text-white'"
     ref="gameContainer"
     @mousemove="onGlobalMouseMove"
     @mouseup="onGlobalMouseUp"
@@ -10,56 +11,85 @@
     <!-- Glass HUD Header of Block Blast with Flame streak and Best Scores -->
     <div
       v-if="hasStarted && !gameOver"
-      class="absolute top-3 left-3 right-3 bg-slate-900/80 backdrop-blur-md border border-slate-800/85 rounded-2xl py-2 px-3 flex items-center justify-between z-10 shadow-lg select-none"
+      class="w-full backdrop-blur-md rounded-2xl py-2 px-3 flex items-center justify-between z-10 shadow-lg select-none mb-1 shrink-0 border transition-all duration-300"
+      :class="isLightTheme ? 'bg-white/90 border-slate-200/85 text-slate-800' : 'bg-slate-900/80 border-slate-800/85 text-white'"
     >
       <!-- Left: Active Streak / Fire mode -->
-      <div class="flex items-center gap-1.5 bg-slate-950/40 px-2 py-1 rounded-xl border border-orange-500/20">
+      <div
+        class="flex items-center gap-1.5 px-2 py-1 rounded-xl border transition-all duration-300"
+        :class="isLightTheme ? 'bg-orange-50/65 border-orange-200/60' : 'bg-slate-950/40 border-orange-500/20'"
+      >
         <span class="relative flex h-3.5 w-3.5">
           <span
             v-if="streak >= 2"
             class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"
           ></span>
           <span
-            class="material-symbols-outlined text-[15px] select-none"
-            :class="streak >= 2 ? 'text-orange-500 font-bold' : 'text-slate-400'"
+            class="material-symbols-outlined text-[15px] select-none text-orange-500"
+            :class="streak >= 2 ? 'text-orange-500 font-bold' : (isLightTheme ? 'text-slate-400' : 'text-slate-400')"
           >
             local_fire_department
           </span>
         </span>
         <div class="flex flex-col text-left leading-none">
-          <span class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">Серия</span>
+          <span class="text-[7.5px] font-black uppercase tracking-widest leading-none mb-0.5" :class="isLightTheme ? 'text-slate-500' : 'text-slate-400'">Серия</span>
           <span
             class="text-xs font-black font-mono leading-none"
-            :class="streak >= 2 ? 'text-orange-400 animate-pulse' : 'text-slate-200'"
+            :class="streak >= 2 ? 'text-orange-500 animate-pulse' : (isLightTheme ? 'text-slate-700' : 'text-slate-200')"
           >
             {{ streak }}
           </span>
         </div>
       </div>
 
-      <!-- Center: Score & Audio button -->
-      <div
-        class="flex flex-col items-center cursor-pointer select-none px-2 py-0.5 rounded-xl hover:bg-slate-800/40 transition"
-        @click="toggleMute"
-        title="Включить / Выключить звук"
-      >
-        <span class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">Счёт</span>
-        <span class="text-base font-black font-mono text-emerald-400 leading-none flex items-center gap-1">
-          {{ score }}
-          <span class="material-symbols-outlined text-[13px] opacity-75 text-emerald-300">
-            {{ isMuted ? 'volume_off' : 'volume_up' }}
+      <!-- Center: Score, Mute, Theme Switcher in beautiful Control Pill -->
+      <div class="flex flex-col items-center select-none px-1">
+        <span class="text-[7.5px] font-black uppercase tracking-widest leading-none mb-0.5" :class="isLightTheme ? 'text-slate-500' : 'text-slate-400'">Счёт</span>
+        <div class="flex items-center gap-2">
+          <!-- Score Value display -->
+          <span class="text-base font-black font-mono leading-none" :class="isLightTheme ? 'text-emerald-600' : 'text-emerald-400'">
+            {{ score }}
           </span>
-        </span>
+          
+          <!-- Quick toggles row -->
+          <div class="flex items-center gap-0.5 p-0.5 rounded-lg border transition-all duration-300" :class="isLightTheme ? 'bg-slate-100 border-slate-200' : 'bg-slate-950/40 border-slate-800/40'">
+            <!-- Sound toggle button -->
+            <button
+              @click="toggleMute"
+              class="h-5 w-5 rounded flex items-center justify-center transition border-none bg-transparent cursor-pointer p-0"
+              :class="isLightTheme ? 'text-slate-600 hover:bg-slate-200' : 'text-slate-300 hover:bg-slate-800'"
+              title="Включить / Выключить звук"
+            >
+              <span class="material-symbols-outlined text-[13px]">
+                {{ isMuted ? 'volume_off' : 'volume_up' }}
+              </span>
+            </button>
+            <!-- Theme switch button -->
+            <button
+              @click="toggleTheme"
+              class="h-5 w-5 rounded flex items-center justify-center transition border-none bg-transparent cursor-pointer p-0"
+              :class="isLightTheme ? 'text-slate-600 hover:bg-slate-200' : 'text-slate-300 hover:bg-slate-800'"
+              title="Переключить тему оформления"
+            >
+              <span class="material-symbols-outlined text-[13px]">
+                {{ isLightTheme ? 'dark_mode' : 'light_mode' }}
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <!-- Right: High Score Cup -->
-      <div class="flex items-center gap-1.5 bg-slate-950/40 px-2 py-1 rounded-xl border border-yellow-500/20">
+      <!-- Right: High Score Cup  -->
+      <div
+        class="flex items-center gap-1.5 px-2 py-1 rounded-xl border transition-all duration-300"
+        :class="isLightTheme ? 'bg-yellow-50/60 border-yellow-200/50' : 'bg-slate-950/40 border-yellow-500/20'"
+      >
         <span class="material-symbols-outlined text-[15px] text-yellow-500 select-none">
           trophy
         </span>
         <div class="flex flex-col text-right leading-none">
-          <span class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">Рекорд</span>
-          <span class="text-xs font-black font-mono text-yellow-400 leading-none">
+          <span class="text-[7.5px] font-black uppercase tracking-widest leading-none mb-0.5" :class="isLightTheme ? 'text-slate-500' : 'text-slate-400'">Рекорд</span>
+          <span class="text-xs font-black font-mono text-yellow-500 leading-none" :class="isLightTheme ? 'text-yellow-650' : 'text-yellow-400'">
             {{ highScore }}
           </span>
         </div>
@@ -69,17 +99,22 @@
     <!-- Active Area: Main viewport board -->
     <div
       ref="boardWrapper"
-      class="flex-grow w-full max-w-[420px] flex flex-col justify-center items-center relative my-1"
+      class="flex-grow w-full max-w-[420px] flex flex-col justify-center items-center relative my-0.5 sm:my-1"
     >
       <!-- Flame Aura border around the board if high streak -->
       <div
-        class="relative p-2.5 rounded-3xl transition-all duration-500 bg-slate-900/40 border"
-        :class="streak >= 2 ? 'border-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.15)] bg-slate-900/50' : 'border-slate-800/60 shadow-xl'"
+        class="relative p-2 rounded-3xl transition-all duration-500 border"
+        :class="[
+          isLightTheme 
+            ? (streak >= 2 ? 'border-orange-400/60 shadow-[0_0_20px_rgba(249,115,22,0.12)] bg-orange-50/45' : 'border-slate-200/90 shadow-lg bg-white/70') 
+            : (streak >= 2 ? 'border-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.15)] bg-slate-900/50' : 'border-slate-800/60 shadow-xl bg-slate-900/40')
+        ]"
       >
         <!-- 8x8 Grid Canvas & Interactivity matrix -->
         <div
           ref="gridElement"
-          class="grid grid-cols-8 gap-1.5 p-1.5 bg-slate-950/70 rounded-2xl relative overflow-hidden w-[360px] h-[360px] max-w-full aspect-square"
+          class="grid grid-cols-8 gap-1 p-1 rounded-2xl relative overflow-hidden block-blast-grid max-w-full aspect-square transition-all duration-300 border"
+          :class="isLightTheme ? 'bg-slate-100 border-slate-200/95' : 'bg-slate-950/70 border-slate-900/60'"
         >
           <!-- Loop through cells dynamically -->
           <div
@@ -130,16 +165,19 @@
     <!-- Active Tray with 3 blocks to place -->
     <div
       v-if="hasStarted && !gameOver"
-      class="w-full max-w-[420px] flex flex-col items-center gap-2 mb-1 z-10 shrink-0"
+      class="w-full max-w-[420px] flex flex-col items-center gap-1.5 mb-1 z-10 shrink-0"
     >
       <!-- Tray blocks panel -->
-      <div class="w-full bg-slate-900/60 border border-slate-800/60 rounded-2xl py-3 px-2 flex justify-around items-center h-[135px] shadow-lg relative">
+      <div
+        class="w-full border rounded-2xl py-2 px-2 flex justify-around items-center h-[110px] sm:h-[135px] shadow-lg relative shrink-0 transition-all duration-300"
+        :class="isLightTheme ? 'bg-white/95 border-slate-200' : 'bg-slate-900/60 border-slate-800/60'"
+      >
         <div
           v-for="(trayItem, index) in blockTray"
           :key="index"
-          class="relative w-[96px] h-[96px] bg-slate-950/40 rounded-2xl border flex items-center justify-center transition-all duration-300"
+          class="relative w-[78px] h-[78px] sm:w-[96px] sm:h-[96px] rounded-2xl border flex items-center justify-center transition-all duration-305 shrink-0"
           :class="[
-            trayItem ? 'border-slate-800 hover:bg-slate-900/50 cursor-grab active:cursor-grabbing' : 'border-dashed border-slate-900 opacity-20',
+            trayItem ? (isLightTheme ? 'border-slate-200 hover:bg-slate-50 cursor-grab active:cursor-grabbing' : 'border-slate-800 hover:bg-slate-900/50 cursor-grab active:cursor-grabbing') : (isLightTheme ? 'border-dashed border-slate-200 bg-slate-50/20 opacity-20' : 'border-dashed border-slate-900 bg-slate-950/40 opacity-20'),
             selectedBlockIndex === index ? 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.25)] scale-105' : '',
             trayItem && !canPlaceBlockAnywhere(trayItem.shape) ? 'grayscale opacity-40' : ''
           ]"
@@ -150,7 +188,7 @@
           <!-- Mini shape representation -->
           <div
             v-if="trayItem"
-            class="grid gap-[2px]"
+            class="grid gap-[2px] shrink-0"
             :style="{
               gridTemplateRows: `repeat(${trayItem.shape.length}, minmax(0, 1fr))`,
               gridTemplateColumns: `repeat(${trayItem.shape[0].length}, minmax(0, 1fr))`
@@ -160,7 +198,7 @@
             <div
               v-for="cellVal in flattenShape(trayItem.shape)"
               :key="cellVal.id"
-              class="w-4 h-4 rounded-[1.5px] border"
+              class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-[1px] sm:rounded-[1.5px] border shrink-0"
               :style="{
                 backgroundColor: cellVal.active ? trayItem.color : 'transparent',
                 borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) rgba(255, 255, 255, 0.45)' : 'transparent',
@@ -172,7 +210,7 @@
           </div>
 
           <!-- Empty or placed label -->
-          <div v-if="!trayItem" class="text-[7.5px] font-black text-slate-600/60 uppercase tracking-widest leading-none">
+          <div v-if="!trayItem" class="text-[7.5px] font-black uppercase tracking-widest leading-none" :class="isLightTheme ? 'text-slate-400' : 'text-slate-600/60'">
             ОК
           </div>
 
@@ -182,7 +220,7 @@
             class="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center"
             title="Нет места для этой фигуры"
           >
-            <span class="material-symbols-outlined text-sm text-red-500 font-bold">
+            <span class="material-symbols-outlined text-sm text-red-550 font-bold">
               block
             </span>
           </div>
@@ -190,8 +228,8 @@
       </div>
 
       <!-- Helper info instruction label -->
-      <div class="text-[9px] font-bold text-slate-500 tracking-wide text-center uppercase leading-none mt-1">
-        <i class="bi bi-hand-index-thumb text-indigo-400 mr-0.5"></i>
+      <div class="text-[8.5px] sm:text-[9px] font-bold tracking-wide text-center uppercase leading-none mt-0.5 sm:mt-1 font-sans" :class="isLightTheme ? 'text-slate-500' : 'text-slate-400/80'">
+        <i class="bi bi-hand-index-thumb text-indigo-400 mr-0.5 animate-pulse"></i>
         Перетащите блоки или кликните на фигуру, а затем на поле
       </div>
     </div>
@@ -199,7 +237,7 @@
     <!-- Dragging absolute flying avatar piece representation inside game frame -->
     <div
       v-if="isDragging && activeDraggedBlock"
-      class="absolute pointer-events-none z-[99999] opacity-90 transition-none scale-110"
+      class="absolute pointer-events-none z-[99999] opacity-90 transition-none scale-110 w-max shrink-0 flex-shrink-0"
       :style="{
         left: pxToPercentage(dragX, 'x'),
         top: pxToPercentage(dragY, 'y'),
@@ -207,21 +245,22 @@
       }"
     >
       <div
-        class="grid gap-1 bg-slate-900/30 p-1 rounded-xl"
+        class="grid gap-1 p-1 rounded-xl shrink-0 flex-shrink-0 shadow-2xl"
+        :class="isLightTheme ? 'bg-slate-200 border border-slate-300/65' : 'bg-slate-900/40 border border-slate-850'"
         :style="{
-          gridTemplateRows: `repeat(${activeDraggedBlock.shape.length}, minmax(0, 1fr))`,
-          gridTemplateColumns: `repeat(${activeDraggedBlock.shape[0].length}, minmax(0, 1fr))`
+          gridTemplateRows: `repeat(${activeDraggedBlock.shape.length}, 32px)`,
+          gridTemplateColumns: `repeat(${activeDraggedBlock.shape[0].length}, 32px)`
         }"
       >
         <div
           v-for="cellVal in flattenShape(activeDraggedBlock.shape)"
           :key="'drag-' + cellVal.id"
-          class="w-8 h-8 rounded-[2px] border"
+          class="w-8 h-8 rounded-[2.5px] border shrink-0 flex-shrink-0"
           :style="{
             backgroundColor: cellVal.active ? activeDraggedBlock.color : 'transparent',
-            borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.4) rgba(255, 255, 255, 0.45)' : 'transparent',
-            borderWidth: cellVal.active ? '2px' : '0px',
-            boxShadow: cellVal.active ? 'inset 2px 2px 0px rgba(255, 255, 255, 0.25), inset -2px -2px 0px rgba(0, 0, 0, 0.35), 0 3px 6px rgba(0, 0, 0, 0.3)' : 'none',
+            borderColor: cellVal.active ? 'rgba(255, 255, 255, 0.55) rgba(0, 0, 0, 0.45) rgba(0, 0, 0, 0.45) rgba(255, 255, 255, 0.55)' : 'transparent',
+            borderWidth: cellVal.active ? '2.5px' : '0px',
+            boxShadow: cellVal.active ? 'inset 2.5px 2.5px 0px rgba(255, 255, 255, 0.35), inset -2.5px -2.5px 0px rgba(0, 0, 0, 0.45), 0 4px 8px rgba(0, 0, 0, 0.35)' : 'none',
             opacity: cellVal.active ? 1 : 0
           }"
         ></div>
@@ -231,29 +270,36 @@
     <!-- Start lobby popup view of game -->
     <div
       v-if="!hasStarted && !gameOver"
-      class="absolute inset-0 bg-slate-950/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-5 text-center z-20"
+      class="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-5 text-center z-20 transition-all duration-300 backdrop-blur-md"
+      :class="isLightTheme ? 'bg-white/95 text-slate-900' : 'bg-slate-950/95 text-white'"
     >
-      <div class="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-orange-400 mb-4 shadow-xl">
+      <div
+        class="w-14 h-14 rounded-full flex items-center justify-center text-orange-400 mb-4 shadow-xl border"
+        :class="isLightTheme ? 'bg-orange-50 border-orange-200' : 'bg-orange-50/10 border-orange-500/20'"
+      >
         <span class="material-symbols-outlined text-3xl animate-bounce" style="animation-duration: 3s">
           local_fire_department
         </span>
       </div>
-      <h2 class="text-lg font-black text-white mb-1 uppercase tracking-wide">
+      <h2 class="text-lg font-black mb-1 uppercase tracking-wide" :class="isLightTheme ? 'text-slate-900' : 'text-white'">
         Block Blast ERP
       </h2>
-      <p class="text-[10px] text-slate-400 max-w-[210px] mb-4 leading-normal font-medium">
+      <p class="text-[10px] max-w-[210px] mb-4 leading-normal font-medium" :class="isLightTheme ? 'text-slate-600' : 'text-slate-400'">
         Увлекательная головоломка со свободным распределением фигур. Заполняйте линии и копите серии!
       </p>
 
-      <div class="text-[9.5px] font-semibold text-slate-300 max-w-[260px] mb-5 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800/40 text-left space-y-1">
-        <p class="text-center font-bold text-[10.5px] text-orange-400 border-b border-slate-800/80 pb-1 mb-1 select-none">ПРАВИЛА ИГРЫ:</p>
+      <div
+        class="text-[9.5px] font-semibold max-w-[260px] mb-5 leading-relaxed p-3 rounded-xl text-left space-y-1 border"
+        :class="isLightTheme ? 'bg-slate-50/60 border-slate-200/80 text-slate-700' : 'bg-slate-900/60 border-slate-800/40 text-slate-300'"
+      >
+        <p class="text-center font-bold text-[10.5px] text-orange-400 border-b pb-1 mb-1 select-none" :class="isLightTheme ? 'border-slate-200/85' : 'border-slate-800/80'">ПРАВИЛА ИГРЫ:</p>
         <div class="flex items-start gap-1">
           <span class="text-orange-400">1.</span>
           <span>Размещайте фигуры на доске 8х8 клеточек.</span>
         </div>
         <div class="flex items-start gap-1">
           <span class="text-orange-400">2.</span>
-          <span>Фигуры <b class="text-red-400 uppercase">нельзя вращать</b> — ставьте как есть.</span>
+          <span>Фигуры <b class="text-red-500 uppercase">нельзя вращать</b> — ставьте как есть.</span>
         </div>
         <div class="flex items-start gap-1">
           <span class="text-orange-400">3.</span>
@@ -263,6 +309,20 @@
           <span class="text-orange-400">4.</span>
           <span><b>Рекордный Streak:</b> Одно за другим сжигание линий умножает очки лавиной.</span>
         </div>
+      </div>
+
+      <!-- Quick Theme Switch on Lobby screen to have beautiful contrast -->
+      <div class="flex items-center gap-2 mb-4">
+        <button
+          @click="toggleTheme"
+          class="px-4 py-1.5 border rounded-lg text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 transition"
+          :class="isLightTheme ? 'text-slate-700 bg-slate-100 border-slate-205 hover:bg-slate-200' : 'text-slate-300 bg-slate-900/80 border-slate-800 hover:bg-slate-850'"
+        >
+          <span class="material-symbols-outlined text-xs">
+            {{ isLightTheme ? 'dark_mode' : 'light_mode' }}
+          </span>
+          Цветовая тема: {{ isLightTheme ? 'Светлая' : 'Тёмная' }}
+        </button>
       </div>
 
       <button
@@ -276,18 +336,22 @@
     <!-- Game Over glass Modal view of game -->
     <div
       v-if="gameOver"
-      class="absolute inset-0 bg-slate-950/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center animate-fade-in z-20"
+      class="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center animate-fade-in z-20 transition-all duration-300 backdrop-blur-md"
+      :class="isLightTheme ? 'bg-white/95 text-slate-900' : 'bg-slate-950/95 text-white'"
     >
-      <div class="w-16 h-16 bg-red-500/10 border border-red-500/25 rounded-full flex items-center justify-center text-red-500 mb-4 shadow-lg">
+      <div
+        class="w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-lg border"
+        :class="isLightTheme ? 'bg-red-50 border-red-200 text-red-500' : 'bg-red-50/10 border-red-500/25 text-red-500'"
+      >
         <i class="bi bi-exclamation-triangle-fill text-3xl"></i>
       </div>
-      <h2 class="text-xl font-black text-white mb-2 tracking-tight uppercase">
+      <h2 class="text-xl font-black mb-2 tracking-tight uppercase" :class="isLightTheme ? 'text-slate-900' : 'text-white'">
         Конец игры
       </h2>
-      <p class="text-xs font-semibold text-slate-400 mb-5 leading-normal">
+      <p class="text-xs font-semibold mb-5 leading-normal" :class="isLightTheme ? 'text-slate-600' : 'text-slate-400'">
         Нет доступных ходов для оставшихся фигур! <br />
-        Итоговый счёт: <span class="text-emerald-400 font-bold font-mono text-sm block mt-1">{{ score }}</span>
-        Рекорд: <span class="text-yellow-400 font-bold font-mono">{{ highScore }}</span>
+        Итоговый счёт: <span class="text-emerald-500 font-bold font-mono text-sm block mt-1" :class="isLightTheme ? 'text-emerald-600' : 'text-emerald-450'">{{ score }}</span>
+        Рекорд: <span class="text-yellow-500 font-bold font-mono" :class="isLightTheme ? 'text-yellow-650' : 'text-yellow-450'">{{ highScore }}</span>
       </p>
       
       <button
@@ -299,7 +363,10 @@
     </div>
 
     <!-- Bottom credit section -->
-    <div class="w-full max-w-[340px] py-1.5 px-3 bg-slate-900/40 border border-slate-800/40 rounded-2xl text-center text-slate-400 text-[8.5px] font-bold tracking-wide leading-normal shrink-0 mt-1">
+    <div
+      class="w-full max-w-[340px] py-1 px-3 border rounded-2xl text-center text-[8px] sm:text-[8.5px] font-bold tracking-wide leading-normal shrink-0 mt-0.5 sm:mt-1.5 font-sans transition-all duration-300"
+      :class="isLightTheme ? 'bg-white/80 border-slate-200 text-slate-600' : 'bg-slate-900/40 border-slate-800/40 text-slate-400'"
+    >
       <i class="bi bi-award-fill text-amber-400 mr-0.5"></i>
       Блок Бласт: Фигуры фиксированы по вращению. Доска 8х8.
     </div>
@@ -1037,6 +1104,23 @@ export default {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+.block-blast-grid {
+  width: min(300px, 78vw, 40vh);
+  height: min(300px, 78vw, 40vh);
+}
+@media (min-width: 350px) {
+  .block-blast-grid {
+    width: min(330px, 80vw, 44vh);
+    height: min(330px, 80vw, 44vh);
+  }
+}
+@media (min-width: 400px) {
+  .block-blast-grid {
+    width: min(360px, 84vw, 48vh);
+    height: min(360px, 84vw, 48vh);
   }
 }
 </style>
