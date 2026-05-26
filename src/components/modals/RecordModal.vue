@@ -527,7 +527,8 @@
                         <input
                           type="text"
                           v-model="brandSearchInput"
-                          @focus="showBrandDropdown = true"
+                          @focus="onBrandFocus"
+                          @click="onBrandFocus"
                           class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
                           placeholder="Выберите марку..."
                         />
@@ -538,8 +539,8 @@
                           <div
                             v-for="b in filteredBrandsList"
                             :key="b.ID"
-                            @mousedown.prevent="selectBrand(b)"
-                            @touchstart.prevent="selectBrand(b)"
+                            @mousedown.prevent.stop="selectBrand(b)"
+                            @touchstart.prevent.stop="selectBrand(b)"
                             class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                           >
                             {{ b.Name }}
@@ -563,7 +564,8 @@
                         <input
                           type="text"
                           v-model="modelSearchInput"
-                          @focus="showModelDropdown = true"
+                          @focus="onModelFocus"
+                          @click="onModelFocus"
                           :disabled="!recordForm.BrandID"
                           class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition disabled:opacity-50"
                           placeholder="Выберите модель..."
@@ -575,8 +577,8 @@
                           <div
                             v-for="m in filteredModelsList"
                             :key="m.ID"
-                            @mousedown.prevent="selectModel(m)"
-                            @touchstart.prevent="selectModel(m)"
+                            @mousedown.prevent.stop="selectModel(m)"
+                            @touchstart.prevent.stop="selectModel(m)"
                             class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                           >
                             {{ m.Name }}
@@ -918,10 +920,10 @@ export default {
             binding.value(event);
           }
         };
-        document.addEventListener("mousedown", el.clickOutsideEvent);
+        document.addEventListener("pointerdown", el.clickOutsideEvent);
       },
       unmounted(el) {
-        document.removeEventListener("mousedown", el.clickOutsideEvent);
+        document.removeEventListener("pointerdown", el.clickOutsideEvent);
       }
     }
   },
@@ -938,6 +940,7 @@ export default {
       isSaving: false,
       bsModal: null,
       applicationRef: null,
+      ignoreModelFocus: false,
     };
   },
   computed: {
@@ -967,12 +970,20 @@ export default {
       let b = this.sortedBrands;
       if (!this.brandSearchInput) return b;
       let q = String(this.brandSearchInput || "").toLowerCase();
+      let currentBrand = this.store.db.brands.find((x) => x && x.ID === this.recordForm.BrandID);
+      if (currentBrand && String(currentBrand.Name || "").toLowerCase() === q) {
+        return b;
+      }
       return b.filter((x) => String(x.Name || "").toLowerCase().includes(q));
     },
     filteredModelsList() {
       let m = this.availableModels;
       if (!this.modelSearchInput) return m;
       let q = String(this.modelSearchInput || "").toLowerCase();
+      let currentModel = this.store.db.models.find((x) => x && x.ID === this.recordForm.ModelID);
+      if (currentModel && String(currentModel.Name || "").toLowerCase() === q) {
+        return m;
+      }
       return m.filter((x) => String(x.Name || "").toLowerCase().includes(q));
     },
     filteredServices() {
@@ -1294,6 +1305,21 @@ export default {
         this.showServiceSelector = true;
       }
     },
+    onBrandFocus(event) {
+      this.showBrandDropdown = true;
+      if (event && event.target && typeof event.target.select === "function") {
+        event.target.select();
+      }
+    },
+    onModelFocus(event) {
+      if (this.ignoreModelFocus) {
+        return;
+      }
+      this.showModelDropdown = true;
+      if (event && event.target && typeof event.target.select === "function") {
+        event.target.select();
+      }
+    },
     hideBrandDropdown() {
       setTimeout(() => {
         this.showBrandDropdown = false;
@@ -1307,9 +1333,10 @@ export default {
       }
       this.brandSearchInput = b.Name;
       this.showBrandDropdown = false;
-      this.$nextTick(() => {
-        this.showModelDropdown = true;
-      });
+      this.ignoreModelFocus = true;
+      setTimeout(() => {
+        this.ignoreModelFocus = false;
+      }, 350);
     },
     hideModelDropdown() {
       setTimeout(() => {
