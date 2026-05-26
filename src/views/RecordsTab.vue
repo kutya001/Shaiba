@@ -1,5 +1,5 @@
 <template>
-<div>
+<div @touchstart="handleTouchStart" @touchend="handleTouchEnd" class="min-h-[calc(100vh-120px)] pb-12">
             <!-- Sticky Header elements for Records -->
             <div
               class="sticky top-0 bg-transparent pt-1.5 pb-2.5 z-10 space-y-2 select-none -mx-3 px-3"
@@ -482,7 +482,52 @@ export default {
     user: Object,
     db: Object
   },
+  data() {
+    return {
+      touchStartX: 0,
+      touchStartY: 0
+    };
+  },
   methods: {
+    handleTouchStart(event) {
+      if (event.touches && event.touches.length > 0) {
+        this.touchStartX = event.touches[0].clientX;
+        this.touchStartY = event.touches[0].clientY;
+      }
+    },
+    handleTouchEnd(event) {
+      if (!event.changedTouches || event.changedTouches.length === 0) return;
+      const diffX = event.changedTouches[0].clientX - this.touchStartX;
+      const diffY = event.changedTouches[0].clientY - this.touchStartY;
+
+      // Свайп влево/вправо по горизонтали
+      if (Math.abs(diffX) > Math.abs(diffY) * 1.8 && Math.abs(diffX) > 60) {
+        const order = ['Открыт', 'Выполнен', 'Отменён', 'Все'];
+        let currentMode = 'Все';
+        if (this.activeStatuses && this.activeStatuses.length === 1) {
+          currentMode = this.activeStatuses[0];
+        }
+
+        const curIndex = order.indexOf(currentMode);
+        if (curIndex !== -1) {
+          let newIndex = curIndex;
+          if (diffX < 0) {
+            // Свайп влево -> следующий фильтр
+            newIndex = (curIndex + 1) % order.length;
+          } else {
+            // Свайп вправо -> предыдущий фильтр
+            newIndex = (curIndex - 1 + order.length) % order.length;
+          }
+
+          const newMode = order[newIndex];
+          if (newMode === 'Все') {
+            this.$emit('set-all-statuses');
+          } else {
+            this.toggleStatus(newMode);
+          }
+        }
+      }
+    },
     openRecordModal(record = null) {
       this.$emit("open-record", record);
     },
