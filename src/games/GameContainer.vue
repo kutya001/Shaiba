@@ -224,6 +224,31 @@
               <span class="group-hover:text-orange-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
             </div>
           </div>
+
+          <!-- NEW Game 7: Flappy Bird -->
+          <div
+            @click="selectGame('flappybird')"
+            class="bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-violet-600/30 rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between h-[125px] sm:h-[145px] shadow-lg relative overflow-hidden"
+          >
+            <div class="absolute -right-3 -top-3 w-10 h-10 bg-violet-600/5 rounded-full filter blur-md group-hover:bg-violet-600/10 transition"></div>
+            <div>
+              <div class="w-7 h-7 bg-violet-600/10 border border-violet-500/20 rounded-lg flex items-center justify-center text-violet-400 text-sm mb-1.5 group-hover:scale-110 transition shrink-0">
+                <i class="bi bi-rocket-takeoff-fill animate-pulse"></i>
+              </div>
+              <h3 class="text-xs font-black tracking-tight text-slate-100 group-hover:text-violet-400 transition m-0">Космолёт</h3>
+              
+              <!-- Personal Stats Badge on Card -->
+              <div class="flex items-center gap-1.5 mt-1 text-[8px] font-black text-slate-400 font-mono">
+                <span class="flex items-center gap-0.5" title="Время игры"><i class="bi bi-clock text-cyan-400"></i> {{ formatGamePlayTime(getGameStats('flappybird').playTime) }}</span>
+                <span class="text-slate-700">•</span>
+                <span class="flex items-center gap-0.5" title="Рекорд"><i class="bi bi-award text-amber-500"></i> {{ getGameStats('flappybird').record }}</span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center text-[8px] uppercase font-black tracking-widest text-slate-500 mt-2">
+              <span>Реакция</span>
+              <span class="group-hover:text-violet-400 transition flex items-center gap-0.5">Играть <i class="bi bi-play-fill leading-none"></i></span>
+            </div>
+          </div>
         </div>
 
         <!-- Tab 2: Dynamic Leaderboards Dashboard -->
@@ -267,6 +292,7 @@
                 <option value="hillclimb">Мотоциклист</option>
                 <option value="game2048">2048</option>
                 <option value="blockblast">Block Blast</option>
+                <option value="flappybird">Космолёт</option>
               </select>
             </div>
           </div>
@@ -388,6 +414,7 @@
             <HillClimb v-else-if="store.activeGameId === 'hillclimb'" />
             <Game2048 v-else-if="store.activeGameId === 'game2048'" />
             <BlockBlast v-else-if="store.activeGameId === 'blockblast'" />
+            <FlappyBird v-else-if="store.activeGameId === 'flappybird'" />
           </div>
         </div>
       </div>
@@ -403,6 +430,7 @@ import Snake from "./Snake/Snake.vue";
 import HillClimb from "./HillClimb/HillClimb.vue";
 import Game2048 from "./Game2048/Game2048.vue";
 import BlockBlast from "./BlockBlast/BlockBlast.vue";
+import FlappyBird from "./FlappyBird/FlappyBird.vue";
 
 export default {
   components: {
@@ -411,7 +439,8 @@ export default {
     Snake,
     HillClimb,
     Game2048,
-    BlockBlast
+    BlockBlast,
+    FlappyBird
   },
   data() {
     return {
