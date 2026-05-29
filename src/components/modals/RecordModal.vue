@@ -539,8 +539,7 @@
                           <div
                             v-for="b in filteredBrandsList"
                             :key="b.ID"
-                            @mousedown.prevent.stop="selectBrand(b)"
-                            @touchstart.prevent.stop="selectBrand(b)"
+                            @click.stop="selectBrand(b)"
                             class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                           >
                             {{ b.Name }}
@@ -577,8 +576,7 @@
                           <div
                             v-for="m in filteredModelsList"
                             :key="m.ID"
-                            @mousedown.prevent.stop="selectModel(m)"
-                            @touchstart.prevent.stop="selectModel(m)"
+                            @click.stop="selectModel(m)"
                             class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                           >
                             {{ m.Name }}
@@ -700,8 +698,7 @@
                         v-for="srv in filteredServices"
                         :key="srv.ID"
                         type="button"
-                        @mousedown.prevent="toggleService(srv.ID)"
-                        @touchstart.prevent="toggleService(srv.ID)"
+                        @click.stop="toggleService(srv.ID)"
                         class="w-full px-3 py-2.5 text-xs font-semibold hover:bg-slate-50 cursor-pointer flex justify-between items-start gap-3 transition-colors border-b border-slate-50 last:border-0"
                         :class="
                           isServiceSelected(srv.ID) ? 'text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50' : 'text-slate-700'
@@ -717,8 +714,7 @@
                       
                       <button
                         type="button"
-                        @mousedown.prevent="addCustomServiceFromName"
-                        @touchstart.prevent="addCustomServiceFromName"
+                        @click.stop="addCustomServiceFromName"
                         v-if="serviceSearch.trim().length > 0 && !filteredServices.some(s => String(s.Name || '').toLowerCase() === serviceSearch.trim().toLowerCase())"
                         class="w-full px-3 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 cursor-pointer border-t border-slate-100 flex items-center gap-2 bg-indigo-600 transition"
                       >
